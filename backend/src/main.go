@@ -16,6 +16,8 @@ func main(){
 		panic(err)
 	}
 
+	config.SetupOAuth()
+
 	err = config.ConnectDatabase()
 	if err != nil {
 		log.Infof(context.Background(), "Error connecting to database: %v", err.Error())

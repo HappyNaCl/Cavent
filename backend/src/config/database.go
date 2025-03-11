@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/HappyNaCl/Cavent/src/domain"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -24,5 +25,7 @@ func ConnectDatabase() error{
 	log.Println("[INFO] Database successfully connected!")
 	Database = db
 
+
+	db.AutoMigrate(&domain.User{})
 	return nil
 }
