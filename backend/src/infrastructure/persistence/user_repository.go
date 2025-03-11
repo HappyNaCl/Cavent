@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"github.com/HappyNaCl/Cavent/src/domain"
+	"github.com/HappyNaCl/Cavent/src/domain/repository"
 	"github.com/markbates/goth"
 	"gorm.io/gorm"
 )
@@ -10,7 +11,7 @@ type UserRepositoryImpl struct{
 	Conn *gorm.DB
 }
 
-func UserRepository(conn *gorm.DB) *UserRepositoryImpl{
+func UserRepository(conn *gorm.DB) repository.UserRepository{
 	return &UserRepositoryImpl{Conn: conn}
 }
 
