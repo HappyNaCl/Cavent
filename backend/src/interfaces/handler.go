@@ -25,9 +25,14 @@ func setupRoutes() *gin.Engine{
 	r := gin.Default()
 
 	r.GET("/", index)
-	r.GET("/auth/:provider", loginWithOAuth)
-	r.GET("/auth/:provider/callback", loginWithOAuthCallback)
-	r.GET("/auth/logout", logout)
+
+	auth := r.Group("/auth")
+	auth.Use(UnauthMiddleware())
+	auth.GET("/:provider", loginWithOAuth)
+	auth.GET("/:provider/callback", loginWithOAuthCallback)
+
+	auth.Use(AuthMiddleware())
+	auth.GET("/logout", logout)
 
 	protected := r.Group("/protected")
 	protected.Use(AuthMiddleware())
@@ -47,7 +52,7 @@ func protectedIndex(c *gin.Context){
 	})
 }
 
-func loginWithOAuth(c *gin.Context){
+func loginWithOAuth(c *gin.Context){	
 	provider := c.Param("provider")
 	c.Request = c.Request.WithContext(context.WithValue(c.Request.Context(), providerKey, provider))
 	gothic.BeginAuthHandler(c.Writer, c.Request)
@@ -59,21 +64,32 @@ func loginWithOAuthCallback(c *gin.Context){
 		c.JSON(400, gin.H{"error": err.Error()})
 	}
 
-	// fmt.Println(user)
-
 	token, err := application.GenerateJWT(user.Email, user.Provider)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
+	
 	appDomain := os.Getenv("APP_DOMAIN")
 	log.Println(appDomain)
 	c.SetCookie("token", token, 3600*24, "/", appDomain, false, true)
 
-	application.RegisterOrLoginUser(user, user.Provider)
-	c.Redirect(http.StatusFound, "/protected")
+	loginUser, err := application.RegisterOrLoginUser(user, user.Provider)
+	if err != nil || loginUser == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"provider": loginUser.Provider,
+		"providerId": loginUser.ProviderID,
+		"name": loginUser.Name,
+		"email": loginUser.Email,
+		"avatar": loginUser.AvatarUrl,
+	})
 }
 
 func logout(c *gin.Context){
 	c.SetCookie("token", "", -1, "/", os.Getenv("APP_DOMAIN"), false, true)
-	c.Redirect(http.StatusFound, "/")
+	c.JSON(http.StatusOK, gin.H{
+		"message": "SUCCESS",
+	})
 }

@@ -9,5 +9,5 @@ import (
 type UserRepository interface {
 	FindByProviderID(providerID string) (*domain.User, error)
 	RegisterUser(user *domain.User) error
-	RegisterOrLoginUser(gothUser goth.User, provider string) (bool, error)
+	RegisterOrLoginUser(gothUser goth.User, provider string) (*domain.User, error)
 }

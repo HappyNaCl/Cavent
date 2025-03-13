@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/HappyNaCl/Cavent/src/config"
+	"github.com/HappyNaCl/Cavent/src/domain"
 	"github.com/HappyNaCl/Cavent/src/infrastructure/persistence"
 	"github.com/golang-jwt/jwt"
 	"github.com/markbates/goth"
@@ -23,6 +24,6 @@ func GenerateJWT(email string, provider string) (string, error){
 	return token.SignedString(byteSecret)
 }
 
-func RegisterOrLoginUser(user goth.User, provider string) (bool, error){
+func RegisterOrLoginUser(user goth.User, provider string) (*domain.User, error){
 	return persistence.UserRepository(config.Database).RegisterOrLoginUser(user, provider)
 }

@@ -36,3 +36,15 @@ func AuthMiddleware() gin.HandlerFunc{
 		c.Next()
 	}
 }
+
+func UnauthMiddleware() gin.HandlerFunc{
+	return func(c *gin.Context){
+		token, err := c.Cookie("token")
+		if err == nil && token != "" {
+			c.JSON(http.StatusConflict, gin.H{"error": "You are already logged in"})
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+}

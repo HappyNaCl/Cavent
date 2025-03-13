@@ -32,7 +32,7 @@ func (repo *UserRepositoryImpl) RegisterUser(user *domain.User) error{
 	return nil
 }
 
-func (repo *UserRepositoryImpl) RegisterOrLoginUser(gothUser goth.User, provider string) (bool, error){
+func (repo *UserRepositoryImpl) RegisterOrLoginUser(gothUser goth.User, provider string) (*domain.User, error){
 	var user domain.User
 
 	result := repo.Conn.Where("provider_id = ? AND provider = ?", gothUser.UserID, provider).First(&user)
@@ -47,9 +47,9 @@ func (repo *UserRepositoryImpl) RegisterOrLoginUser(gothUser goth.User, provider
 			}
 			repo.Conn.Create(&user)
 		} else {
-			return false, result.Error
+			return nil, result.Error
 		}
 	}
 
-	return true, nil
+	return &user, nil
 }
