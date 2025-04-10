@@ -24,6 +24,15 @@ func (repo *UserRepositoryImpl) FindByProviderID(providerID string) (*domain.Use
 	return &user, nil
 }
 
+func (repo *UserRepositoryImpl) FindByEmail(email string) (*domain.User, error){
+	var user domain.User
+	err := repo.Conn.Where("email = ?", email).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
 func (repo *UserRepositoryImpl) RegisterUser(user *domain.User) error{
 	err := repo.Conn.Save(&user).Error
 	if err != nil {
@@ -32,7 +41,7 @@ func (repo *UserRepositoryImpl) RegisterUser(user *domain.User) error{
 	return nil
 }
 
-func (repo *UserRepositoryImpl) RegisterOrLoginUser(gothUser goth.User, provider string) (*domain.User, error){
+func (repo *UserRepositoryImpl) RegisterOrLoginOauthUser(gothUser goth.User, provider string) (*domain.User, error){
 	var user domain.User
 
 	result := repo.Conn.Where("provider_id = ? AND provider = ?", gothUser.UserID, provider).First(&user)

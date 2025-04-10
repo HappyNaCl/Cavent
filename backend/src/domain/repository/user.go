@@ -8,6 +8,7 @@ import (
 // Make a repo interface containing methods to query the database for user
 type UserRepository interface {
 	FindByProviderID(providerID string) (*domain.User, error)
+	FindByEmail(email string) (*domain.User, error)
 	RegisterUser(user *domain.User) error
-	RegisterOrLoginUser(gothUser goth.User, provider string) (*domain.User, error)
+	RegisterOrLoginOauthUser(gothUser goth.User, provider string) (*domain.User, error)
 }

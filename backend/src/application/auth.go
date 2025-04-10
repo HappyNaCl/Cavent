@@ -1,6 +1,7 @@
 package application
 
 import (
+	"errors"
 	"os"
 	"time"
 
@@ -24,6 +25,19 @@ func GenerateJWT(email string, provider string) (string, error){
 	return token.SignedString(byteSecret)
 }
 
-func RegisterOrLoginUser(user goth.User, provider string) (*domain.User, error){
-	return persistence.UserRepository(config.Database).RegisterOrLoginUser(user, provider)
+func RegisterOrLoginOauthUser(user goth.User, provider string) (*domain.User, error){
+	return persistence.UserRepository(config.Database).RegisterOrLoginOauthUser(user, provider)
+}
+
+func LoginUser(email string, password string) (*domain.User, error){
+	user, err := persistence.UserRepository(config.Database).FindByProviderID(email)
+	if err != nil {
+		return nil, err
+	}
+
+	if user.Password != password {
+		return nil, errors.New("invalid password")
+	}
+
+	return user, nil
 }

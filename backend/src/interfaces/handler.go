@@ -26,7 +26,7 @@ func setupRoutes() *gin.Engine{
 
 	r.GET("/", index)
 
-	auth := r.Group("/auth")
+	auth := r.Group("/api/auth")
 	auth.Use(UnauthMiddleware())
 	auth.GET("/:provider", loginWithOAuth)
 	auth.GET("/:provider/callback", loginWithOAuthCallback)
@@ -34,7 +34,7 @@ func setupRoutes() *gin.Engine{
 	auth.Use(AuthMiddleware())
 	auth.GET("/logout", logout)
 
-	protected := r.Group("/protected")
+	protected := r.Group("/api/protected")
 	protected.Use(AuthMiddleware())
 	protected.GET("/", protectedIndex)
 	return r
@@ -50,6 +50,10 @@ func protectedIndex(c *gin.Context){
 	c.JSON(200, gin.H{
 		"message": "Protected",
 	})
+}
+
+func loginWithoutOAuth(c *gin.Context){
+	
 }
 
 func loginWithOAuth(c *gin.Context){	
@@ -68,12 +72,12 @@ func loginWithOAuthCallback(c *gin.Context){
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
-	
+
 	appDomain := os.Getenv("APP_DOMAIN")
 	log.Println(appDomain)
 	c.SetCookie("token", token, 3600*24, "/", appDomain, false, true)
 
-	loginUser, err := application.RegisterOrLoginUser(user, user.Provider)
+	loginUser, err := application.RegisterOrLoginOauthUser(user, user.Provider)
 	if err != nil || loginUser == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
