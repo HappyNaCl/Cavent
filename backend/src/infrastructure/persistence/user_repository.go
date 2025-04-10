@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"github.com/HappyNaCl/Cavent/src/domain"
+	"github.com/HappyNaCl/Cavent/src/domain/factory"
 	"github.com/HappyNaCl/Cavent/src/domain/repository"
 	"github.com/markbates/goth"
 	"gorm.io/gorm"
@@ -33,12 +34,12 @@ func (repo *UserRepositoryImpl) FindByEmail(email string) (*domain.User, error){
 	return &user, nil
 }
 
-func (repo *UserRepositoryImpl) RegisterUser(user *domain.User) error{
+func (repo *UserRepositoryImpl) RegisterUser(user *domain.User) (*domain.User, error){
 	err := repo.Conn.Save(&user).Error
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return user, nil
 }
 
 func (repo *UserRepositoryImpl) RegisterOrLoginOauthUser(gothUser goth.User, provider string) (*domain.User, error){
@@ -47,13 +48,7 @@ func (repo *UserRepositoryImpl) RegisterOrLoginOauthUser(gothUser goth.User, pro
 	result := repo.Conn.Where("provider_id = ? AND provider = ?", gothUser.UserID, provider).First(&user)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
-			user = domain.User{
-				Provider: provider,
-				ProviderID: gothUser.UserID,
-				Email: gothUser.Email,
-				Name: gothUser.Name,
-				AvatarUrl: gothUser.AvatarURL,
-			}
+			user := factory.UserFactory().GetOAuthUser(provider, gothUser.UserID, gothUser.Name, gothUser.Email, "", gothUser.AvatarURL)
 			repo.Conn.Create(&user)
 		} else {
 			return nil, result.Error

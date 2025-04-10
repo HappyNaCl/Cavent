@@ -28,6 +28,7 @@ func setupRoutes() *gin.Engine{
 
 	auth := r.Group("/api/auth")
 	auth.Use(UnauthMiddleware())
+	auth.POST("/register", registerUser)
 	auth.GET("/:provider", loginWithOAuth)
 	auth.GET("/:provider/callback", loginWithOAuthCallback)
 
@@ -52,8 +53,38 @@ func protectedIndex(c *gin.Context){
 	})
 }
 
-func loginWithoutOAuth(c *gin.Context){
+// func loginCredential(c *gin.Context){
 	
+// }
+
+func registerUser(c *gin.Context){
+	fullName := c.PostForm("fullName")
+	email := c.PostForm("email")
+	password := c.PostForm("password")
+
+	user, err := application.RegisterUser(fullName, email, password)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	token, err := application.GenerateJWT(user.Email, user.Provider)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	appDomain := os.Getenv("APP_DOMAIN")
+	log.Println(appDomain)
+	c.SetCookie("token", token, 3600*24, "/", appDomain, false, true)
+
+	c.JSON(200, gin.H{
+		"provider": user.Provider,
+		"providerId": user.ProviderID,
+		"name": user.Name,
+		"email": user.Email,
+		"avatar": user.AvatarUrl,
+	})
 }
 
 func loginWithOAuth(c *gin.Context){	

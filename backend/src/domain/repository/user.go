@@ -9,6 +9,6 @@ import (
 type UserRepository interface {
 	FindByProviderID(providerID string) (*domain.User, error)
 	FindByEmail(email string) (*domain.User, error)
-	RegisterUser(user *domain.User) error
+	RegisterUser(user *domain.User) (*domain.User, error)
 	RegisterOrLoginOauthUser(gothUser goth.User, provider string) (*domain.User, error)
 }
