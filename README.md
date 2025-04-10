@@ -1,4 +1,4 @@
 # Cavent
 
-Backend: Golang\n
-Frontend: React + Vite + Typescript
+Backend: Golang<br>
+Frontend: React + Vite + Typescript<br>
