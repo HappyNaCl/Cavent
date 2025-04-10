@@ -1,11 +1,11 @@
 import { Route, Routes } from "react-router";
-import AuthLayout from "./layout/AuthLayout";
+import AuthPage from "./page/auth/AuthPage";
 
 function App() {
   return (
-    <main className="w-screen h-fit min-h-screen bg-gray-700">
+    <main className="w-screen h-fit min-h-screen">
       <Routes>
-        <Route path="/auth" element={<AuthLayout />} />
+        <Route path="/auth" element={<AuthPage />} />
       </Routes>
     </main>
   );
