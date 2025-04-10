@@ -28,7 +28,9 @@ export default function AuthPage() {
         </div>
       </div>
       <div className="flex flex-col flex-1 rounded-4xl bg-white shadow-lg px-36 justify-center gap-10">
-        <span className="font-semibold text-5xl">Create Account</span>
+        <span className="font-semibold text-5xl">
+          {isLogin ? "Login" : "Create Account"}
+        </span>
         <div className="w-full">
           <GoogleButton />
         </div>
