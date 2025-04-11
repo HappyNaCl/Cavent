@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/HappyNaCl/Cavent/src/domain"
+	"github.com/HappyNaCl/Cavent/backend/domain/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -26,6 +26,6 @@ func ConnectDatabase() error{
 	Database = db
 
 
-	db.AutoMigrate(&domain.User{})
+	db.AutoMigrate(&model.User{})
 	return nil
 }

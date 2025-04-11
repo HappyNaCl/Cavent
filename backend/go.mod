@@ -1,4 +1,4 @@
-module github.com/HappyNaCl/Cavent
+module github.com/HappyNaCl/Cavent/backend
 
 go 1.23.4
 

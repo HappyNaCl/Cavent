@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 
-	"github.com/HappyNaCl/Cavent/src/config"
-	"github.com/HappyNaCl/Cavent/src/interfaces"
+	"github.com/HappyNaCl/Cavent/backend/config"
+	"github.com/HappyNaCl/Cavent/backend/interfaces"
 	"github.com/joho/godotenv"
 	"google.golang.org/appengine/log"
 )

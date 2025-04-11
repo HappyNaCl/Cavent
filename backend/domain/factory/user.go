@@ -1,26 +1,26 @@
 package factory
 
 import (
-	"github.com/HappyNaCl/Cavent/src/config"
-	"github.com/HappyNaCl/Cavent/src/domain"
+	"github.com/HappyNaCl/Cavent/backend/config"
+	"github.com/HappyNaCl/Cavent/backend/domain/model"
 	"github.com/google/uuid"
 )
 
 type UserFactoryInterface interface {
-	GetOAuthUser(provider string, providerId string, name string, email string, password string, avatarUrl string) *domain.User
-	GetUser(name string, email string, password string) *domain.User
+	GetOAuthUser(provider string, providerId string, name string, email string, password string, avatarUrl string) *model.User
+	GetUser(name string, email string, password string) *model.User
 }
 
 type UserFactoryImpl struct {}
 
-func (u *UserFactoryImpl) GetOAuthUser(provider string, providerId string, name string, email string, password string, avatarUrl string) *domain.User {
+func (u *UserFactoryImpl) GetOAuthUser(provider string, providerId string, name string, email string, password string, avatarUrl string) *model.User {
 	hash, err := config.HashPassword(password)
 
 	if err != nil {
 		return nil
 	}
 
-	return &domain.User{
+	return &model.User{
 		Provider: provider,
 		ProviderID: providerId,
 		Name: name,
@@ -30,14 +30,14 @@ func (u *UserFactoryImpl) GetOAuthUser(provider string, providerId string, name 
 	}
 }
 
-func (u *UserFactoryImpl) GetUser(name string, email string, password string) *domain.User {
+func (u *UserFactoryImpl) GetUser(name string, email string, password string) *model.User {
 	hash, err := config.HashPassword(password)
 
 	if err != nil {
 		return nil
 	}
 
-	return &domain.User{
+	return &model.User{
 		Provider: "credential",
 		ProviderID: uuid.NewString(),
 		Name: name,

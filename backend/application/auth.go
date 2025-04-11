@@ -5,9 +5,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/HappyNaCl/Cavent/src/config"
-	"github.com/HappyNaCl/Cavent/src/domain"
-	"github.com/HappyNaCl/Cavent/src/infrastructure/persistence"
+	"github.com/HappyNaCl/Cavent/backend/config"
+	"github.com/HappyNaCl/Cavent/backend/domain/model"
+	"github.com/HappyNaCl/Cavent/backend/infrastructure/persistence"
 	"github.com/golang-jwt/jwt"
 	"github.com/markbates/goth"
 )
@@ -25,17 +25,23 @@ func GenerateJWT(email string, provider string) (string, error){
 	return token.SignedString(byteSecret)
 }
 
-func RegisterOrLoginOauthUser(user goth.User, provider string) (*domain.User, error){
+func RegisterOrLoginOauthUser(user goth.User, provider string) (*model.User, error){
 	return persistence.UserRepository(config.Database).RegisterOrLoginOauthUser(user, provider)
 }
 
-func LoginUser(email string, password string) (*domain.User, error){
-	user, err := persistence.UserRepository(config.Database).FindByProviderID(email)
+func LoginUser(email string, password string) (*model.User, error){
+	user, err := persistence.UserRepository(config.Database).FindByEmail(email)
 	if err != nil {
 		return nil, err
 	}
 
-	if user.Password != password {
+	result, err := config.ComparePasswordAndHash(password, user.Password)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !result {
 		return nil, errors.New("invalid password")
 	}
 
