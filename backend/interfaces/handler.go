@@ -70,7 +70,6 @@ func loginCredential(c *gin.Context){
 	}
 	appDomain := os.Getenv("APP_DOMAIN")
 
-	log.Println(appDomain)
 	c.SetCookie("token", token, 3600*24, "/", appDomain, false, true)
 	c.JSON(200, gin.H{
 		"message": "success",
