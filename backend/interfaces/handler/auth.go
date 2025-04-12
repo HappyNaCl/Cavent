@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -107,21 +108,27 @@ func (h AuthHandler) RegisterUser(c *gin.Context){
 
 func (h AuthHandler) LoginWithOAuth(c *gin.Context){	
 	provider := c.Param("provider")
+	fmt.Println(provider)
 	c.Request = c.Request.WithContext(context.WithValue(c.Request.Context(), "provider", provider))
 	gothic.BeginAuthHandler(c.Writer, c.Request)
 }
 
 func (h AuthHandler) LoginWithOAuthCallback(c *gin.Context){
-	user, err := gothic.CompleteUserAuth(c.Writer, c.Request)
+	gothUser, err := gothic.CompleteUserAuth(c.Writer, c.Request)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 	}
 
+	user, err := application.RegisterOrLoginOauthUser(gothUser, gothUser.Provider)
+	if err != nil || user == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+
 	token, err := application.GenerateJWT(application.JWTClaims{
-		ProviderId: user.UserID,
+		ProviderId: user.ProviderID,
 		Provider: user.Provider,
 		Email: user.Email,
-		AvatarUrl: user.AvatarURL,
+		AvatarUrl: user.AvatarUrl,
 		Name: user.Name,
 		Exp: 3600*24,
 	})
@@ -132,19 +139,15 @@ func (h AuthHandler) LoginWithOAuthCallback(c *gin.Context){
 	appDomain := os.Getenv("APP_DOMAIN")
 	c.SetCookie("token", token, 3600*24, "/", appDomain, false, true)
 
-	loginUser, err := application.RegisterOrLoginOauthUser(user, user.Provider)
-	if err != nil || loginUser == nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
 
 	c.JSON(200, gin.H{
 		"message": "success",
 		"data": gin.H{
-			"provider": loginUser.Provider,
-			"providerId": loginUser.ProviderID,
-			"name": loginUser.Name,
+			"provider": user.Provider,
+			"providerId": user.ProviderID,
+			"name": user.Name,
 			"email": user.Email,
-			"avatar": loginUser.AvatarUrl,
+			"avatar": user.AvatarUrl,
 		},
 	})
 }

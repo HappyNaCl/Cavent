@@ -22,8 +22,6 @@ func SetupOAuth(){
     gothic.Store = store
 	
 	goth.UseProviders(
-		google.New(clientId, clientSecret, "http://localhost:8080/auth/google/callback"),	
+		google.New(clientId, clientSecret, "http://localhost:8080/api/auth/google/callback"),	
 	)
-
-
 }

@@ -1,6 +1,8 @@
 package persistence
 
 import (
+	"strings"
+
 	"github.com/HappyNaCl/Cavent/backend/domain/factory"
 	"github.com/HappyNaCl/Cavent/backend/domain/model"
 	"github.com/HappyNaCl/Cavent/backend/domain/repository"
@@ -48,7 +50,7 @@ func (repo *UserRepositoryImpl) RegisterOrLoginOauthUser(gothUser goth.User, pro
 	result := repo.Conn.Where("provider_id = ? AND provider = ?", gothUser.UserID, provider).First(&user)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
-			user := factory.UserFactory().GetOAuthUser(provider, gothUser.UserID, gothUser.Name, gothUser.Email, "", gothUser.AvatarURL)
+			user := factory.UserFactory().GetOAuthUser(provider, gothUser.UserID, strings.Split(gothUser.Email, "@")[0], gothUser.Email, "", gothUser.AvatarURL)
 			repo.Conn.Create(&user)
 		} else {
 			return nil, result.Error
