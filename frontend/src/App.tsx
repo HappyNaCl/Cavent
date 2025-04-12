@@ -1,7 +1,7 @@
 import { Route, Routes, useNavigate } from "react-router";
 import AuthPage from "./page/auth/AuthPage";
 import HomePage from "./page/home/HomePage";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { env } from "@/lib/schema/EnvSchema";
 import { useAuth } from "./components/provider/AuthProvider";
@@ -10,6 +10,7 @@ function App() {
   const hasRun = useRef(false);
   const nav = useNavigate();
   const { login } = useAuth();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (hasRun.current) return;
@@ -21,7 +22,6 @@ function App() {
           withCredentials: true,
         });
 
-        console.log(res);
         if (res.status === 200) {
           login(res.data.user);
           nav("/");
@@ -31,10 +31,19 @@ function App() {
       } catch {
         nav("/auth");
       }
+      setLoading(false);
     }
 
     checkToken();
   }, [login, nav]);
+
+  if (loading) {
+    return (
+      <main className="w-screen h-screen flex items-center justify-center">
+        <span className="text-gray-500">Checking authentication...</span>
+      </main>
+    );
+  }
 
   return (
     <main className="w-screen h-fit min-h-screen">

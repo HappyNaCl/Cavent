@@ -1,7 +1,6 @@
 package interfaces
 
 import (
-	"log"
 	"net/http"
 	"os"
 
@@ -23,8 +22,6 @@ func AuthMiddleware() gin.HandlerFunc{
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error){
 			return jwtSecret, nil
 		})
-		log.Println(token.Valid)
-		log.Println(err)
 		if err != nil  || !token.Valid {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			c.Abort()
@@ -40,7 +37,6 @@ func AuthMiddleware() gin.HandlerFunc{
 			c.Set("exp", claims["exp"])
 			c.Next()
 		}else{
-			log.Println("Invalid token claims")
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			return
 		}

@@ -30,9 +30,10 @@ func (h AuthHandler) LoginCredential(c *gin.Context){
 	log.Println(email, password)
 	user, err := application.LoginUser(email, password)
 	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Credential"})
 		return
 	}
+
 	token, err := application.GenerateJWT(application.JWTClaims{
 		ProviderId: user.ProviderID,
 		Provider: user.Provider,
@@ -129,7 +130,6 @@ func (h AuthHandler) LoginWithOAuthCallback(c *gin.Context){
 	}
 
 	appDomain := os.Getenv("APP_DOMAIN")
-	log.Println(appDomain)
 	c.SetCookie("token", token, 3600*24, "/", appDomain, false, true)
 
 	loginUser, err := application.RegisterOrLoginOauthUser(user, user.Provider)
@@ -157,7 +157,6 @@ func (h AuthHandler) Logout(c *gin.Context){
 }
 
 func (h AuthHandler) CheckMe(c *gin.Context){
-	log.Println("CheckMe")
 	providerId, _ := c.Get("providerId")
 	
 	provider, _ := c.Get("provider")

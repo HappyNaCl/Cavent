@@ -2,7 +2,6 @@ package application
 
 import (
 	"errors"
-	"log"
 	"os"
 	"time"
 
@@ -47,8 +46,7 @@ func LoginUser(email string, password string) (*model.User, error){
 	if err != nil {
 		return nil, err
 	}
-	log.Println(password)
-	log.Println(user.Password)
+
 	result, err := config.ComparePasswordAndHash(password, user.Password)
 
 	if err != nil {

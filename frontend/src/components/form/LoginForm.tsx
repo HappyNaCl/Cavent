@@ -15,7 +15,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import LabeledCheckbox from "../input/LabeledCheckbox";
 import { env } from "@/lib/schema/EnvSchema";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { useAuth } from "../provider/AuthProvider";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -39,20 +39,22 @@ export default function LoginForm() {
     formData.append("password", data.password);
     formData.append("rememberMe", String(data.rememberMe));
 
-    const res = await axios.post(
-      `${env.VITE_BACKEND_URL}/api/auth/login`,
-      formData,
-      {
-        withCredentials: true,
-      }
-    );
+    try {
+      const res = await axios.post(
+        `${env.VITE_BACKEND_URL}/api/auth/login`,
+        formData,
+        {
+          withCredentials: true,
+        }
+      );
 
-    if (res.status === 200) {
       const { data: user } = res.data;
       login(user);
       nav("/");
-    } else {
-      toast.error("Invalid Credentials");
+    } catch (error) {
+      const axiosErr = error as AxiosError<{ error: string }>;
+      const message = axiosErr.response?.data?.error || "Something went wrong";
+      toast.error(message);
     }
   };
 
