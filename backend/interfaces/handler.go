@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/HappyNaCl/Cavent/backend/interfaces/handler"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,6 +18,13 @@ func Run(port int) error{
 func setupRoutes() *gin.Engine{
 	r := gin.Default()
 
+	r.Use(cors.New(cors.Config{
+		AllowOrigins: []string{"http://localhost:5173"},
+		AllowMethods: []string{"GET", "POST", "DELETE", "PUT"},
+		AllowCredentials: true,
+		AllowHeaders: []string{"Origin", "Content-Type", "Authorization"},
+	}))
+
 	authHandler := handler.AuthHandler{}
 
 	r.GET("/", index)
@@ -28,11 +36,10 @@ func setupRoutes() *gin.Engine{
 	auth.GET("/:provider", authHandler.LoginWithOAuth)
 	auth.GET("/:provider/callback", authHandler.LoginWithOAuthCallback)
 
-	// auth.POST("/logout", AuthMiddleware(), authHandler.Logout)
-
 	authProtected := r.Group("/api/auth")
 	authProtected.Use(AuthMiddleware())
 	authProtected.POST("/logout", authHandler.Logout)
+	authProtected.GET("/me", authHandler.CheckMe)
 
 	protected := r.Group("/api/protected")
 	protected.Use(AuthMiddleware())

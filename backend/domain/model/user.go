@@ -6,9 +6,9 @@ import "gorm.io/gorm"
 type User struct {
 	gorm.Model
 	Provider string `json:"provider" gorm:"index"`
-	ProviderID string `json:"provider_id" gorm:"uniqueIndex"`
+	ProviderID string `json:"providerId" gorm:"primaryKey"`
 	Email string `json:"email" gorm:"unique"`
 	Name string `json:"name"`
 	Password string `json:"-"`
-	AvatarUrl string `json:"avatar_url"`
+	AvatarUrl string `json:"avatarUrl"`
 }

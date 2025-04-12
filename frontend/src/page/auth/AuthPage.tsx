@@ -5,6 +5,7 @@ import { useState } from "react";
 import LoginForm from "@/components/form/LoginForm";
 import RegisterForm from "@/components/form/RegisterForm";
 import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -20,14 +21,14 @@ export default function AuthPage() {
           <img src={Logo} alt="" />
         </div>
         <div className="flex-1 mt-16">
-          <span className="text-7xl text-white font-semibold">
+          <span className="text-6xl text-white font-semibold">
             Discover tailored events.
             <br />
             Sign up for personalized recommendations today!
           </span>
         </div>
       </div>
-      <div className="flex flex-col flex-1 rounded-4xl bg-white shadow-lg px-36 justify-center gap-10">
+      <div className="flex flex-col flex-1 rounded-4xl bg-white shadow-lg px-36 justify-center sm:gap-8 lg:gap-6">
         <span className="font-semibold text-5xl">
           {isLogin ? "Login" : "Create Account"}
         </span>
@@ -58,6 +59,7 @@ export default function AuthPage() {
           </div>
         )}
       </div>
+      <Toaster position="top-center" />
     </div>
   );
 }

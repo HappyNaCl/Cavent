@@ -31,7 +31,7 @@ export default function RegisterForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="fullName"
@@ -90,7 +90,7 @@ export default function RegisterForm() {
           )}
         />
         <Button
-          className="w-full text-3xl py-8 rounded-2xl hover:bg-gray-800"
+          className="w-full text-2xl py-8 rounded-2xl hover:bg-gray-800"
           type="submit"
         >
           Register

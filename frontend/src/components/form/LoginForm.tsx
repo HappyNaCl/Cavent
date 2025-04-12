@@ -13,8 +13,17 @@ import { loginSchema } from "@/lib/schema/LoginSchema";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import LabeledCheckbox from "../input/LabeledCheckbox";
+import { env } from "@/lib/schema/EnvSchema";
+import axios from "axios";
+import { useAuth } from "../provider/AuthProvider";
+import { useNavigate } from "react-router";
+import { toast } from "sonner";
 
 export default function LoginForm() {
+  const { login } = useAuth();
+  const nav = useNavigate();
+
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -25,8 +34,26 @@ export default function LoginForm() {
   });
 
   const onSubmit = async (data: z.infer<typeof loginSchema>) => {
-    console.log(data);
-    // Perform login action here
+    const formData = new FormData();
+    formData.append("email", data.email);
+    formData.append("password", data.password);
+    formData.append("rememberMe", String(data.rememberMe));
+
+    const res = await axios.post(
+      `${env.VITE_BACKEND_URL}/api/auth/login`,
+      formData,
+      {
+        withCredentials: true,
+      }
+    );
+
+    if (res.status === 200) {
+      const { data: user } = res.data;
+      login(user);
+      nav("/");
+    } else {
+      toast.error("Invalid Credentials");
+    }
   };
 
   return (
@@ -69,8 +96,25 @@ export default function LoginForm() {
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="rememberMe"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <LabeledCheckbox
+                  id="rememberMe"
+                  label="Remember Me"
+                  disabled={false}
+                  value={field.value}
+                  onChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
         <Button
-          className="w-full text-3xl py-8 rounded-2xl hover:bg-gray-800"
+          className="w-full text-2xl py-8 rounded-2xl hover:bg-gray-800"
           type="submit"
         >
           Login

@@ -11,10 +11,19 @@ import (
 
 func SetupOAuth(){
 	key := os.Getenv("SESSION_SECRET")
+	clientId := os.Getenv("GOOGLE_CLIENT_ID")
+	clientSecret := os.Getenv("GOOGLE_CLIENT_SECRET")
+
+	if key == "" || clientId == "" || clientSecret == "" {
+		panic("Missing environment variables for OAuth")
+	}
+
     store := sessions.NewCookieStore([]byte(key))
     gothic.Store = store
-
+	
 	goth.UseProviders(
-		google.New(os.Getenv("GOOGLE_CLIENT_ID"), os.Getenv("GOOGLE_CLIENT_SECRET"), "http://localhost:8080/auth/google/callback"),	
+		google.New(clientId, clientSecret, "http://localhost:8080/auth/google/callback"),	
 	)
+
+
 }

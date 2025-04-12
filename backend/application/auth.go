@@ -13,11 +13,23 @@ import (
 	"github.com/markbates/goth"
 )
 
-func GenerateJWT(email string, provider string) (string, error){
+type JWTClaims struct {
+	ProviderId string `json:"providerId"`
+	Provider string `json:"provider"`
+	Name string `json:"name"`
+	Email string `json:"email"`
+	AvatarUrl string `json:"avatarUrl"`
+	Exp int `json:"exp"`
+}
+
+func GenerateJWT(claim JWTClaims) (string, error){
 	claims := jwt.MapClaims{
-		"email": email,
-		"provider": provider,
-		"exp": time.Now().Add(time.Hour * 24).Unix(),
+		"providerId" : claim.ProviderId,
+		"provider" : claim.Provider,
+		"email" : claim.Email,
+		"name": claim.Name,
+		"avatarUrl" : claim.AvatarUrl,
+		"exp" : time.Now().Add(time.Duration(claim.Exp) * time.Second).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
