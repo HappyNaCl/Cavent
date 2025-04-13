@@ -1,6 +1,6 @@
 export default interface User {
   provider: string;
-  providerId: string;
+  id: string;
   name: string;
   email: string;
   avatarUrl: string;

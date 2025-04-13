@@ -20,7 +20,7 @@ func UserRepository(conn *gorm.DB) repository.UserRepository{
 
 func (repo *UserRepositoryImpl) FindByProviderID(providerID string) (*model.User, error){
 	var user model.User
-	err := repo.Conn.Preload("User").Where("provider_id = ?", providerID).First(&user).Error
+	err := repo.Conn.Preload("User").Where("id = ?", providerID).First(&user).Error
 	if err != nil {
 		return nil, err
 	}

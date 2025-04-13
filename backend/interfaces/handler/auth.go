@@ -36,7 +36,7 @@ func (h AuthHandler) LoginCredential(c *gin.Context){
 	}
 
 	token, err := application.GenerateJWT(application.JWTClaims{
-		ProviderId: user.ProviderID,
+		Id: user.Id,
 		Provider: user.Provider,
 		Email: user.Email,
 		AvatarUrl: user.AvatarUrl,
@@ -55,7 +55,7 @@ func (h AuthHandler) LoginCredential(c *gin.Context){
 		"message": "success",
 		"data": gin.H{
 			"provider": user.Provider,
-			"providerId": user.ProviderID,
+			"id": user.Id,
 			"name": user.Name,
 			"email": user.Email,
 			"avatarUrl": user.AvatarUrl,
@@ -80,7 +80,7 @@ func (h AuthHandler) RegisterUser(c *gin.Context){
 	}
 
 	token, err := application.GenerateJWT(application.JWTClaims{
-		ProviderId: user.ProviderID,
+		Id: user.Id,
 		Provider: user.Provider,
 		Email: user.Email,
 		AvatarUrl: user.AvatarUrl,
@@ -99,8 +99,8 @@ func (h AuthHandler) RegisterUser(c *gin.Context){
 	c.JSON(200, gin.H{
 		"message": "success",
 		"data": gin.H{
+			"id": user.Id,
 			"provider": user.Provider,
-			"providerId": user.ProviderID,
 			"name": user.Name,
 			"email": user.Email,
 			"avatar": user.AvatarUrl,
@@ -127,7 +127,7 @@ func (h AuthHandler) LoginWithOAuthCallback(c *gin.Context){
 	}
 
 	token, err := application.GenerateJWT(application.JWTClaims{
-		ProviderId: user.ProviderID,
+		Id: user.Id,
 		Provider: user.Provider,
 		Email: user.Email,
 		AvatarUrl: user.AvatarUrl,
@@ -153,7 +153,7 @@ func (h AuthHandler) Logout(c *gin.Context){
 }
 
 func (h AuthHandler) CheckMe(c *gin.Context){
-	providerId, _ := c.Get("providerId")
+	id, _ := c.Get("id")
 	
 	provider, _ := c.Get("provider")
 	
@@ -166,7 +166,7 @@ func (h AuthHandler) CheckMe(c *gin.Context){
 	firstTimeLogin, _ := c.Get("firstTimeLogin")
 
 	c.JSON(http.StatusOK, gin.H{"user": model.User{
-		ProviderID: providerId.(string),
+		Id: id.(string),
 		Provider: provider.(string),
 		Email: email.(string),
 		Name: name.(string),

@@ -22,7 +22,7 @@ func (u *UserFactoryImpl) GetOAuthUser(provider string, providerId string, name 
 
 	return &model.User{
 		Provider: provider,
-		ProviderID: providerId,
+		Id: providerId,
 		Name: name,
 		Email: email,
 		Password: hash,
@@ -39,7 +39,7 @@ func (u *UserFactoryImpl) GetUser(name string, email string, password string) *m
 
 	return &model.User{
 		Provider: "credential",
-		ProviderID: uuid.NewString(),
+		Id: uuid.NewString(),
 		Name: name,
 		Email: email,
 		Password: hash,

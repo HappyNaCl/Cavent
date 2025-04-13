@@ -9,9 +9,14 @@ import (
 
 func Migrate(db *gorm.DB) error{
 	db.Migrator().DropTable(&model.User{})
+	db.Migrator().DropTable(&model.Tag{})
+	db.Migrator().DropTable("user_interests")
+	db.Migrator().DropTable(&model.TagType{})
 
 	err := db.AutoMigrate(
 		&model.User{},
+		&model.Tag{},
+		&model.TagType{},
 	)
 
 	if err != nil {

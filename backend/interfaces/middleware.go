@@ -36,7 +36,7 @@ func AuthMiddleware() gin.HandlerFunc{
 			return
 		}
 
-		for _, key := range []string{"providerId", "provider", "email", "avatarUrl", "name", "exp", "firstTimeLogin"} {
+		for _, key := range []string{"id", "provider", "email", "avatarUrl", "name", "exp", "firstTimeLogin"} {
 			if val, ok := claims[key]; ok {
 				c.Set(key, val)
 			}

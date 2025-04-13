@@ -13,7 +13,7 @@ import (
 )
 
 type JWTClaims struct {
-	ProviderId string `json:"providerId"`
+	Id string `json:"id"`
 	Provider string `json:"provider"`
 	Name string `json:"name"`
 	Email string `json:"email"`
@@ -24,7 +24,7 @@ type JWTClaims struct {
 
 func GenerateJWT(claim JWTClaims) (string, error){
 	claims := jwt.MapClaims{
-		"providerId" : claim.ProviderId,
+		"id" : claim.Id,
 		"provider" : claim.Provider,
 		"email" : claim.Email,
 		"name": claim.Name,
