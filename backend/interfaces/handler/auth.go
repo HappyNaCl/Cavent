@@ -139,17 +139,7 @@ func (h AuthHandler) LoginWithOAuthCallback(c *gin.Context){
 	appDomain := os.Getenv("APP_DOMAIN")
 	c.SetCookie("token", token, 3600*24, "/", appDomain, false, true)
 
-
-	c.JSON(200, gin.H{
-		"message": "success",
-		"data": gin.H{
-			"provider": user.Provider,
-			"providerId": user.ProviderID,
-			"name": user.Name,
-			"email": user.Email,
-			"avatar": user.AvatarUrl,
-		},
-	})
+	c.Redirect(http.StatusTemporaryRedirect, os.Getenv("FRONTEND_URL"))
 }
 
 func (h AuthHandler) Logout(c *gin.Context){

@@ -28,7 +28,7 @@ export default function AuthPage() {
           </span>
         </div>
       </div>
-      <div className="flex flex-col flex-1 rounded-4xl bg-white shadow-lg px-36 justify-center sm:gap-8 lg:gap-6">
+      <div className="flex flex-col flex-1 rounded-4xl bg-white shadow-lg px-36 justify-center sm:gap-8 lg:gap-4">
         <span className="font-semibold text-5xl">
           {isLogin ? "Login" : "Create Account"}
         </span>

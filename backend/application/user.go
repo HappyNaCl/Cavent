@@ -15,7 +15,7 @@ func RegisterUser(fullName string, email string, password string) (*model.User, 
 		return nil, errors.New("full name, email and password are required")
 	}
 
-	if !str.Contains(email, "@") || !str.Contains(email, ".com") {
+	if !str.Contains(email, "@") || !str.Contains(email, ".") {
 		return nil, errors.New("invalid email format")
 	}
 

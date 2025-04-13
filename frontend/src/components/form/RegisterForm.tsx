@@ -13,11 +13,20 @@ import { registerSchema } from "@/lib/schema/RegisterSchema";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import axios from "axios";
+import { env } from "@/lib/schema/EnvSchema";
+import { useNavigate } from "react-router";
+import { useAuth } from "../provider/AuthProvider";
 
 export default function RegisterForm() {
+  const nav = useNavigate();
+  const { login } = useAuth();
+
   const form = useForm({
     resolver: zodResolver(registerSchema),
     defaultValues: {
+      fullName: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -26,7 +35,27 @@ export default function RegisterForm() {
 
   const onSubmit = async (data: z.infer<typeof registerSchema>) => {
     console.log(data);
-    // Perform login action here
+    const formData = new FormData();
+    formData.append("email", data.email.toLowerCase());
+    formData.append("password", data.password);
+    formData.append("fullName", data.fullName);
+    formData.append("confirmPassword", data.confirmPassword);
+
+    try {
+      const res = await axios.post(
+        `${env.VITE_BACKEND_URL}/api/auth/register`,
+        formData,
+        { withCredentials: true }
+      );
+
+      if (res.status === 200) {
+        const { data: user } = res.data;
+        login(user);
+        nav("/");
+      }
+    } catch (error) {
+      toast.error(`Error: ${error}}`);
+    }
   };
 
   return (
@@ -80,9 +109,28 @@ export default function RegisterForm() {
               <FormLabel>Password</FormLabel>
               <FormControl>
                 <PasswordInput
+                  id="password"
                   onChange={field.onChange}
                   value={field.value}
                   placeholder="Enter your password"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="confirmPassword"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <PasswordInput
+                  id="confirm-password"
+                  onChange={field.onChange}
+                  value={field.value}
+                  placeholder="Re-enter your password"
                 />
               </FormControl>
               <FormMessage />
