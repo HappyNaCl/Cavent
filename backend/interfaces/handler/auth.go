@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -27,8 +26,6 @@ func (h AuthHandler) LoginCredential(c *gin.Context){
 		time = 3600*24*7
 	} 
 
-
-	log.Println(email, password)
 	user, err := application.LoginUser(email, password)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Credential"})

@@ -5,7 +5,6 @@ import (
 	"github.com/markbates/goth"
 )
 
-// Make a repo interface containing methods to query the database for user
 type UserRepository interface {
 	FindByProviderID(providerID string) (*model.User, error)
 	FindByEmail(email string) (*model.User, error)
