@@ -22,23 +22,24 @@ func AuthMiddleware() gin.HandlerFunc{
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error){
 			return jwtSecret, nil
 		})
+
 		if err != nil  || !token.Valid {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			c.Abort()
 			return
 		}
 
-		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			c.Set("providerId", claims["providerId"])
-			c.Set("provider", claims["provider"])
-			c.Set("email", claims["email"])
-			c.Set("avatarUrl", claims["avatarUrl"])
-			c.Set("name", claims["name"])
-			c.Set("exp", claims["exp"])
-			c.Next()
-		}else{
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid claims"})
+			c.Abort()
 			return
+		}
+
+		for _, key := range []string{"providerId", "provider", "email", "avatarUrl", "name", "exp", "firstTimeLogin"} {
+			if val, ok := claims[key]; ok {
+				c.Set(key, val)
+			}
 		}
 	}
 }

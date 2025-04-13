@@ -11,4 +11,5 @@ type User struct {
 	Name string `json:"name"`
 	Password string `json:"-"`
 	AvatarUrl string `json:"avatarUrl"`
+	FirstTimeLogin bool `json:"firstTimeLogin" gorm:"default:true"`
 }

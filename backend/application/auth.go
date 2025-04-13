@@ -18,6 +18,7 @@ type JWTClaims struct {
 	Name string `json:"name"`
 	Email string `json:"email"`
 	AvatarUrl string `json:"avatarUrl"`
+	FirstTimeLogin bool `json:"firstTimeLogin"`
 	Exp int `json:"exp"`
 }
 
@@ -28,6 +29,7 @@ func GenerateJWT(claim JWTClaims) (string, error){
 		"email" : claim.Email,
 		"name": claim.Name,
 		"avatarUrl" : claim.AvatarUrl,
+		"firstTimeLogin" : claim.FirstTimeLogin,
 		"exp" : time.Now().Add(time.Duration(claim.Exp) * time.Second).Unix(),
 	}
 

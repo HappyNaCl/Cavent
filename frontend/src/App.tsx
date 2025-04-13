@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { env } from "@/lib/schema/EnvSchema";
 import { useAuth } from "./components/provider/AuthProvider";
+import PreferencePage from "./page/profile/PreferencePage";
 
 function App() {
   const hasRun = useRef(false);
@@ -24,7 +25,11 @@ function App() {
 
         if (res.status === 200) {
           login(res.data.user);
-          nav("/");
+          if (res.data.user.firstTimeLogin) {
+            nav("/profile/preference");
+          } else {
+            nav("/");
+          }
         } else {
           nav("/auth");
         }
@@ -50,6 +55,9 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/profile">
+          <Route path="preference" element={<PreferencePage />} />
+        </Route>
       </Routes>
     </main>
   );

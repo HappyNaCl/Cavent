@@ -42,6 +42,7 @@ func (h AuthHandler) LoginCredential(c *gin.Context){
 		AvatarUrl: user.AvatarUrl,
 		Name: user.Name,
 		Exp: time,
+		FirstTimeLogin: user.FirstTimeLogin,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -84,6 +85,7 @@ func (h AuthHandler) RegisterUser(c *gin.Context){
 		Email: user.Email,
 		AvatarUrl: user.AvatarUrl,
 		Name: user.Name,
+		FirstTimeLogin: user.FirstTimeLogin,
 		Exp: 3600*24,
 	})
 	if err != nil {
@@ -130,6 +132,7 @@ func (h AuthHandler) LoginWithOAuthCallback(c *gin.Context){
 		Email: user.Email,
 		AvatarUrl: user.AvatarUrl,
 		Name: user.Name,
+		FirstTimeLogin: user.FirstTimeLogin,
 		Exp: 3600*24,
 	})
 	if err != nil {
@@ -158,7 +161,9 @@ func (h AuthHandler) CheckMe(c *gin.Context){
 
 	avatarUrl, _ := c.Get("avatarUrl")
 
-	name, _:= c.Get("name")
+	name, _ := c.Get("name")
+
+	firstTimeLogin, _ := c.Get("firstTimeLogin")
 
 	c.JSON(http.StatusOK, gin.H{"user": model.User{
 		ProviderID: providerId.(string),
@@ -166,5 +171,6 @@ func (h AuthHandler) CheckMe(c *gin.Context){
 		Email: email.(string),
 		Name: name.(string),
 		AvatarUrl: avatarUrl.(string),
+		FirstTimeLogin: firstTimeLogin.(bool),
 	}})
 }

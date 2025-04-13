@@ -51,7 +51,7 @@ export default function RegisterForm() {
       if (res.status === 200) {
         const { data: user } = res.data;
         login(user);
-        nav("/");
+        nav("/profile/preference");
       }
     } catch (error) {
       toast.error(`Error: ${error}}`);
@@ -124,7 +124,7 @@ export default function RegisterForm() {
           name="confirmPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>Confirm Password</FormLabel>
               <FormControl>
                 <PasswordInput
                   id="confirm-password"
