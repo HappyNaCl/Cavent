@@ -11,5 +11,5 @@ type User struct {
 	Description string `json:"description" gorm:"size:500"`
 	CreatedAt int64 `json:"createdAt" gorm:"autoCreateTime"`
 	UpdatedAt int64 `json:"updatedAt" gorm:"autoUpdateTime"`
-	Tags []Tag `json:"tags" gorm:"many2many:user_interests;joinForeignKey:UserID;joinReferences:UserID"`
+	Tags []Tag `json:"tags" gorm:"many2many:user_interests;joinForeignKey:UserId;joinReferences:TagId"`
 }

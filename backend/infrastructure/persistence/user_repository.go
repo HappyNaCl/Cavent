@@ -59,3 +59,21 @@ func (repo *UserRepositoryImpl) RegisterOrLoginOauthUser(gothUser goth.User, pro
 
 	return &user, nil
 }
+
+func (repo *UserRepositoryImpl) UpdateInterest(userId string, preferences []string) error {
+	var user model.User
+	if err := repo.Conn.Where("id = ?", userId).First(&user).Error; err != nil {
+		return err
+	}
+
+	var tags []model.Tag
+	if err := repo.Conn.Where("id IN ?", preferences).Find(&tags).Error; err != nil {
+		return err
+	}
+
+	if err := repo.Conn.Model(&user).Association("Tags").Replace(&tags); err != nil {
+		return err
+	}
+
+	return nil
+}

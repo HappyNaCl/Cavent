@@ -10,4 +10,5 @@ type UserRepository interface {
 	FindByEmail(email string) (*model.User, error)
 	RegisterUser(user *model.User) (*model.User, error)
 	RegisterOrLoginOauthUser(gothUser goth.User, provider string) (*model.User, error)
+	UpdateInterest(userId string, interestIds []string) error
 }

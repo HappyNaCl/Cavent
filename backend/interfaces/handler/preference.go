@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
 	"os"
 
@@ -15,6 +16,23 @@ func NewPreferenceHandler() *PreferenceHandler {
 }
 
 func (h PreferenceHandler) UpdatePreferences(c *gin.Context) {
+	userId := c.PostForm("userId")
+	preferencesJson := c.PostForm("preferences")
+
+	var preference []string
+
+	err := json.Unmarshal([]byte(preferencesJson), &preference)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
+		return
+	}
+
+	err = application.UpdatePrefences(userId, preference)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	if firstTimeLogin, exists := c.Get("firstTimeLogin"); exists {
 		if firstTimeLogin == true {
 			id, _ := c.Get("id")

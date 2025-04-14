@@ -34,7 +34,6 @@ export default function RegisterForm() {
   });
 
   const onSubmit = async (data: z.infer<typeof registerSchema>) => {
-    console.log(data);
     const formData = new FormData();
     formData.append("email", data.email.toLowerCase());
     formData.append("password", data.password);

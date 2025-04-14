@@ -27,3 +27,15 @@ func RegisterUser(fullName string, email string, password string) (*model.User, 
 	
 	return persistence.UserRepository(config.Database).RegisterUser(user)
 }
+
+func UpdatePrefences(userId string, preferences []string) error {
+	if userId == "" {
+		return errors.New("user ID is required")
+	}
+
+	if len(preferences) == 0 {
+		return errors.New("preferences are required")
+	}
+
+	return persistence.UserRepository(config.Database).UpdateInterest(userId, preferences)
+}
