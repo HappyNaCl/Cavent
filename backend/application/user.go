@@ -39,3 +39,16 @@ func UpdatePrefences(userId string, preferences []string) error {
 
 	return persistence.UserRepository(config.Database).UpdateInterest(userId, preferences)
 }
+
+func GetUserTag(userId string) ([]model.Tag, error) {
+	if userId == "" {
+		return nil, errors.New("user ID is required")
+	}
+
+	tags, err := persistence.UserRepository(config.Database).GetUserTag(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	return tags, nil
+}

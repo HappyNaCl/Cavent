@@ -11,4 +11,5 @@ type UserRepository interface {
 	RegisterUser(user *model.User) (*model.User, error)
 	RegisterOrLoginOauthUser(gothUser goth.User, provider string) (*model.User, error)
 	UpdateInterest(userId string, interestIds []string) error
+	GetUserTag(userId string) ([]model.Tag, error)
 }

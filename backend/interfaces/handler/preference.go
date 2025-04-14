@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"os"
 
@@ -33,7 +34,9 @@ func (h PreferenceHandler) UpdatePreferences(c *gin.Context) {
 		return
 	}
 
+	log.Println("Preferences updated successfully")
 	if firstTimeLogin, exists := c.Get("firstTimeLogin"); exists {
+		log.Println("firstTimeLogin:", firstTimeLogin)
 		if firstTimeLogin == true {
 			id, _ := c.Get("id")
 	
@@ -44,7 +47,7 @@ func (h PreferenceHandler) UpdatePreferences(c *gin.Context) {
 			avatarUrl, _ := c.Get("avatarUrl")
 		
 			name, _ := c.Get("name")
-
+			log.Println("firstTimeLogin:", firstTimeLogin)
 			token, err := application.GenerateJWT(application.JWTClaims{
 				Id: id.(string),
 				Provider: provider.(string),

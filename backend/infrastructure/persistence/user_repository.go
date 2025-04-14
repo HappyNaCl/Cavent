@@ -74,6 +74,21 @@ func (repo *UserRepositoryImpl) UpdateInterest(userId string, preferences []stri
 	if err := repo.Conn.Model(&user).Association("Tags").Replace(&tags); err != nil {
 		return err
 	}
+	
+	user.FirstTimeLogin = false
+
+	if err := repo.Conn.Save(&user).Error; err != nil {
+		return err
+	}
 
 	return nil
+}
+
+func (repo *UserRepositoryImpl) GetUserTag(userId string) ([]model.Tag, error) {
+	var user model.User
+	if err := repo.Conn.Preload("Tags").Where("id = ?", userId).First(&user).Error; err != nil {
+		return nil, err
+	}
+
+	return user.Tags, nil
 }

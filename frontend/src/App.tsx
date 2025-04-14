@@ -6,6 +6,7 @@ import axios from "axios";
 import { env } from "@/lib/schema/EnvSchema";
 import { useAuth } from "./components/provider/AuthProvider";
 import PreferencePage from "./page/profile/PreferencePage";
+import GeneralLayout from "./layout/GeneralLayout";
 
 function App() {
   const hasRun = useRef(false);
@@ -53,11 +54,15 @@ function App() {
   return (
     <main className="w-screen h-fit min-h-screen">
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/auth" element={<AuthPage />} />
-        <Route path="/profile">
-          <Route path="preference" element={<PreferencePage />} />
+        <Route path="/" element={<GeneralLayout />}>
+          <Route index element={<HomePage />} />
+          <Route path="/profile">
+            <Route path="preference" element={<PreferencePage />} />
+          </Route>
+          {/* <Route path="home" element={<HomePage />} />
+          <Route path="preference" element={<PreferencePage />} /> */}
         </Route>
+        <Route path="/auth" element={<AuthPage />} />
       </Routes>
     </main>
   );

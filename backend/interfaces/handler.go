@@ -28,6 +28,7 @@ func setupRoutes() *gin.Engine{
 	authHandler := handler.AuthHandler{}
 	preferenceHandler := handler.NewPreferenceHandler()
 	tagHandler := handler.NewTagHandler()
+	userHandler := handler.NewUserHandler()
 
 	r.GET("/", index)
 
@@ -49,6 +50,7 @@ func setupRoutes() *gin.Engine{
 
 	profile := r.Group("/api/user")
 	profile.Use(AuthMiddleware())
+	profile.GET("/tag", userHandler.GetUserTag)
 	profile.PUT("/preference", preferenceHandler.UpdatePreferences)
 
 	protected := r.Group("/api/protected")

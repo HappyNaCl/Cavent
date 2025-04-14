@@ -6,8 +6,7 @@ export default function PreferencePage() {
   if (!user) return null;
 
   return (
-    <div>
-      <h1>Set preference pls :c</h1>
+    <div className="px-20 py-8">
       <InterestForm />
     </div>
   );

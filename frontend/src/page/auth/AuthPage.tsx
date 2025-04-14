@@ -21,7 +21,7 @@ export default function AuthPage() {
           <img src={Logo} alt="" />
         </div>
         <div className="flex-1 mt-16">
-          <span className="text-6xl text-white font-semibold">
+          <span className="text-6xl text-white font-semibold font-montserrat">
             Discover tailored events.
             <br />
             Sign up for personalized recommendations today!
