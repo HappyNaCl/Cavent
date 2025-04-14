@@ -8,6 +8,7 @@ export const useAuthGuard = () => {
 
   useEffect(() => {
     if (!user) {
+      console.log("User not found, redirecting to auth page");
       nav("/auth");
     }
   }, [user, nav]);

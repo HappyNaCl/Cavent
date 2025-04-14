@@ -48,7 +48,6 @@ export default function InterestForm() {
 
       if (res.status === 200) {
         const { data } = res.data;
-        console.log(data);
         form.reset({
           interests: data.map((tag: Tag) => tag.id),
         });

@@ -7,6 +7,7 @@ import { env } from "@/lib/schema/EnvSchema";
 import { useAuth } from "./components/provider/AuthProvider";
 import PreferencePage from "./page/profile/PreferencePage";
 import GeneralLayout from "./layout/GeneralLayout";
+import CreateEventPage from "./page/event/CreateEventPage";
 
 function App() {
   const hasRun = useRef(false);
@@ -28,8 +29,6 @@ function App() {
           login(res.data.user);
           if (res.data.user.firstTimeLogin) {
             nav("/profile/preference");
-          } else {
-            nav("/");
           }
         } else {
           nav("/auth");
@@ -56,11 +55,12 @@ function App() {
       <Routes>
         <Route path="/" element={<GeneralLayout />}>
           <Route index element={<HomePage />} />
-          <Route path="/profile">
+          <Route path="profile">
             <Route path="preference" element={<PreferencePage />} />
           </Route>
-          {/* <Route path="home" element={<HomePage />} />
-          <Route path="preference" element={<PreferencePage />} /> */}
+          <Route path="event">
+            <Route path="create" element={<CreateEventPage />} />
+          </Route>
         </Route>
         <Route path="/auth" element={<AuthPage />} />
       </Routes>
