@@ -1,6 +1,7 @@
 package persistence
 
 import (
+	"log"
 	"strings"
 
 	"github.com/HappyNaCl/Cavent/backend/domain/factory"
@@ -45,19 +46,20 @@ func (repo *UserRepositoryImpl) RegisterUser(user *model.User) (*model.User, err
 }
 
 func (repo *UserRepositoryImpl) RegisterOrLoginOauthUser(gothUser goth.User, provider string) (*model.User, error){
-	var user model.User
+	var user *model.User
 
-	result := repo.Conn.Where("provider_id = ? AND provider = ?", gothUser.UserID, provider).First(&user)
+	result := repo.Conn.Where("id = ? AND provider = ?", gothUser.UserID, provider).First(&user)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
-			user := factory.UserFactory().GetOAuthUser(provider, gothUser.UserID, strings.Split(gothUser.Email, "@")[0], gothUser.Email, "", gothUser.AvatarURL)
+			user = factory.UserFactory().GetOAuthUser(provider, gothUser.UserID, strings.Split(gothUser.Email, "@")[0], gothUser.Email, "", gothUser.AvatarURL)
+			log.Println("[INFO] User not found in database, creating new user:", user)
 			repo.Conn.Create(&user)
 		} else {
 			return nil, result.Error
 		}
 	}
-
-	return &user, nil
+	log.Println("[INFO] User found in database:", user)
+	return user, nil
 }
 
 func (repo *UserRepositoryImpl) UpdateInterest(userId string, preferences []string) error {

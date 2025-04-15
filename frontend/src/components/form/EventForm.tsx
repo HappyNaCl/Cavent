@@ -20,9 +20,13 @@ import {
 } from "@/components/ui/card";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
 import { z } from "zod";
-import { EventSchema } from "@/lib/schema/EventSchema";
+import {
+  EventBannerSchema,
+  EventDetailsSchema,
+  EventSchema,
+  EventTicketingSchema,
+} from "@/lib/schema/EventSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import TextInput from "../input/TextInput";
 
@@ -52,6 +56,14 @@ export const EventForm = () => {
   });
 
   const onSubmit = async (formData: unknown) => {
+    const values = form.getValues();
+
+    const stepSchema = [
+      EventDetailsSchema,
+      EventBannerSchema,
+      EventTicketingSchema,
+    ];
+
     if (step < totalSteps - 1) {
       setStep(step + 1);
     } else {

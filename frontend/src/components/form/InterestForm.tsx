@@ -49,7 +49,7 @@ export default function InterestForm() {
       if (res.status === 200) {
         const { data } = res.data;
         form.reset({
-          interests: data.map((tag: Tag) => tag.id),
+          interests: data ? data.map((tag: Tag) => tag.id) : [],
         });
       }
     } catch (error) {
