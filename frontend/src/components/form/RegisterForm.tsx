@@ -37,7 +37,7 @@ export default function RegisterForm() {
     const formData = new FormData();
     formData.append("email", data.email.toLowerCase());
     formData.append("password", data.password);
-    formData.append("fullName", data.fullName);
+    formData.append("name", data.fullName);
     formData.append("confirmPassword", data.confirmPassword);
 
     try {

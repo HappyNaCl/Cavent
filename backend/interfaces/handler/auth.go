@@ -9,12 +9,25 @@ import (
 
 	"github.com/HappyNaCl/Cavent/backend/application"
 	"github.com/HappyNaCl/Cavent/backend/domain/model"
+	"github.com/HappyNaCl/Cavent/backend/interfaces/dto"
 	"github.com/gin-gonic/gin"
 	"github.com/markbates/goth/gothic"
 )
 
 type AuthHandler struct {}
 
+// LoginByCredential godoc
+// @Summary Login with email and password
+// @Description Login with email and password
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param email formData string true "Email"
+// @Param password formData string true "Password"
+// @Param rememberMe formData boolean false "Remember Me"
+// @Success 200 {object} dto.UserAuthDto
+// @Failure 400 {object} model.ErrorResponse
+// @Router /auth/login [post]
 func (h AuthHandler) LoginCredential(c *gin.Context){
 	email := c.PostForm("email")
 	password := c.PostForm("password")
@@ -50,22 +63,34 @@ func (h AuthHandler) LoginCredential(c *gin.Context){
 	c.SetCookie("token", token, time, "/", appDomain, false, true)
 	c.JSON(200, gin.H{
 		"message": "success",
-		"data": gin.H{
-			"provider": user.Provider,
-			"id": user.Id,
-			"name": user.Name,
-			"email": user.Email,
-			"avatarUrl": user.AvatarUrl,
+		"data": &dto.UserAuthDto{
+			Provider: user.Provider,
+			Id: user.Id,
+			Name: user.Name,
+			Email: user.Email,
+			AvatarUrl: user.AvatarUrl,
 		},
 	})
 }
 
+// RegisterUser godoc
+// @Summary Register a new user
+// @Description Register a new user 
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param email formData string true "Email"
+// @Param password formData string true "Password"
+// @Param name formData string true "Name"
+// @Success 200 {object} dto.UserAuthDto
+// @Failure 400 {object} model.ErrorResponse
+// @Router /auth/register [post]
 func (h AuthHandler) RegisterUser(c *gin.Context){
-	fullName := c.PostForm("fullName")
+	name := c.PostForm("Name")
 	email := c.PostForm("email")
 	password := c.PostForm("password")
 
-	user, err := application.RegisterUser(fullName, email, password)
+	user, err := application.RegisterUser(name, email, password)
 	if err != nil {
 		if strings.Contains(strings.ToLower(err.Error()), "duplicate key") {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "User already exists"})
@@ -95,12 +120,12 @@ func (h AuthHandler) RegisterUser(c *gin.Context){
 
 	c.JSON(200, gin.H{
 		"message": "success",
-		"data": gin.H{
-			"id": user.Id,
-			"provider": user.Provider,
-			"name": user.Name,
-			"email": user.Email,
-			"avatar": user.AvatarUrl,
+		"data": &dto.UserAuthDto{
+			Provider: user.Provider,
+			Id: user.Id,
+			Name: user.Name,
+			Email: user.Email,
+			AvatarUrl: user.AvatarUrl,
 		},
 	})
 }

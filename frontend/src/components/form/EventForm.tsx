@@ -41,6 +41,7 @@ import {
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "../ui/textarea";
+import { LucideCalendarDays, LucideClock, LucideMapPin } from "lucide-react";
 
 export const EventForm = () => {
   const [step, setStep] = useState(0);
@@ -102,6 +103,8 @@ export const EventForm = () => {
       toast.error(result.error.message);
       return;
     }
+
+    console.log(step);
 
     if (step < totalSteps - 1) {
       setStep(step + 1);
@@ -655,6 +658,71 @@ export const EventForm = () => {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="grid gap-y-4"
               >
+                <div className="border-3 border-black rounded-2xl p-10">
+                  <div className="flex flex-col gap-4">
+                    <img
+                      className="w-full h-100 object-cover rounded-lg"
+                      src={URL.createObjectURL(getValues("banner") as File)}
+                      alt=""
+                    />
+                    <div className="flex flex-col gap-14">
+                      <div className="flex flex-col gap-2 py-3">
+                        <span className="font-bold text-5xl">
+                          {getValues("title")}
+                        </span>
+                        <span className="text-xl text-gray-500">
+                          {getValues("eventType") === "recurring"
+                            ? "Recurring Event"
+                            : "Single Event"}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <span className="text-2xl font-semibold">
+                          Date and Time
+                        </span>
+                        <span className="text-xl flex flex-row gap-4 items-center">
+                          <LucideCalendarDays />
+                          {format(getValues("startDate"), "PPP")}
+                        </span>
+                        <span className="text-xl flex flex-row gap-4 items-center">
+                          <LucideClock />
+                          {getValues("startTime")} {"-"}{" "}
+                          {getValues("endTime") === undefined
+                            ? "Done"
+                            : getValues("endTime")}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <span className="text-2xl font-semibold">Location</span>
+                        <span className="text-xl flex flex-row gap-4 items-center">
+                          <LucideMapPin />
+                          {getValues("location")}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <span className="text-2xl font-semibold">
+                          Event Description
+                        </span>
+                        <pre className="text-xl font-sans text-gray-600">
+                          {getValues("description")}
+                        </pre>
+                      </div>
+                    </div>
+                  </div>
+
+                  {getValues("ticketType") === "ticketed" && (
+                    <div className="flex flex-col gap-4">
+                      <span className="text-xl font-semibold">Ticketing</span>
+                      {fields.map((field) => (
+                        <div key={field.id} className="flex flex-col gap-2">
+                          <span>Ticket Name: {field.name}</span>
+                          <span>Ticket Price: {field.price}</span>
+                          <span>Ticket Quantity: {field.quantity}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <div className="flex justify-between">
                   <Button
                     type="button"

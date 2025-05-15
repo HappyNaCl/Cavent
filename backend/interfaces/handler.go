@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/HappyNaCl/Cavent/backend/docs"
 	"github.com/HappyNaCl/Cavent/backend/interfaces/handler"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func Run(port int) error{
@@ -32,23 +35,23 @@ func setupRoutes() *gin.Engine{
 
 	r.GET("/", index)
 
-	auth := r.Group("/api/auth")
+	auth := r.Group("/api/v1/auth")
 	auth.Use(UnauthMiddleware())
 	auth.POST("/register", authHandler.RegisterUser)
 	auth.POST("/login", authHandler.LoginCredential)
 	auth.GET("/:provider", authHandler.LoginWithOAuth)
 	auth.GET("/:provider/callback", authHandler.LoginWithOAuthCallback)
 
-	authProtected := r.Group("/api/auth")
+	authProtected := r.Group("/api/v1/auth")
 	authProtected.Use(AuthMiddleware())
 	authProtected.POST("/logout", authHandler.Logout)
 	authProtected.GET("/me", authHandler.CheckMe)
 
-	tags := r.Group("/api/tags")
+	tags := r.Group("/api/v1/tags")
 	tags.Use(AuthMiddleware())
 	tags.GET("", tagHandler.GetAllTagsWithType)
 
-	profile := r.Group("/api/user")
+	profile := r.Group("/api/v1/user")
 	profile.Use(AuthMiddleware())
 	profile.GET("/tag", userHandler.GetUserTag)
 	profile.PUT("/preference", preferenceHandler.UpdatePreferences)
@@ -56,6 +59,10 @@ func setupRoutes() *gin.Engine{
 	protected := r.Group("/api/protected")
 	protected.Use(AuthMiddleware())
 	protected.GET("/", protectedIndex)
+
+	docs.SwaggerInfo.BasePath = "/api/v1"
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	return r
 }
 

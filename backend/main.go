@@ -5,11 +5,16 @@ import (
 	"flag"
 
 	"github.com/HappyNaCl/Cavent/backend/config"
+	_ "github.com/HappyNaCl/Cavent/backend/docs"
 	"github.com/HappyNaCl/Cavent/backend/interfaces"
 	"github.com/joho/godotenv"
 	"google.golang.org/appengine/log"
 )
 
+// @title Cavent API
+// @version 1.0
+// @description This is the Cavent backend API documentation.
+// @BasePath /api/v1
 func main(){
 	
 	err := godotenv.Load(".env")
