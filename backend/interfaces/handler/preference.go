@@ -16,6 +16,19 @@ func NewPreferenceHandler() *PreferenceHandler {
 	return &PreferenceHandler{}
 }
 
+// UpdatePreferences godoc
+// @Summary Update user preferences
+// @Description Update user preferences
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param userId formData string true "User ID"
+// @Param preferences formData []string true "Preferences"
+// @Success 200 {object} responses.SuccessResponse
+// @Failure 400 {object} responses.ErrorResponse
+// @Failure 500 {object} responses.ErrorResponse
+// @Router /user/preference [put]
+// @Security ApiKeyAuth
 func (h PreferenceHandler) UpdatePreferences(c *gin.Context) {
 	userId := c.PostForm("userId")
 	preferencesJson := c.PostForm("preferences")

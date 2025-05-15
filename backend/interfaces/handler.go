@@ -49,11 +49,11 @@ func setupRoutes() *gin.Engine{
 
 	tags := r.Group("/api/v1/tags")
 	tags.Use(AuthMiddleware())
-	tags.GET("", tagHandler.GetAllTagsWithType)
+	tags.GET("/", tagHandler.GetAllTagsWithType)
 
 	profile := r.Group("/api/v1/user")
 	profile.Use(AuthMiddleware())
-	profile.GET("/tag", userHandler.GetUserTag)
+	profile.GET("/preference", userHandler.GetUserTag)
 	profile.PUT("/preference", preferenceHandler.UpdatePreferences)
 
 	protected := r.Group("/api/protected")

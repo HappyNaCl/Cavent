@@ -1,5 +1,23 @@
 basePath: /api/v1
 definitions:
+  dto.TagDTO:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  dto.TagTypeDTO:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      tags:
+        items:
+          $ref: '#/definitions/dto.TagDTO'
+        type: array
+    type: object
   dto.UserAuthDto:
     properties:
       avatarUrl:
@@ -176,4 +194,84 @@ paths:
       summary: Register a new user
       tags:
       - auth
+  /tags:
+    get:
+      consumes:
+      - application/json
+      description: Get all tags with type
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.TagTypeDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get all tags with type
+      tags:
+      - tags
+  /user/preference:
+    get:
+      consumes:
+      - application/json
+      description: Get user tags
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.TagDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user tags
+      tags:
+      - user
+    put:
+      consumes:
+      - application/json
+      description: Update user preferences
+      parameters:
+      - description: User ID
+        in: formData
+        name: userId
+        required: true
+        type: string
+      - collectionFormat: csv
+        description: Preferences
+        in: formData
+        items:
+          type: string
+        name: preferences
+        required: true
+        type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update user preferences
+      tags:
+      - user
 swagger: "2.0"

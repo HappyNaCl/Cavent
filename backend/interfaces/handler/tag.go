@@ -15,6 +15,16 @@ func NewTagHandler() *TagHandler {
 	return &TagHandler{}
 }
 
+// GetAllTagsWithType godoc
+// @Summary Get all tags with type
+// @Description Get all tags with type
+// @Tags tags
+// @Accept json
+// @Produce json
+// @Success 200 {object} dto.TagTypeDTO
+// @Failure 500 {object} responses.ErrorResponse
+// @Router /tags [get]
+// @Security ApiKeyAuth
 func (h TagHandler) GetAllTagsWithType(c *gin.Context){
 	tags, err := persistence.TagRepository(config.Database).GetAllTagsWithType()
 	if err != nil {

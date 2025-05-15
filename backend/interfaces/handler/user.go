@@ -14,7 +14,16 @@ func NewUserHandler() *UserHandler {
 	return &UserHandler{}
 }
 
-
+// GetUserTag godoc
+// @Summary Get user tags
+// @Description Get user tags
+// @Tags user
+// @Accept json
+// @Produce json
+// @Success 200 {object} dto.TagDTO
+// @Failure 500 {object} responses.ErrorResponse
+// @Router /user/preference [get]
+// @Security ApiKeyAuth
 func (h UserHandler) GetUserTag(c *gin.Context) {
 	userId, _ := c.Get("id")
 	userIdStr, ok := userId.(string)
