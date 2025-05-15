@@ -6,6 +6,8 @@ definitions:
         type: string
       email:
         type: string
+      firstTimeLogin:
+        type: boolean
       id:
         type: string
       name:
@@ -13,9 +15,14 @@ definitions:
       provider:
         type: string
     type: object
-  model.ErrorResponse:
+  responses.ErrorResponse:
     properties:
       error:
+        type: string
+    type: object
+  responses.SuccessResponse:
+    properties:
+      message:
         type: string
     type: object
 info:
@@ -24,6 +31,44 @@ info:
   title: Cavent API
   version: "1.0"
 paths:
+  /auth/{provider}:
+    get:
+      description: A endpoint to login with OAuth
+      parameters:
+      - description: OAuth provider
+        in: path
+        name: provider
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: A endpoint to login with OAuth
+      tags:
+      - auth
+  /auth/{provider}/callback:
+    get:
+      description: A endpoint to login with OAuth callback
+      parameters:
+      - description: OAuth provider
+        in: path
+        name: provider
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: A endpoint to login with OAuth callback
+      tags:
+      - auth
   /auth/login:
     post:
       consumes:
@@ -54,8 +99,46 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/model.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       summary: Login with email and password
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      description: Logout
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Logout
+      tags:
+      - auth
+  /auth/me:
+    get:
+      description: Check user info
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserAuthDto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Check user info
       tags:
       - auth
   /auth/register:
@@ -89,7 +172,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/model.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       summary: Register a new user
       tags:
       - auth
