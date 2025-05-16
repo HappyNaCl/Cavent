@@ -15,5 +15,5 @@ type Category struct {
     UpdatedAt  time.Time
 
     Users      []User     `gorm:"many2many:user_interests"`
-    Events     []Event    `gorm:"foreignKey:CategoryID"`
+    Events     []Event    `gorm:"foreignKey:CategoryId"`
 }

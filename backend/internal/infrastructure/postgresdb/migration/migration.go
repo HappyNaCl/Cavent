@@ -1,13 +1,11 @@
-package postgres
+package postgresdb
 
 import (
-	"log"
-
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/model"
 	"gorm.io/gorm"
 )
 
-func Migrate(db *gorm.DB) {
+func Migrate(db *gorm.DB) error {
     err := db.Migrator().DropTable(
         &model.UserFavorite{},
         &model.EventView{},
@@ -22,7 +20,7 @@ func Migrate(db *gorm.DB) {
     )
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	err = db.AutoMigrate(
@@ -38,6 +36,8 @@ func Migrate(db *gorm.DB) {
     )
 	
     if err != nil {
-        log.Fatal("failed to migrate:", err)
+        return err
     }
+
+    return nil
 }

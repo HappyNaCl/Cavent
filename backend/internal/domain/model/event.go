@@ -22,7 +22,8 @@ type Event struct {
     BannerUrl   string
     CreatedAt   time.Time
     UpdatedAt   time.Time
-    TicketTypes []TicketType `gorm:"foreignKey:EventID"`
-    Favorites   []UserFavorite `gorm:"foreignKey:EventID"`
-    Views       []EventView    `gorm:"foreignKey:EventID"`
+	
+    TicketTypes []TicketType `gorm:"foreignKey:EventId"`
+    Favorites   []UserFavorite `gorm:"foreignKey:EventId"`
+    Views       []EventView    `gorm:"foreignKey:EventId"`
 }

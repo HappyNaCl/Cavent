@@ -11,5 +11,5 @@ type CategoryType struct {
     Name      string
     CreatedAt time.Time
     UpdatedAt time.Time
-    Categories []Category `gorm:"foreignKey:TagTypeID"`
+    Categories []Category `gorm:"foreignKey:CategoryTypeId"`
 }

@@ -15,5 +15,5 @@ type TicketType struct {
     Quantity  int
     CreatedAt time.Time
     UpdatedAt time.Time
-    Tickets   []Ticket  `gorm:"foreignKey:TicketTypeID"`
+    Tickets   []Ticket  `gorm:"foreignKey:TicketTypeId"`
 }

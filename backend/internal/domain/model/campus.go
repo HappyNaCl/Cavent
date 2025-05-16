@@ -13,6 +13,6 @@ type Campus struct {
     Description string
     CreatedAt   time.Time
     UpdatedAt   time.Time
-    Users       []User    `gorm:"foreignKey:CampusID"`
-    Events      []Event   `gorm:"foreignKey:CampusID"`
+    Users       []User    `gorm:"foreignKey:CampusId"`
+    Events      []Event   `gorm:"foreignKey:CampusId"`
 }

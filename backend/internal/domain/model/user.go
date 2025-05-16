@@ -11,6 +11,7 @@ type User struct {
     CampusId        uuid.UUID
     Campus          Campus
     Provider        string
+	ProviderId 	 	string `gorm:"uniqueIndex"`
     Email           string
     Name            string
     Password        string
@@ -24,7 +25,9 @@ type User struct {
     UpdatedAt       time.Time
 
     Interests       []Category     `gorm:"many2many:user_interests"`
-    Favorites       []UserFavorite `gorm:"foreignKey:UserID"`
-    Tickets         []Ticket       `gorm:"foreignKey:UserID"`
-    EventViews      []EventView    `gorm:"foreignKey:UserID"`
+    Favorites       []UserFavorite `gorm:"foreignKey:UserId"`
+    Tickets         []Ticket       `gorm:"foreignKey:UserId"`
+    EventViews      []EventView    `gorm:"foreignKey:UserId"`
+
+	RefreshToken    RefreshToken   `gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE"`
 }

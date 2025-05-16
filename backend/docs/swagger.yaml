@@ -1,4 +1,8 @@
+basePath: /api/v1
 info:
   contact: {}
+  description: This is the Cavent backend API documentation.
+  title: Cavent API
+  version: "1.0"
 paths: {}
 swagger: "2.0"
