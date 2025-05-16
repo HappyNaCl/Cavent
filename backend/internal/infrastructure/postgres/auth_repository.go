@@ -6,14 +6,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserGormRepo struct {
+type AuthGormRepo struct {
 	db *gorm.DB
 	redis *redis.Client
 }
 
-func NewUserGormRepo(db *gorm.DB, redis *redis.Client) repo.UserRepository {
-	return &UserGormRepo{
+func NewAuthGormRepo(db *gorm.DB, redis *redis.Client) repo.AuthRepository {
+	return &AuthGormRepo{
 		db: db,
 		redis: redis,
 	}
 }
+
