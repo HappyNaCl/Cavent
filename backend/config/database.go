@@ -8,12 +8,12 @@ import (
 	"gorm.io/gorm"
 )
 
-func ConnectDb(l *zap.Logger) (*gorm.DB, error){
+func ConnectDb() (*gorm.DB, error){
 	url := os.Getenv("DATABASE_URL")
     db, err := gorm.Open(postgres.Open(url), &gorm.Config{})
 
     if err != nil {
-        l.Sugar().Errorf("Error connecting to db: %v", err)
+        zap.L().Sugar().Errorf("Error connecting to db: %v", err)
 		return nil, err
     }
 

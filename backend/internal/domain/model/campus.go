@@ -11,6 +11,7 @@ type Campus struct {
     Name        string
     LogoUrl     string
     Description string
+    Domain      string
     CreatedAt   time.Time
     UpdatedAt   time.Time
     Users       []User    `gorm:"foreignKey:CampusId"`

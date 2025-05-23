@@ -2,6 +2,7 @@ package postgresdb
 
 import (
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/model"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -39,5 +40,7 @@ func Migrate(db *gorm.DB) error {
         return err
     }
 
+
+    zap.L().Sugar().Info("Database migrated successfully!")
     return nil
 }

@@ -1,10 +1,9 @@
 package postgresdb
 
 import (
-	"fmt"
-
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/model"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -28,12 +27,30 @@ func Seed(db *gorm.DB) error {
 		{"Fashion & Beauty", []string{"Fashion Shows", "Beauty Workshops", "Makeup Classes", "Style Consultations"}},
 	}
 
+	campus := &model.Campus{
+		Id: uuid.New(),
+		Name: "Binus University",
+		LogoUrl: "https://gtdwezwzzeuthpatkdgu.supabase.co/storage/v1/object/sign/cavent/assets/binus.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzQyYThhYjI0LTBmNDQtNDVkYS1iNWQ0LWVkOTk0NGZmOWNjNyJ9.eyJ1cmwiOiJjYXZlbnQvYXNzZXRzL2JpbnVzLnBuZyIsImlhdCI6MTc0Nzk2MjQ0NiwiZXhwIjoyMzc4NjgyNDQ2fQ.6Kw7A87H5WNJDCElqXcqfMPAsVG0UiQ-4jJEnw2Jvvs",
+		Description: "Best University of The West",
+		Domain: "binus.ac.id",
+	}
+
+	
+	err := db.Create(campus).Error
+	if err != nil {
+		zap.L().Sugar().Fatal("Failed to seed campus!")
+		return err
+	}
+
 	for _, item := range tagData {
 		if err := seedTagTypeWithTags(db, item.TypeName, item.Tags); err != nil {
-			return fmt.Errorf("failed to seed tag type %s: %w", item.TypeName, err)
+			zap.L().Sugar().Fatalf("Failed to see tag %v", item)
+			return err
 		}
 	}
 
+
+	zap.L().Sugar().Info("Database seeded successfully!")
 	return nil
 }
 

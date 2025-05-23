@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 
 	"github.com/HappyNaCl/Cavent/backend/config"
@@ -10,7 +9,7 @@ import (
 	v1 "github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1"
 	"github.com/joho/godotenv"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"google.golang.org/appengine/log"
+	"go.uber.org/zap"
 
 	_ "github.com/HappyNaCl/Cavent/backend/docs"
 	swaggerFiles "github.com/swaggo/files"
@@ -28,12 +27,11 @@ func main(){
         panic("Failed to load .env file")
     }
 
-	logger := config.SetupLogger()
-	defer logger.Sync()
+	config.SetupLogger()
 
-	db, err := config.ConnectDb(logger)
+	db, err := config.ConnectDb()
 	if err != nil {
-		logger.Sugar().Errorf("Error connecting to db: %v", err)
+		zap.L().Sugar().Errorf("Error connecting to db: %v", err)
 		panic(err)
 	}
 
@@ -46,7 +44,7 @@ func main(){
 	if migrate != nil && *migrate {
 		err := migration.Migrate(db)
 		if err != nil {
-			log.Infof(context.Background(), "Error migrating database: %v", err.Error())
+			zap.L().Sugar().Infof("Error migrating database: %v", err.Error())
 			panic(err)
 		}
 	}
@@ -54,7 +52,7 @@ func main(){
 	if seed != nil && *seed {
 		err := seeder.Seed(db)
 		if err != nil {
-			log.Infof(context.Background(), "Error seeding database: %v", err.Error())
+			zap.L().Sugar().Infof("Error seeding database: %v", err.Error())
 			panic(err)
 		}
 	}
@@ -62,12 +60,12 @@ func main(){
 	if fresh != nil && *fresh {
 		err := migration.Migrate(db)
 		if err != nil {
-			log.Infof(context.Background(), "Error migrating database: %v", err.Error())
+			zap.L().Sugar().Infof("Error migrating database: %v", err.Error())
 			panic(err)
 		}
 		err = seeder.Seed(db)
 		if err != nil {
-			log.Infof(context.Background(), "Error seeding database: %v", err.Error())
+			zap.L().Sugar().Infof("Error seeding database: %v", err.Error())
 			panic(err)
 		}
 	}
