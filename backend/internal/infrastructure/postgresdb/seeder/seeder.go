@@ -1,6 +1,9 @@
 package postgresdb
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/model"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -27,15 +30,15 @@ func Seed(db *gorm.DB) error {
 		{"Fashion & Beauty", []string{"Fashion Shows", "Beauty Workshops", "Makeup Classes", "Style Consultations"}},
 	}
 
+	campusLogo := fmt.Sprintf("%s/storage/v1/object/public/%s/assets/binus.png", os.Getenv("SUPABASE_PROJECT_URL"), os.Getenv("SUPABASE_BUCKET_NAME"))
 	campus := &model.Campus{
 		Id: uuid.New(),
 		Name: "Binus University",
-		LogoUrl: "https://gtdwezwzzeuthpatkdgu.supabase.co/storage/v1/object/sign/cavent/assets/binus.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN0b3JhZ2UtdXJsLXNpZ25pbmcta2V5XzQyYThhYjI0LTBmNDQtNDVkYS1iNWQ0LWVkOTk0NGZmOWNjNyJ9.eyJ1cmwiOiJjYXZlbnQvYXNzZXRzL2JpbnVzLnBuZyIsImlhdCI6MTc0Nzk2MjQ0NiwiZXhwIjoyMzc4NjgyNDQ2fQ.6Kw7A87H5WNJDCElqXcqfMPAsVG0UiQ-4jJEnw2Jvvs",
+		LogoUrl: campusLogo,
 		Description: "Best University of The West",
 		Domain: "binus.ac.id",
 	}
 
-	
 	err := db.Create(campus).Error
 	if err != nil {
 		zap.L().Sugar().Fatal("Failed to seed campus!")
