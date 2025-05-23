@@ -6,12 +6,12 @@ import (
 
 	"github.com/HappyNaCl/Cavent/backend/internal/types"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func AuthMiddleware() gin.HandlerFunc{
 	return func(c *gin.Context) {
-		jwtSecret := []byte(os.Getenv("JWT_SECRET"))
+		jwtSecret := []byte(os.Getenv("ACCESS_JWT_SECRET"))
 		tokenString := c.Request.Header.Get("Authorization")
 		tokenString = tokenString[len("Bearer "):]
 		if tokenString == "" {

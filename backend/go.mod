@@ -5,7 +5,7 @@ go 1.23.4
 require github.com/markbates/goth v1.81.0
 
 require (
-	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
+	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect

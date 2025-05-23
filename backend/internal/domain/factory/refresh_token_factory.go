@@ -1,34 +1,38 @@
 package factory
 
 import (
-	"crypto/rand"
-	"encoding/base64"
+	"os"
+	"time"
 
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/model"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type RefreshTokenFactory struct {}
 
-func generateToken() (string, error) {
-	byteLength := 60
+func NewRefreshTokenFactory() *RefreshTokenFactory {
+	return &RefreshTokenFactory{}
+}
 
-	b := make([]byte, byteLength)
-	_, err := rand.Read(b)
+func (f *RefreshTokenFactory) GetRefreshToken(user *model.User) (string, error)  {
+	refreshSecret := os.Getenv("REFRESH_JWT_SECRET")
+
+	claims := jwt.MapClaims{
+		"Sub" : user.Id.String(),
+		"Exp": time.Now().Add(30 * 24 * time.Hour).Unix(),
+		"Iat": time.Now().Unix(),
+		"Email" : user.Email,
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	tokenStr, err := token.SignedString(refreshSecret)
 	if err != nil {
 		return "", err
 	}
 
-	return base64.RawURLEncoding.EncodeToString(b), nil
+	return tokenStr, nil
 }
 
-func (r *RefreshTokenFactory) GetToken(userId string) (*model.RefreshToken, error) {
-	tokenStr, err := generateToken()
-	if err != nil {
-		return nil, err
-	}
 
-	return &model.RefreshToken{
-		UserId: userId,
-		Token: tokenStr,
-	}, nil
-}
+
