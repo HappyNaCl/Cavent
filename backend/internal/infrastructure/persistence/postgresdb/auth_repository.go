@@ -1,23 +1,24 @@
 package postgresdb
 
 import (
-	"log"
+	"errors"
 	"strings"
 
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/factory"
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/model"
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/repo"
 	"github.com/markbates/goth"
-	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 type AuthGormRepo struct {
 	db    *gorm.DB
-	redis *redis.Client
-	logger *zap.Logger
 }
+
+var (
+	ErrDuplicateEmail = errors.New("email already exists")
+)
 
 // LoginUser implements repo.AuthRepository.
 func (a *AuthGormRepo) LoginUser(email string) (*model.User, error) {
@@ -37,30 +38,35 @@ func (a *AuthGormRepo) RegisterOrLoginOauthUser(gothUser goth.User, provider str
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			user = factory.NewUserFactory().GetOAuthUser(provider, gothUser.UserID, strings.Split(gothUser.Email, "@")[0], gothUser.Email, "", gothUser.AvatarURL)
-			log.Println("[INFO] User not found in database, creating new user:", user)
-			a.db.Create(&user)
+			
+			zap.L().Sugar().Infof("[INFO] User not found in database, creating new user: %v", user)
+			
+			err := a.db.Create(&user).Error
+			if err != nil {
+				return nil, err
+			}
+
 		} else {
 			return nil, result.Error
 		}
 	}
 
-	log.Println("[INFO] User found in database:", user)
+	zap.L().Sugar().Infof("[INFO] User found in database:", user)
 	return user, nil
 }
 
 // RegisterUser implements repo.AuthRepository.
 func (a *AuthGormRepo) RegisterUser(user *model.User) (*model.User, error) {
-	err := a.db.Save(&user).Error
+	err := a.db.Create(&user).Error
+
 	if err != nil {
 		return nil, err
 	}
 	return user, nil
 }
 
-func NewAuthGormRepo(db *gorm.DB, redis *redis.Client, logger *zap.Logger) repo.AuthRepository {
+func NewAuthGormRepo(db *gorm.DB) repo.AuthRepository {
 	return &AuthGormRepo{
 		db:    db,
-		redis: redis,
-		logger: logger,
 	}
 }

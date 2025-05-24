@@ -6,7 +6,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func SetupLogger(){
+func SetupLogger() *zap.Logger {
 	appEnv := os.Getenv("APP_ENV")
 	if appEnv == "" {
 		appEnv = "development"
@@ -18,7 +18,7 @@ func SetupLogger(){
 			panic(err)
 		}
 		zap.ReplaceGlobals(logger)
-		return
+		return nil
 	}
 	
 	logger, err := zap.NewProduction()
@@ -26,6 +26,6 @@ func SetupLogger(){
 		panic(err)
 	}
 
-	defer logger.Sync()
 	zap.ReplaceGlobals(logger)
+	return logger
 }

@@ -8,9 +8,9 @@ import (
 
 type EventView struct {
     Id        uuid.UUID `gorm:"type:uuid;primaryKey"`
-    EventId   uuid.UUID
+    EventId   uuid.UUID `gorm:"type:uuid;index"`
     Event     Event
-    UserId    uuid.UUID
+    UserId    uuid.UUID `gorm:"type:uuid"`
     User      User
-    ViewedAt  time.Time
+	CreatedAt time.Time `json:"createdAt" gorm:"autoCreateTime"`
 }

@@ -4,15 +4,13 @@ import (
 	"flag"
 
 	"github.com/HappyNaCl/Cavent/backend/config"
-	migration "github.com/HappyNaCl/Cavent/backend/internal/infrastructure/postgresdb/migration"
-	seeder "github.com/HappyNaCl/Cavent/backend/internal/infrastructure/postgresdb/seeder"
+	migration "github.com/HappyNaCl/Cavent/backend/internal/infrastructure/persistence/postgresdb/migration"
+	seeder "github.com/HappyNaCl/Cavent/backend/internal/infrastructure/persistence/postgresdb/seeder"
 	v1 "github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1"
 	"github.com/joho/godotenv"
-	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.uber.org/zap"
 
 	_ "github.com/HappyNaCl/Cavent/backend/docs"
-	swaggerFiles "github.com/swaggo/files"
 )
 
 // @title Cavent API
@@ -20,14 +18,15 @@ import (
 // @description This is the Cavent backend API documentation.
 // @BasePath /api/v1
 func main(){
-	r := v1.Init()
+
 
 	err := godotenv.Load()
     if err != nil {
         panic("Failed to load .env file")
     }
 
-	config.SetupLogger()
+	logger := config.SetupLogger()
+	defer logger.Sync()
 
 	db, err := config.ConnectDb()
 	if err != nil {
@@ -35,7 +34,15 @@ func main(){
 		panic(err)
 	}
 
-    migrate := flag.Bool("migrate", false, "Run migrations")
+	redis, err := config.ConnectRedis()
+	if err != nil {
+		zap.L().Sugar().Errorf("Error connecting to redis: %v", err)
+		panic(err)
+	}
+
+	r := v1.Init(db, redis)
+    
+	migrate := flag.Bool("migrate", false, "Run migrations")
 	seed := flag.Bool("seed", false, "Run seeders")
 	fresh := flag.Bool("fresh", false, "Run fresh migrations and seed")
 
@@ -70,7 +77,6 @@ func main(){
 		}
 	}
 
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	r.Run(":8080")
 }

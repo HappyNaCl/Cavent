@@ -12,6 +12,6 @@ type Ticket struct {
     User          User
     TicketTypeId  uuid.UUID
     TicketType    TicketType
-    CreatedAt     time.Time
-    UpdatedAt     time.Time
+	CreatedAt     time.Time `json:"createdAt" gorm:"autoCreateTime"`
+	UpdatedAt     time.Time `json:"updatedAt" gorm:"autoUpdateTime"`
 }

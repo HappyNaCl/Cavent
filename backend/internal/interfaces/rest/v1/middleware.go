@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/HappyNaCl/Cavent/backend/internal/types"
+	"github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1/types"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )

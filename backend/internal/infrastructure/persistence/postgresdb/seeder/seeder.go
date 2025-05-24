@@ -36,7 +36,7 @@ func Seed(db *gorm.DB) error {
 		Name: "Binus University",
 		LogoUrl: campusLogo,
 		Description: "Best University of The West",
-		Domain: "binus.ac.id",
+		InviteCode: "AAAAAA",
 	}
 
 	err := db.Create(campus).Error
