@@ -3,15 +3,15 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router";
 
 export const useAuthGuard = () => {
-  const { user } = useAuth();
+  const { user, token: accessToken } = useAuth();
   const nav = useNavigate();
 
   useEffect(() => {
-    if (!user) {
+    if (!user || !accessToken) {
       console.log("User not found, redirecting to auth page");
       nav("/auth");
     }
-  }, [user, nav]);
+  }, [user, accessToken, nav]);
 
   return user;
 };

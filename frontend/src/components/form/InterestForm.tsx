@@ -17,10 +17,7 @@ import { useEffect, useState } from "react";
 import { TagType } from "@/interface/TagType";
 import { Checkbox } from "../ui/checkbox";
 import { Button } from "../ui/button";
-import axios from "axios";
-import { env } from "@/lib/schema/EnvSchema";
 import { cn } from "@/lib/utils";
-import { Tag } from "@/interface/Tag";
 
 export default function InterestForm() {
   const user = useAuthGuard();
@@ -28,13 +25,7 @@ export default function InterestForm() {
 
   async function fetchTagTypes() {
     try {
-      const res = await axios.get(`${env.VITE_BACKEND_URL}/api/tags`, {
-        withCredentials: true,
-      });
-      if (res.status === 200) {
-        const { data } = res.data;
-        setTagTypes(data);
-      }
+      console.log("e");
     } catch (error) {
       toast.error(`Error: ${error}`);
     }
@@ -42,16 +33,7 @@ export default function InterestForm() {
 
   async function fetchCurrentTags() {
     try {
-      const res = await axios.get(`${env.VITE_BACKEND_URL}/api/user/tag`, {
-        withCredentials: true,
-      });
-
-      if (res.status === 200) {
-        const { data } = res.data;
-        form.reset({
-          interests: data ? data.map((tag: Tag) => tag.id) : [],
-        });
-      }
+      console.log("e");
     } catch (error) {
       toast.error(`Error: ${error}`);
     }
@@ -67,7 +49,6 @@ export default function InterestForm() {
   useEffect(() => {
     fetchTagTypes();
     fetchCurrentTags();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const onSubmit = async (data: z.infer<typeof InterestSchema>) => {
@@ -82,17 +63,7 @@ export default function InterestForm() {
     formData.append("preferences", JSON.stringify(data.interests));
 
     try {
-      const res = await axios.put(
-        `${env.VITE_BACKEND_URL}/api/user/preference`,
-        formData,
-        {
-          withCredentials: true,
-        }
-      );
-
-      if (res.status === 200) {
-        toast.success("Interests updated successfully!");
-      }
+      console.log("Submitting interests:", data.interests);
     } catch (error) {
       toast.error(`Error: ${error}`);
     }

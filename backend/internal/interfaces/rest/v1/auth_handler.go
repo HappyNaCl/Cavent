@@ -79,7 +79,7 @@ func (a *AuthHandler) registerUser(c *gin.Context) {
 	}
 
 	refreshTokenFactory := factory.NewRefreshTokenFactory()
-	refreshToken, err := refreshTokenFactory.GetRefreshToken(userResult.Id, userResult.Email)
+	refreshToken, err := refreshTokenFactory.GetRefreshToken(userResult.Id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, &types.ErrorResponse{
 			Error: err.Error(),
@@ -94,6 +94,7 @@ func (a *AuthHandler) registerUser(c *gin.Context) {
 		Message: "success",
 		Data: &response.RegisterResponse{
 			AccessToken:  accessToken,
+			User: userResult.ToBrief(),
 		},
 	})
 }
@@ -139,7 +140,7 @@ func (a *AuthHandler) loginUser(c *gin.Context) {
 	}
 
 	refreshTokenFactory := factory.NewRefreshTokenFactory()
-	refreshToken, err := refreshTokenFactory.GetRefreshToken(userResult.Id, userResult.Email)
+	refreshToken, err := refreshTokenFactory.GetRefreshToken(userResult.Id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, &types.ErrorResponse{
 			Error: err.Error(),
@@ -158,6 +159,7 @@ func (a *AuthHandler) loginUser(c *gin.Context) {
 		Message: "success",
 		Data: &response.LoginResponse{
 			AccessToken:  accessToken,
+			User: userResult.ToBrief(),
 		},
 	})
 }
@@ -225,7 +227,7 @@ func (a *AuthHandler) handleOAuthCallback(c *gin.Context) {
 	}
 
 	refreshTokenFactory := factory.NewRefreshTokenFactory()
-	refreshToken, err := refreshTokenFactory.GetRefreshToken(userResult.Id, userResult.Email)
+	refreshToken, err := refreshTokenFactory.GetRefreshToken(userResult.Id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, &types.ErrorResponse{
 			Error: err.Error(),

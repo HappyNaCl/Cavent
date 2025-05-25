@@ -14,11 +14,10 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import LabeledCheckbox from "../input/LabeledCheckbox";
-import { env } from "@/lib/schema/EnvSchema";
-import axios, { AxiosError } from "axios";
 import { useAuth } from "../provider/AuthProvider";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import api from "@/lib/axios";
 
 export default function LoginForm() {
   const { login } = useAuth();
@@ -40,21 +39,18 @@ export default function LoginForm() {
     formData.append("rememberMe", String(data.rememberMe));
 
     try {
-      const res = await axios.post(
-        `${env.VITE_BACKEND_URL}/api/auth/login`,
-        formData,
-        {
-          withCredentials: true,
-        }
-      );
+      const res = await api.post("/auth/login", formData, {
+        withCredentials: true,
+      });
 
-      const { data: user } = res.data;
-      login(user);
-      nav("/");
+      if (res.status === 200) {
+        const { accessToken, user } = res.data;
+        login(user, accessToken);
+        toast.success("Login successful!");
+        nav("/");
+      }
     } catch (error) {
-      const axiosErr = error as AxiosError<{ error: string }>;
-      const message = axiosErr.response?.data?.error || "Something went wrong";
-      toast.error(message);
+      toast.error(`Error: ${error}`);
     }
   };
 

@@ -7,7 +7,7 @@ type RegisterRequest struct {
 	Password 		string `json:"password" form:"password" binding:"required"`
 	ConfirmPassword string `json:"confirmPassword" form:"confirmPassword" binding:"required"`
 	Email 			string `json:"email" form:"email" binding:"required"`
-	InviteCode 		*string `json:"inviteCode" form:"inviteCode" binding:"required"`
+	InviteCode 		*string `json:"inviteCode" form:"inviteCode"`
 }
 
 func (r RegisterRequest) ToCommand() *command.RegisterUserCommand {

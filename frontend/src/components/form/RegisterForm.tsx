@@ -14,10 +14,9 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import axios from "axios";
-import { env } from "@/lib/schema/EnvSchema";
 import { useNavigate } from "react-router";
 import { useAuth } from "../provider/AuthProvider";
+import api from "@/lib/axios";
 
 export default function RegisterForm() {
   const nav = useNavigate();
@@ -41,16 +40,15 @@ export default function RegisterForm() {
     formData.append("confirmPassword", data.confirmPassword);
 
     try {
-      const res = await axios.post(
-        `${env.VITE_BACKEND_URL}/api/auth/register`,
-        formData,
-        { withCredentials: true }
-      );
+      const res = await api.post("/auth/register", formData, {
+        withCredentials: true,
+      })
 
-      if (res.status === 200) {
-        const { data: user } = res.data;
-        login(user);
-        nav("/profile/preference");
+      if (res.status === 201) {
+        const { accessToken, user } = res.data;
+        login(user, accessToken);
+        toast.success("Registration successful!");
+        nav("/");
       }
     } catch (error) {
       toast.error(`Error: ${error}}`);

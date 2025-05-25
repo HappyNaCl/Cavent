@@ -1,7 +1,10 @@
 package repo
 
-import "github.com/HappyNaCl/Cavent/backend/internal/domain/model"
+import (
+	"github.com/HappyNaCl/Cavent/backend/internal/domain/model"
+	"github.com/google/uuid"
+)
 
 type UserRepository interface {
-	FindByEmail(email string) (*model.User, error)
+	GetBriefUser(userId uuid.UUID) (*model.User, error)
 }

@@ -14,14 +14,13 @@ func NewRefreshTokenFactory() *RefreshTokenFactory {
 	return &RefreshTokenFactory{}
 }
 
-func (f *RefreshTokenFactory) GetRefreshToken(id uuid.UUID, email string) (string, error)  {
+func (f *RefreshTokenFactory) GetRefreshToken(id uuid.UUID) (string, error)  {
 	refreshSecret := os.Getenv("REFRESH_JWT_SECRET")
 
 	claims := jwt.MapClaims{
 		"Sub" : id.String(),
 		"Exp": time.Now().Add(30 * 24 * time.Hour).Unix(),
 		"Iat": time.Now().Unix(),
-		"Email" : email,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

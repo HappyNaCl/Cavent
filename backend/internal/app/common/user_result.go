@@ -23,3 +23,14 @@ type UserResult struct {
 	CreatedAt 		time.Time `json:"createdAt" gorm:"autoCreateTime"`
 	UpdatedAt 		time.Time `json:"updatedAt" gorm:"autoUpdateTime"`
 }
+
+func (u UserResult) ToBrief() BriefUserResult {
+    return BriefUserResult{
+        Id:        u.Id,
+        CampusId:  u.CampusId,
+        Provider:  u.Provider,
+        Name:      u.Name,
+        Email:     u.Email,
+        AvatarUrl: u.AvatarUrl,
+    }
+}
