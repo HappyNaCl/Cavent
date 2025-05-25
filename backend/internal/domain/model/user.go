@@ -14,7 +14,7 @@ type User struct {
 	ProviderId 	 	string `json:"providerId" gorm:"not null;uniqueIndex"`
     Email           string `json:"email"  gorm:"not null;uniqueIndex"`
     Name            string `json:"name" gorm:"not null"`
-    Password        string `json:"-" gorm:"not null"`
+    Password        string `json:"-"`
     AvatarUrl       string `json:"avatarUrl" gorm:"not null"`
     FirstTimeLogin  bool   `json:"firstTimeLogin" gorm:"default:true"`
     Description     *string `json:"description"`

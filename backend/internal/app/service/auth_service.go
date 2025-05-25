@@ -12,6 +12,7 @@ import (
 	"github.com/HappyNaCl/Cavent/backend/internal/infrastructure/persistence/postgresdb"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/redis/go-redis/v9"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -78,6 +79,25 @@ func (as *AuthService) RegisterUser(com *command.RegisterUserCommand) (*command.
 		Result: userResult,
 	}, nil
 }
+
+func (as *AuthService) LoginUser(com *command.LoginUserCommand) (*command.LoginUserCommandResult, error) {
+	user, err := as.authRepo.LoginUser(com.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(com.Password)) != nil {
+		return nil, errors.ErrInvalidCredentials
+	}
+
+	userResult := mapper.NewUserResultFromLoginUser(user)
+	
+	return &command.LoginUserCommandResult{
+		Result: userResult,
+	}, nil
+}
+
+func (as *AuthService) RegisterOrLoginOAuthUser(com *command.RegisterOrLoginOAuthCommand) (*command.RegisterOrLoginOAuthCommandResult, error) {
 
 func isValidPassword(password string) bool {
     hasUppercase := regexp.MustCompile(`[A-Z]`).MatchString(password)

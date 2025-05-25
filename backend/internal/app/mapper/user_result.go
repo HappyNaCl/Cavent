@@ -6,6 +6,14 @@ import (
 )
 
 func NewUserResultFromRegisteredUser(user *model.User) *common.UserResult {
+	return NewUserResultFromUser(user)
+}
+
+func NewUserResultFromLoginUser(user *model.User) *common.UserResult {
+	return NewUserResultFromUser(user)
+}
+
+func NewUserResultFromUser(user *model.User) *common.UserResult {
 	if user == nil {
 		return nil
 	}
@@ -20,7 +28,5 @@ func NewUserResultFromRegisteredUser(user *model.User) *common.UserResult {
 		AvatarUrl:      user.AvatarUrl,
 		Description:    user.Description,
 		Role:           user.Role,
-		PhoneNumber:    user.PhoneNumber,
-		Address:        user.Address,
 	}
 }

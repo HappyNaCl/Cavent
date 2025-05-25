@@ -12,4 +12,7 @@ var (
 	ErrInvalidPassword = errors.New("password must contain a uppercase letter and a number")
 	ErrConfirmPasswordMismatch = errors.New("password and confirm password is not the same")
 	ErrDuplicateEmail = errors.New("email already exists")
+
+	// Login Errors
+	ErrInvalidCredentials = errors.New("invalid credentials")
 )

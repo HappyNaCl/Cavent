@@ -1,5 +1,5 @@
 package response
 
-type RegisterResponse struct {
+type LoginResponse struct {
 	AccessToken string `json:"accessToken"`
 }
