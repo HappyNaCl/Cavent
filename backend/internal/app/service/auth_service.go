@@ -97,7 +97,17 @@ func (as *AuthService) LoginUser(com *command.LoginUserCommand) (*command.LoginU
 	}, nil
 }
 
-func (as *AuthService) RegisterOrLoginOAuthUser(com *command.RegisterOrLoginOAuthCommand) (*command.RegisterOrLoginOAuthCommandResult, error) {
+func (as *AuthService) HandleOAuth(com *command.HandleOAuthCommand) (*command.HandleOAuthCommandResult, error) {
+	user, err := as.authRepo.RegisterOrLoginOauthUser(com.User, com.Provider)
+
+	if err != nil {
+		return nil, err
+	}
+	
+	return &command.HandleOAuthCommandResult{
+		Result: mapper.NewUserResultFromUser(user),
+	}, nil
+}
 
 func isValidPassword(password string) bool {
     hasUppercase := regexp.MustCompile(`[A-Z]`).MatchString(password)

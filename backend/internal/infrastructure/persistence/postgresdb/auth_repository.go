@@ -32,32 +32,33 @@ func (a *AuthGormRepo) LoginUser(email string) (*model.User, error) {
 
 // RegisterOrLoginOauthUser implements repo.AuthRepository.
 func (a *AuthGormRepo) RegisterOrLoginOauthUser(gothUser goth.User, provider string) (*model.User, error) {
-	var user *model.User
+	var user model.User
 
 	result := a.db.Where("id = ? AND provider = ?", gothUser.UserID, provider).First(&user)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
-			user = factory.NewUserFactory().GetOAuthUser(provider, gothUser.UserID, strings.Split(gothUser.Email, "@")[0], gothUser.Email, "", gothUser.AvatarURL)
+			userModel := factory.NewUserFactory().GetOAuthUser(provider, gothUser.UserID, strings.Split(gothUser.Email, "@")[0], gothUser.Email, "", gothUser.AvatarURL)
 			
 			zap.L().Sugar().Infof("[INFO] User not found in database, creating new user: %v", user)
 			
-			err := a.db.Create(&user).Error
+			err := a.db.Create(&userModel).Error
 			if err != nil {
 				return nil, err
 			}
 
+			return userModel, nil
 		} else {
 			return nil, result.Error
 		}
 	}
 
 	zap.L().Sugar().Infof("[INFO] User found in database:", user)
-	return user, nil
+	return &user, nil
 }
 
 // RegisterUser implements repo.AuthRepository.
 func (a *AuthGormRepo) RegisterUser(user *model.User) (*model.User, error) {
-	err := a.db.Create(&user).Error
+	err := a.db.Create(user).Error
 
 	if err != nil {
 		return nil, err
