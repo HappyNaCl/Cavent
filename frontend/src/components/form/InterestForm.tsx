@@ -14,18 +14,23 @@ import {
   FormMessage,
 } from "../ui/form";
 import { useEffect, useState } from "react";
-import { TagType } from "@/interface/TagType";
+import { CategoryType } from "@/interface/CategoryType";
 import { Checkbox } from "../ui/checkbox";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
+import api from "@/lib/axios";
 
 export default function InterestForm() {
   const user = useAuthGuard();
-  const [tagTypes, setTagTypes] = useState<TagType[]>([]);
+  const [categoryTypes, setCategoryTypes] = useState<CategoryType[]>([]);
 
   async function fetchTagTypes() {
     try {
-      console.log("e");
+      const res = await api.get("/category");
+      console.log("Tag types fetched:", res.data.data);
+      if (res.status === 200 && res.data.data) {
+        setCategoryTypes(res.data.data);
+      }
     } catch (error) {
       toast.error(`Error: ${error}`);
     }
@@ -87,15 +92,17 @@ export default function InterestForm() {
                 </FormDescription>
               </div>
               <div className="flex flex-col gap-4">
-                {tagTypes.map((tagType) => (
-                  <div key={tagType.id} className="flex flex-col gap-4">
-                    <span className="text-xl font-bold">{tagType.name}</span>
+                {categoryTypes.map((categoryType) => (
+                  <div key={categoryType.id} className="flex flex-col gap-4">
+                    <span className="text-xl font-bold">
+                      {categoryType.name}
+                    </span>
                     <div className="flex flex-row gap-4">
-                      {tagType.tags.map((tag) => {
-                        const isChecked = field.value?.includes(tag.id);
+                      {categoryType.categories.map((category) => {
+                        const isChecked = field.value?.includes(category.id);
                         return (
                           <FormItem
-                            key={tag.id}
+                            key={category.id}
                             className="flex flex-row items-start space-x-3 space-y-0"
                           >
                             <FormControl>
@@ -111,15 +118,15 @@ export default function InterestForm() {
                                   checked={isChecked}
                                   onCheckedChange={(checked) => {
                                     const updated = checked
-                                      ? [...field.value, tag.id]
+                                      ? [...field.value, category.id]
                                       : field.value.filter(
-                                          (val) => val !== tag.id
+                                          (val) => val !== category.id
                                         );
                                     field.onChange(updated);
                                   }}
                                   className="hidden"
                                 />
-                                {tag.name}
+                                {category.name}
                                 <span
                                   className={cn(
                                     "transition-all duration-300 ease-in-out transform",

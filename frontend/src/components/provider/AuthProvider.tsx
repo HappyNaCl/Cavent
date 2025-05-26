@@ -79,11 +79,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         });
         setUser(meRes.data.data.user);
 
-        // const user = meRes.data.data.user;
-        // if (user.firstTimeLogin) {
-        //   nav("/profile/interest");
-        // }
-        nav("/");
+        const user = meRes.data.data.user;
+        if (user.firstTimeLogin) {
+          nav("/profile/interest");
+        }
       } catch (err) {
         setUser(null);
         setToken(null);

@@ -82,6 +82,10 @@ func (as *AuthService) RegisterUser(com *command.RegisterUserCommand) (*command.
 
 func (as *AuthService) LoginUser(com *command.LoginUserCommand) (*command.LoginUserCommandResult, error) {
 	user, err := as.authRepo.LoginUser(com.Email)
+	if err == gorm.ErrRecordNotFound {
+		return nil, errors.ErrInvalidCredentials
+	}
+
 	if err != nil {
 		return nil, err
 	}

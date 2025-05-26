@@ -23,6 +23,9 @@ func Init(db *gorm.DB, redis *redis.Client) *gin.Engine  {
 	
 	authRoute := NewAuthRoute(db, redis)
 	authRoute.SetupRoutes(v1)
+
+	categoryRoute := NewCategoryHandler(db, redis)
+	categoryRoute.SetupRoutes(v1)
 	
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	return r
