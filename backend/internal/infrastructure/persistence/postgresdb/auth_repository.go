@@ -39,7 +39,7 @@ func (a *AuthGormRepo) RegisterOrLoginOauthUser(gothUser goth.User, provider str
 		if result.Error == gorm.ErrRecordNotFound {
 			userModel := factory.NewUserFactory().GetOAuthUser(provider, gothUser.UserID, strings.Split(gothUser.Email, "@")[0], gothUser.Email, "", gothUser.AvatarURL)
 			
-			zap.L().Sugar().Infof("[INFO] User not found in database, creating new user: %v", user)
+			zap.L().Sugar().Infof("[INFO] User not found in database, creating new user")
 			
 			err := a.db.Create(&userModel).Error
 			if err != nil {
@@ -52,7 +52,7 @@ func (a *AuthGormRepo) RegisterOrLoginOauthUser(gothUser goth.User, provider str
 		}
 	}
 
-	zap.L().Sugar().Infof("[INFO] User found in database:", user)
+	zap.L().Sugar().Infof("[INFO] User found in database")
 	return &user, nil
 }
 

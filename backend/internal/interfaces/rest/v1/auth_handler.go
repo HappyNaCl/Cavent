@@ -255,12 +255,9 @@ func (a *AuthHandler) handleOAuthCallback(c *gin.Context) {
 	expireTime := 3600 * 24
 	c.SetCookie("refresh_token", refreshToken, expireTime, "/", appDomain, false, true)
 
-	c.JSON(http.StatusOK, &types.SuccessResponse{
-		Message: "success",
-		Data: &response.LoginResponse{
-			AccessToken:  accessToken,
-		},
-	})
+	frontendUrl := os.Getenv("FRONTEND_URL")
+
+	c.Redirect(http.StatusFound, frontendUrl + fmt.Sprintf("?token=%s", accessToken))
 }
 
 func (a *AuthHandler) checkMe(c *gin.Context){

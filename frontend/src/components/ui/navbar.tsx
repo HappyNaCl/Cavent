@@ -1,4 +1,5 @@
 import Logo from "../../assets/Logo.png";
+import LogoutButton from "../button/LogoutButton";
 import Navlink from "./navlink";
 
 export default function Navbar() {
@@ -26,7 +27,7 @@ export default function Navbar() {
           <a href="">Login</a>
         </li>
         <li>
-          <a href="">Sign Out</a>
+          <LogoutButton />
         </li>
       </nav>
     </div>

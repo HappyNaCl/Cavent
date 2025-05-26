@@ -3,6 +3,8 @@ module github.com/HappyNaCl/Cavent/backend
 go 1.23.4
 
 require (
+	cloud.google.com/go/compute v1.20.1 // indirect
+	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	github.com/go-chi/chi/v5 v5.1.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
 	github.com/gorilla/context v1.1.1 // indirect

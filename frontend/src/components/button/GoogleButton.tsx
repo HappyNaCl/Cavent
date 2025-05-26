@@ -4,7 +4,7 @@ import { env } from "@/lib/schema/EnvSchema";
 
 export default function GoogleButton() {
   const handleClick = () => {
-    window.location.href = `${env.VITE_BACKEND_URL}/api/auth/google`;
+    window.location.href = `${env.VITE_BACKEND_URL}/api/v1/auth/google`;
   };
 
   return (

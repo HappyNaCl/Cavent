@@ -18,8 +18,6 @@ import (
 // @description This is the Cavent backend API documentation.
 // @BasePath /api/v1
 func main(){
-
-
 	err := godotenv.Load()
     if err != nil {
         panic("Failed to load .env file")
@@ -27,6 +25,8 @@ func main(){
 
 	logger := config.SetupLogger()
 	defer logger.Sync()
+
+	config.SetupOAuth()
 
 	db, err := config.ConnectDb()
 	if err != nil {
