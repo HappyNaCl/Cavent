@@ -1,5 +1,24 @@
 basePath: /api/v1
 definitions:
+  common.BriefUserResult:
+    properties:
+      avatarUrl:
+        type: string
+      campusId:
+        type: string
+      email:
+        type: string
+      firstTimeLogin:
+        type: boolean
+      id:
+        type: string
+      name:
+        type: string
+      provider:
+        type: string
+      role:
+        type: string
+    type: object
   request.LoginRequest:
     properties:
       email:
@@ -11,7 +30,6 @@ definitions:
     required:
     - email
     - password
-    - rememberMe
     type: object
   request.RegisterRequest:
     properties:
@@ -28,11 +46,22 @@ definitions:
     required:
     - confirmPassword
     - email
-    - inviteCode
     - name
     - password
     type: object
+  response.CheckMeResponse:
+    properties:
+      user:
+        $ref: '#/definitions/common.BriefUserResult'
+    type: object
   response.LoginResponse:
+    properties:
+      accessToken:
+        type: string
+      user:
+        $ref: '#/definitions/common.BriefUserResult'
+    type: object
+  response.RefreshResponse:
     properties:
       accessToken:
         type: string
@@ -41,6 +70,8 @@ definitions:
     properties:
       accessToken:
         type: string
+      user:
+        $ref: '#/definitions/common.BriefUserResult'
     type: object
   types.ErrorResponse:
     properties:
@@ -59,6 +90,64 @@ info:
   title: Cavent API
   version: "1.0"
 paths:
+  /auth/{provider}:
+    get:
+      consumes:
+      - application/json
+      description: Login a user with OAuth provider
+      parameters:
+      - description: OAuth Provider
+        enum:
+        - google
+        - github
+        - etc.
+        in: path
+        name: provider
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Redirects to OAuth provider for authentication
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Login a user with OAuth
+      tags:
+      - auth
+  /auth/{provider}/callback:
+    get:
+      consumes:
+      - application/json
+      description: Handle OAuth callback after user authentication
+      parameters:
+      - description: OAuth Provider
+        enum:
+        - google
+        - github
+        - etc.
+        in: path
+        name: provider
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "302":
+          description: Redirects to frontend with access token as query parameter
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: OAuth Callback
+      tags:
+      - auth
   /auth/login:
     post:
       consumes:
@@ -92,6 +181,85 @@ paths:
           schema:
             $ref: '#/definitions/types.ErrorResponse'
       summary: Login a user
+      tags:
+      - auth
+  /auth/logout:
+    get:
+      consumes:
+      - application/json
+      description: Logout user by clearing the refresh token cookie
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/types.SuccessResponse'
+            - properties:
+                data: {}
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Logout user
+      tags:
+      - auth
+  /auth/me:
+    get:
+      consumes:
+      - application/json
+      description: Get the current user's information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/types.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.CheckMeResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Check current user
+      tags:
+      - auth
+  /auth/refresh:
+    get:
+      consumes:
+      - application/json
+      description: Refresh the access token using the refresh token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/types.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.RefreshResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Refresh access token
       tags:
       - auth
   /auth/register:

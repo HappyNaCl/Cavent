@@ -189,7 +189,7 @@ func (a *AuthHandler) loginUser(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param provider path string true "OAuth Provider" Enums(google, github, etc.)
-// @Success 201 {object} types.SuccessResponse
+// @Success 201 {string} string "Redirects to OAuth provider for authentication"
 // @Failure 500 {object} types.ErrorResponse
 // @Router /auth/{provider} [get]
 func (a *AuthHandler) loginOAuthUser(c *gin.Context) {
@@ -206,7 +206,7 @@ func (a *AuthHandler) loginOAuthUser(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param provider path string true "OAuth Provider" Enums(google, github, etc.)
-// @Success 200 {object} types.SuccessResponse{data=response.LoginResponse}
+// @Success 302 {string} string "Redirects to frontend with access token as query parameter"
 // @Failure 500 {object} types.ErrorResponse
 // @Router /auth/{provider}/callback [get]
 func (a *AuthHandler) handleOAuthCallback(c *gin.Context) {
@@ -260,6 +260,16 @@ func (a *AuthHandler) handleOAuthCallback(c *gin.Context) {
 	c.Redirect(http.StatusFound, frontendUrl + fmt.Sprintf("?token=%s", accessToken))
 }
 
+// CheckMe godoc
+// @Summary Check current user
+// @Description Get the current user's information
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Success 200 {object} types.SuccessResponse{data=response.CheckMeResponse}
+// @Failure 401 {object} types.ErrorResponse
+// @Failure 500 {object} types.ErrorResponse
+// @Router /auth/me [get]
 func (a *AuthHandler) checkMe(c *gin.Context){
 	userId, ok := c.Get("sub")
 	if !ok {
@@ -291,6 +301,16 @@ func (a *AuthHandler) checkMe(c *gin.Context){
 	})
 }
 
+// Refresh godoc
+// @Summary Refresh access token
+// @Description Refresh the access token using the refresh token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Success 200 {object} types.SuccessResponse{data=response.RefreshResponse}
+// @Failure 401 {object} types.ErrorResponse
+// @Failure 500 {object} types.ErrorResponse
+// @Router /auth/refresh [get]
 func (a *AuthHandler) refresh(c *gin.Context) {
 	appDomain := os.Getenv("APP_DOMAIN")
 	refreshToken, err := c.Cookie("refresh_token")
@@ -383,6 +403,15 @@ func (a *AuthHandler) refresh(c *gin.Context) {
 	}
 }
 
+// Logout godoc
+// @Summary Logout user
+// @Description Logout user by clearing the refresh token cookie
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Success 200 {object} types.SuccessResponse{data=interface{}}
+// @Failure 500 {object} types.ErrorResponse
+// @Router /auth/logout [get]	
 func (a *AuthHandler) logout(c *gin.Context) {
 	appDomain := os.Getenv("APP_DOMAIN")
 
