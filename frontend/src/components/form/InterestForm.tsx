@@ -21,10 +21,12 @@ import api from "@/lib/axios";
 import { Category } from "@/interface/Category";
 import axios from "axios";
 import { useNavigate } from "react-router";
+import { useAuth } from "../provider/AuthProvider";
 
 export default function InterestForm() {
   const [categoryTypes, setCategoryTypes] = useState<CategoryType[]>([]);
   const nav = useNavigate();
+  const { user, login } = useAuth();
 
   const form = useForm({
     resolver: zodResolver(InterestSchema),
@@ -77,8 +79,15 @@ export default function InterestForm() {
     console.log(data.interests);
     try {
       const res = await api.put("/user/interest", formData);
+      console.log(res);
       if (res.status === 200) {
         toast.success("Interests updated successfully!");
+
+        if (user?.firstTimeLogin) {
+          const { accessToken, user: updatedUser } = res.data.data;
+          login(updatedUser, accessToken);
+        }
+
         nav("/");
       } else {
         toast.error(`Error: ${res.data.error}`);

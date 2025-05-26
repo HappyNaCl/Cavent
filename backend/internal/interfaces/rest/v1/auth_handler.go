@@ -281,7 +281,7 @@ func (a *AuthHandler) checkMe(c *gin.Context){
 	}
 
 	command := &command.GetBriefUserCommand{
-		UserID: userId.(string),
+		UserId: userId.(string),
 	}
 
 	res, err := a.userService.GetBriefUser(command)
@@ -365,7 +365,7 @@ func (a *AuthHandler) refresh(c *gin.Context) {
 		}
 
 		res, err := a.userService.GetBriefUser(&command.GetBriefUserCommand{
-			UserID: userId,
+			UserId: userId,
 		})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, &types.ErrorResponse{

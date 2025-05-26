@@ -51,6 +51,11 @@ func (u *UserGormRepo) UpdateUserInterests(userId string, interestIds []string) 
 		return err
 	}
 
+	user.FirstTimeLogin = false
+	if err := u.db.Model(&user).Update("first_time_login", false).Error; err != nil {
+		return err
+	}
+
 	return nil
 }
 

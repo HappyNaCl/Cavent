@@ -21,7 +21,7 @@ func NewUserService(db *gorm.DB, redis *redis.Client) *UserService {
 }
 
 func (us *UserService) GetBriefUser(com *command.GetBriefUserCommand) (*command.GetBriefUserCommandResult, error) {
-	user, err := us.userRepo.GetBriefUser(com.UserID)
+	user, err := us.userRepo.GetBriefUser(com.UserId)
 	if err != nil {
 		return nil, err
 	}

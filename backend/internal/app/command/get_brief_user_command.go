@@ -5,7 +5,7 @@ import (
 )
 
 type GetBriefUserCommand struct {
-	UserID string
+	UserId string
 }
 
 type GetBriefUserCommandResult struct {

@@ -6,6 +6,7 @@ import (
 	"github.com/HappyNaCl/Cavent/backend/internal/app/command"
 	"github.com/HappyNaCl/Cavent/backend/internal/app/service"
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/errors"
+	"github.com/HappyNaCl/Cavent/backend/internal/domain/factory"
 	"github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1/dto/request"
 	"github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1/types"
 	"github.com/gin-gonic/gin"
@@ -66,10 +67,51 @@ func (u UserHandler) UpdateUserInterest(c *gin.Context) {
 		return
 	}
 
+	var token string
+
+	firstTimeLogin, exists := c.Get("firstTimeLogin")
+	if exists && firstTimeLogin.(bool) {
+		id, _ := c.Get("sub")
+        email, _ := c.Get("email")
+		role, _ := c.Get("role")
+
+
+		accessTokenFactory := factory.NewAccessTokenFactory()
+		token, err = accessTokenFactory.GetAccessToken(id.(string), email.(string), role.(string), false)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, types.ErrorResponse{
+				Error: err.Error(),
+			})
+			return
+		}
+
+		userId, _ := c.Get("sub")
+		user, err := u.userService.GetBriefUser(&command.GetBriefUserCommand{
+			UserId: userId.(string),
+		})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, types.ErrorResponse{
+				Error: err.Error(),
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, types.SuccessResponse{
+			Message: "success",
+			Data: gin.H{
+				"accessToken": token,
+				"user":        user.Result,
+			},
+		})
+		return
+	}
+	
+
 	c.JSON(http.StatusOK, types.SuccessResponse{
 		Message: "success",
 		Data:    nil,
 	})
+	return
 }
 
 func (u UserHandler) GetUserInterests(c *gin.Context) {
