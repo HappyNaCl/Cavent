@@ -6,8 +6,11 @@ import LoginForm from "@/components/form/LoginForm";
 import RegisterForm from "@/components/form/RegisterForm";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
+import { useUnauthGuard } from "@/lib/hook/useUnauthGuard";
 
 export default function AuthPage() {
+  useUnauthGuard();
+
   const [isLogin, setIsLogin] = useState(true);
 
   const toggleForm = () => {

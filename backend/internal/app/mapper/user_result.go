@@ -22,11 +22,15 @@ func NewUserResultFromUser(user *model.User) *common.UserResult {
 		Id:             user.Id,
 		CampusId:       user.CampusId,
 		Provider:       user.Provider,
-		ProviderId:     user.ProviderId,
 		Email:          user.Email,
 		Name:           user.Name,
 		AvatarUrl:      user.AvatarUrl,
 		Description:    user.Description,
 		Role:           user.Role,
+		PhoneNumber:    user.PhoneNumber,
+		Address:        user.Address,
+		CreatedAt:    	user.CreatedAt,
+		UpdatedAt:     	user.UpdatedAt,
+		FirstTimeLogin: user.FirstTimeLogin,
 	}
 }

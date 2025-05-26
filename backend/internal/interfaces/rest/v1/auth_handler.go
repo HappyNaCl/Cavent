@@ -2,8 +2,11 @@ package v1
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/HappyNaCl/Cavent/backend/internal/app/command"
 	"github.com/HappyNaCl/Cavent/backend/internal/app/service"
@@ -12,18 +15,22 @@ import (
 	"github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1/dto/response"
 	"github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1/types"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/markbates/goth/gothic"
 	"github.com/redis/go-redis/v9"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 type AuthHandler struct {
 	authService *service.AuthService
+	userService *service.UserService
 }
 
 func NewAuthRoute(db *gorm.DB, redis *redis.Client) types.Route {
 	return &AuthHandler{
 		authService: service.NewAuthService(db, redis),
+		userService: service.NewUserService(db, redis),
 	}
 }
 
@@ -33,6 +40,12 @@ func (a *AuthHandler) SetupRoutes(v1 *gin.RouterGroup) {
 
 	v1.GET("/auth/:provider", a.loginOAuthUser)
 	v1.GET("/auth/:provider/callback", a.handleOAuthCallback)
+
+	v1.GET("/auth/refresh", a.refresh)
+
+	v1.Use(AuthMiddleware())
+	v1.GET("/auth/me", a.checkMe)
+	v1.GET("/auth/logout", a.logout)
 }
 
 // RegisterUser godoc
@@ -57,6 +70,10 @@ func (a *AuthHandler) registerUser(c *gin.Context) {
 		c.Abort()
 		return
 	}
+
+	req.Email = strings.TrimSpace(req.Email)
+	req.Email = strings.ToLower(req.Email)
+	req.Name = strings.TrimSpace(req.Name)
 
 	res, err := a.authService.RegisterUser(req.ToCommand())
 	if err != nil {
@@ -90,7 +107,7 @@ func (a *AuthHandler) registerUser(c *gin.Context) {
 
 	c.SetCookie("refresh_token", refreshToken, 3600*24, "/", appDomain, false, true)
 
-	c.JSON(http.StatusOK, &types.SuccessResponse{
+	c.JSON(http.StatusCreated, &types.SuccessResponse{
 		Message: "success",
 		Data: &response.RegisterResponse{
 			AccessToken:  accessToken,
@@ -243,5 +260,138 @@ func (a *AuthHandler) handleOAuthCallback(c *gin.Context) {
 		Data: &response.LoginResponse{
 			AccessToken:  accessToken,
 		},
+	})
+}
+
+func (a *AuthHandler) checkMe(c *gin.Context){
+	userId, ok := c.Get("sub")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, &types.ErrorResponse{
+			Error: "unauthorized3",
+		})
+		c.Abort()
+		return
+	}
+
+	command := &command.GetBriefUserCommand{
+		UserID: userId.(string),
+	}
+
+	res, err := a.userService.GetBriefUser(command)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, &types.ErrorResponse{
+			Error: err.Error(),
+		})
+		return
+	}
+
+	user := res.Result
+	c.JSON(http.StatusOK, &types.SuccessResponse{
+		Message: "success",
+		Data: &response.CheckMeResponse{
+			User: user,
+		},
+	})
+}
+
+func (a *AuthHandler) refresh(c *gin.Context) {
+	appDomain := os.Getenv("APP_DOMAIN")
+	refreshToken, err := c.Cookie("refresh_token")
+	if err != nil || refreshToken == "" {
+		c.JSON(http.StatusUnauthorized, &types.ErrorResponse{
+			Error: "unauthorized",
+		})
+		return
+	}
+
+	token, err := jwt.Parse(refreshToken, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
+		return []byte(os.Getenv("REFRESH_JWT_SECRET")), nil
+		},
+	)
+
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, &types.ErrorResponse{
+			Error: "invalid or expired refresh token",
+		})
+		return
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		userId, ok := claims["sub"].(string)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, &types.ErrorResponse{
+				Error: "invalid user ID in refresh token",
+			})
+			return
+		}
+
+		exp, ok := claims["exp"].(float64)
+		if !ok || exp < float64(time.Now().Unix()) {
+			zap.L().Sugar().Debugf("%d %d", exp, time.Now().Unix())
+			c.JSON(http.StatusUnauthorized, &types.ErrorResponse{
+				Error: "refresh token expired",
+			})
+			return
+		}
+
+		refreshTokenFactory := factory.NewRefreshTokenFactory()
+		newRefreshToken, err := refreshTokenFactory.GetRefreshToken(userId)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, &types.ErrorResponse{
+				Error: err.Error(),
+			})
+			return
+		}
+
+		res, err := a.userService.GetBriefUser(&command.GetBriefUserCommand{
+			UserID: userId,
+		})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, &types.ErrorResponse{
+				Error: err.Error(),
+			})
+			return
+		}
+
+		userResult := res.Result
+
+		accessTokenFactory := factory.NewAccessTokenFactory()
+		newAccessToken, err := accessTokenFactory.GetAccessToken(userResult.Id, userResult.Email, userResult.Name, userResult.FirstTimeLogin)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, &types.ErrorResponse{
+				Error: err.Error(),
+			})
+			return
+		}
+
+
+		expireTime := 3600 * 24 * 30 // 30 days
+
+		c.SetCookie("refresh_token", newRefreshToken, expireTime, "/", appDomain, false, true)
+		c.JSON(http.StatusOK, &types.SuccessResponse{
+			Message: "success",
+			Data: &response.RefreshResponse{
+				AccessToken:  newAccessToken,
+			},
+		})
+	} else {
+		c.SetCookie("refresh_token", "", -1, "/", appDomain, false, true)
+		c.JSON(http.StatusUnauthorized, &types.ErrorResponse{
+			Error: "invalid refresh token",
+		})
+	}
+}
+
+func (a *AuthHandler) logout(c *gin.Context) {
+	appDomain := os.Getenv("APP_DOMAIN")
+
+	c.SetCookie("refresh_token", "", -1, "/", appDomain, false, true)
+	c.JSON(http.StatusOK, &types.SuccessResponse{
+		Message: "success",
+		Data: nil,
 	})
 }

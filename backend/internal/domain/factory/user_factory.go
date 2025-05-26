@@ -20,13 +20,13 @@ func (u *UserFactory) GetOAuthUser(provider string, providerId string, name stri
 	}
 
 	return &model.User{
-		Id: uuid.New(),
+		Id: providerId,
 		Provider: provider,
-		ProviderId: providerId,
 		Name: name,
 		Email: email,
 		Password: string(hash),
 		AvatarUrl: avatarUrl,
+		FirstTimeLogin: true,
 	}
 }
 
@@ -38,11 +38,12 @@ func (u *UserFactory) GetUser(name string, email string, password string) *model
 	}
 
 	return &model.User{
-		Id: uuid.New(),
+		Id: uuid.New().String(),
 		Provider: "credential",
 		Name: name,
 		Email: email,
 		Password: string(hash),
 		AvatarUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4YreOWfDX3kK-QLAbAL4ufCPc84ol2MA8Xg&s",
+		FirstTimeLogin: true,
 	}
 }

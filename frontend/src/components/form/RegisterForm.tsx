@@ -34,18 +34,18 @@ export default function RegisterForm() {
 
   const onSubmit = async (data: z.infer<typeof registerSchema>) => {
     const formData = new FormData();
-    formData.append("email", data.email.toLowerCase());
-    formData.append("password", data.password);
-    formData.append("name", data.fullName);
-    formData.append("confirmPassword", data.confirmPassword);
+    formData.append("email", data.email.trim().toLowerCase());
+    formData.append("password", data.password.trim());
+    formData.append("name", data.fullName.trim());
+    formData.append("confirmPassword", data.confirmPassword.trim());
 
     try {
       const res = await api.post("/auth/register", formData, {
         withCredentials: true,
-      })
+      });
 
       if (res.status === 201) {
-        const { accessToken, user } = res.data;
+        const { accessToken, user } = res.data.data;
         login(user, accessToken);
         toast.success("Registration successful!");
         nav("/");

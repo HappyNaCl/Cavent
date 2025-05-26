@@ -18,6 +18,7 @@ import { useAuth } from "../provider/AuthProvider";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import api from "@/lib/axios";
+import axios from "axios";
 
 export default function LoginForm() {
   const { login } = useAuth();
@@ -34,7 +35,7 @@ export default function LoginForm() {
 
   const onSubmit = async (data: z.infer<typeof loginSchema>) => {
     const formData = new FormData();
-    formData.append("email", data.email);
+    formData.append("email", data.email.toLowerCase().trim());
     formData.append("password", data.password);
     formData.append("rememberMe", String(data.rememberMe));
 
@@ -44,13 +45,17 @@ export default function LoginForm() {
       });
 
       if (res.status === 200) {
-        const { accessToken, user } = res.data;
+        const { accessToken, user } = res.data.data;
         login(user, accessToken);
         toast.success("Login successful!");
         nav("/");
       }
     } catch (error) {
-      toast.error(`Error: ${error}`);
+      if (axios.isAxiosError(error)) {
+        toast.error(
+          `Error: ${error.response?.data?.error || "An error occurred"}`
+        );
+      }
     }
   };
 

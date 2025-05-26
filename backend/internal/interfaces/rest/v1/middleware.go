@@ -13,22 +13,22 @@ func AuthMiddleware() gin.HandlerFunc{
 	return func(c *gin.Context) {
 		jwtSecret := []byte(os.Getenv("ACCESS_JWT_SECRET"))
 		tokenString := c.Request.Header.Get("Authorization")
-		tokenString = tokenString[len("Bearer "):]
 		if tokenString == "" {
 			c.JSON(http.StatusUnauthorized, &types.ErrorResponse{
-				Error: "unauthorized",
+				Error: "unauthorized1",
 			})
 			c.Abort()
 			return
 		}
 
+		tokenString = tokenString[len("Bearer "):]
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error){
 			return jwtSecret, nil
 		})
 
 		if err != nil  || !token.Valid {
 			c.JSON(http.StatusUnauthorized,  &types.ErrorResponse{
-				Error: "unauthorized",
+				Error: "unauthorized2",
 			})
 			c.Abort()
 			return
@@ -55,10 +55,10 @@ func AuthMiddleware() gin.HandlerFunc{
 
 func UnauthMiddleware() gin.HandlerFunc{
 	return func(c *gin.Context){
-		token, err := c.Cookie("token")
-		tokenString := token[len("Bearer "):]
+		tokenString := c.Request.Header.Get("Authorization")
+		tokenString = tokenString[len("Bearer "):]
 		
-		if err == nil && tokenString != "" {
+		if tokenString != "" {
 			c.JSON(http.StatusConflict,  &types.ErrorResponse{
 				Error: "already logged in",
 			})

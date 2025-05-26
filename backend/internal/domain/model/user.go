@@ -7,11 +7,10 @@ import (
 )
 
 type User struct {
-    Id              uuid.UUID `gorm:"type:uuid;primaryKey"`
+    Id              string `gorm:"primaryKey"`
     CampusId        *uuid.UUID `gorm:"type:uuid"`
     Campus          Campus
     Provider        string `json:"provider" gorm:"not null"`
-	ProviderId 	 	string `json:"providerId" gorm:"not null;uniqueIndex"`
     Email           string `json:"email"  gorm:"not null;uniqueIndex"`
     Name            string `json:"name" gorm:"not null"`
     Password        string `json:"-"`

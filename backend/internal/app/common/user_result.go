@@ -8,8 +8,8 @@ import (
 
 
 type UserResult struct {
-	Id          	uuid.UUID `gorm:"type:uuid;primaryKey"`
-    CampusId        *uuid.UUID `gorm:"type:uuid"`
+	Id          	string
+    CampusId        *uuid.UUID
     Provider        string
 	ProviderId 	 	string
     Email           string 
@@ -20,8 +20,8 @@ type UserResult struct {
     Role            string 
     PhoneNumber     *string 
     Address         *string 
-	CreatedAt 		time.Time `json:"createdAt" gorm:"autoCreateTime"`
-	UpdatedAt 		time.Time `json:"updatedAt" gorm:"autoUpdateTime"`
+	CreatedAt 		time.Time
+	UpdatedAt 		time.Time
 }
 
 func (u UserResult) ToBrief() BriefUserResult {
@@ -32,5 +32,7 @@ func (u UserResult) ToBrief() BriefUserResult {
         Name:      u.Name,
         Email:     u.Email,
         AvatarUrl: u.AvatarUrl,
+        FirstTimeLogin: u.FirstTimeLogin,
+        Role:      u.Role,
     }
 }

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 )
 
 type RefreshTokenFactory struct {}
@@ -14,13 +13,13 @@ func NewRefreshTokenFactory() *RefreshTokenFactory {
 	return &RefreshTokenFactory{}
 }
 
-func (f *RefreshTokenFactory) GetRefreshToken(id uuid.UUID) (string, error)  {
+func (f *RefreshTokenFactory) GetRefreshToken(id string) (string, error)  {
 	refreshSecret := os.Getenv("REFRESH_JWT_SECRET")
 
 	claims := jwt.MapClaims{
-		"Sub" : id.String(),
-		"Exp": time.Now().Add(30 * 24 * time.Hour).Unix(),
-		"Iat": time.Now().Unix(),
+		"sub" : id,
+		"exp": time.Now().Add(30 * 24 * time.Hour).Unix(),
+		"iat": time.Now().Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
