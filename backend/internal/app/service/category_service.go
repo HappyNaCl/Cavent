@@ -26,6 +26,6 @@ func (cs *CategoryService) GetAllCategory() (*command.GetCategoriesCommandResult
 	}
 
 	return &command.GetCategoriesCommandResult{
-		CategoryTypes: mapper.NewCategoryResultFromCategoryTypes(categoryTypes),
+		CategoryTypes: mapper.NewCategoryTypeResultFromCategoryTypes(categoryTypes),
 	}, nil
 }

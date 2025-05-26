@@ -6,11 +6,11 @@ import (
 	"gorm.io/gorm"
 )
 
-type CampusRepository struct {
+type CampusGormRepo struct {
 	db    *gorm.DB
 }
 
-func (c *CampusRepository) FindCampusByInviteCode(inviteCode string) (*model.Campus, error) {
+func (c *CampusGormRepo) FindCampusByInviteCode(inviteCode string) (*model.Campus, error) {
 	var campus model.Campus
 
 	err := c.db.Find(&campus).Where("inviteCode = ?", inviteCode).Error
@@ -22,7 +22,7 @@ func (c *CampusRepository) FindCampusByInviteCode(inviteCode string) (*model.Cam
 }
 
 func NewCampusGormRepo(db *gorm.DB) repo.CampusRepository {
-	return &CampusRepository{
+	return &CampusGormRepo{
 		db:    db,
 	}
 }

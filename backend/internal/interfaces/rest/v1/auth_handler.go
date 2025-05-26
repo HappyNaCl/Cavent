@@ -274,7 +274,7 @@ func (a *AuthHandler) checkMe(c *gin.Context){
 	userId, ok := c.Get("sub")
 	if !ok {
 		c.JSON(http.StatusUnauthorized, &types.ErrorResponse{
-			Error: "unauthorized3",
+			Error: "unauthorized",
 		})
 		c.Abort()
 		return

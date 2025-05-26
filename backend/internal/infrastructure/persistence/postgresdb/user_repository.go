@@ -21,6 +21,39 @@ func (u *UserGormRepo) GetBriefUser(userId string) (*model.User, error) {
 	return &user, nil
 }
 
+func (u *UserGormRepo) GetUserInterests(userId string) ([]*model.Category, error) {
+	var user model.User
+	err := u.db.Where("id = ?", userId).Preload("Interests").First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+
+	interests := make([]*model.Category, 0)
+	for _, interest := range user.Interests {
+		interests = append(interests, &interest)
+	}
+
+	return interests, nil
+}
+
+func (u *UserGormRepo) UpdateUserInterests(userId string, interestIds []string) error {
+	var user model.User
+	err := u.db.Where("id = ?", userId).First(&user).Error
+	if err != nil {
+		return err
+	}
+	var interests []model.Category
+	if err := u.db.Where("id IN ?", interestIds).Find(&interests).Error; err != nil {
+		return err
+	}
+
+	if err := u.db.Model(&user).Association("Interests").Replace(interests); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func NewUserGormRepo(db *gorm.DB) repo.UserRepository {
 	return &UserGormRepo{
 		db:    db,

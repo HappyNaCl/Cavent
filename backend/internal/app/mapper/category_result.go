@@ -5,7 +5,7 @@ import (
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/model"
 )
 
-func NewCategoryResultFromCategoryTypes(categoryTypes []*model.CategoryType) []*common.CategoryTypeResult {
+func NewCategoryTypeResultFromCategoryTypes(categoryTypes []*model.CategoryType) []*common.CategoryTypeResult {
 	if categoryTypes == nil {
 		return nil
 	}
@@ -28,4 +28,20 @@ func NewCategoryResultFromCategoryTypes(categoryTypes []*model.CategoryType) []*
 	}
 
 	return categoryTypeResults
+}
+
+func NewCategoriesResultFromCategory(category []*model.Category) []*common.CategoryResult {
+	if category == nil {
+		return nil
+	}
+
+	categoryResults := make([]*common.CategoryResult, 0, len(category))
+	for _, cat := range category {
+		categoryResults = append(categoryResults, &common.CategoryResult{
+			Id:   cat.Id,
+			Name: cat.Name,
+		})
+	}
+
+	return categoryResults
 }

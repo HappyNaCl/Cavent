@@ -7,5 +7,5 @@ import (
 type GetCategoriesCommand struct{}
 
 type GetCategoriesCommandResult struct {
-	CategoryTypes []*common.CategoryTypeResult `json:"category_types"`
+	CategoryTypes []*common.CategoryTypeResult
 }

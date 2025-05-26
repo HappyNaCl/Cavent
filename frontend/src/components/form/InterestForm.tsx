@@ -1,4 +1,3 @@
-import { useAuthGuard } from "@/lib/hook/useAuthGuard";
 import { InterestSchema } from "@/lib/schema/InterestSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -19,30 +18,13 @@ import { Checkbox } from "../ui/checkbox";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import api from "@/lib/axios";
+import { Category } from "@/interface/Category";
+import axios from "axios";
+import { useNavigate } from "react-router";
 
 export default function InterestForm() {
-  const user = useAuthGuard();
   const [categoryTypes, setCategoryTypes] = useState<CategoryType[]>([]);
-
-  async function fetchTagTypes() {
-    try {
-      const res = await api.get("/category");
-      console.log("Tag types fetched:", res.data.data);
-      if (res.status === 200 && res.data.data) {
-        setCategoryTypes(res.data.data);
-      }
-    } catch (error) {
-      toast.error(`Error: ${error}`);
-    }
-  }
-
-  async function fetchCurrentTags() {
-    try {
-      console.log("e");
-    } catch (error) {
-      toast.error(`Error: ${error}`);
-    }
-  }
+  const nav = useNavigate();
 
   const form = useForm({
     resolver: zodResolver(InterestSchema),
@@ -52,22 +34,55 @@ export default function InterestForm() {
   });
 
   useEffect(() => {
+    async function fetchTagTypes() {
+      try {
+        const res = await api.get("/category");
+        console.log("Tag types fetched:", res.data.data);
+        if (res.status === 200 && res.data.data) {
+          setCategoryTypes(res.data.data);
+        }
+      } catch (error) {
+        toast.error(`Error: ${error}`);
+      }
+    }
+
+    async function fetchCurrentTags() {
+      try {
+        const res = await api.get("/user/interest");
+        console.log("Current tags fetched:", res.data.data);
+        if (res.status === 200 && res.data.data) {
+          const { data } = res.data;
+          form.reset({
+            interests: data.map((category: Category) => category.id),
+          });
+        }
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          toast.error(`Error: ${error.response?.data.error || error.message}`);
+        } else {
+          toast.error(`Error: ${error}`);
+        }
+      }
+    }
+
     fetchTagTypes();
     fetchCurrentTags();
-  }, [user]);
+  }, [form]);
 
   const onSubmit = async (data: z.infer<typeof InterestSchema>) => {
     const formData = new FormData();
-    if (user?.id) {
-      formData.append("userId", user.id);
-    } else {
-      console.error("User ID is missing.");
-      return;
-    }
-
-    formData.append("preferences", JSON.stringify(data.interests));
-
+    data.interests.forEach((interest) => {
+      formData.append("categoryIds", interest);
+    });
+    console.log(data.interests);
     try {
+      const res = await api.put("/user/interest", formData);
+      if (res.status === 200) {
+        toast.success("Interests updated successfully!");
+        nav("/");
+      } else {
+        toast.error(`Error: ${res.data.error}`);
+      }
       console.log("Submitting interests:", data.interests);
     } catch (error) {
       toast.error(`Error: ${error}`);

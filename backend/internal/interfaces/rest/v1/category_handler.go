@@ -27,7 +27,9 @@ func NewCategoryHandler(db *gorm.DB, redis *redis.Client) types.Route {
 func (h *CategoryHandler) GetAllCategory(c *gin.Context) {
 	result, err := h.categoryService.GetAllCategory()
 	if err != nil {
-		c.JSON(500, gin.H{"error": "Internal Server Error"})
+		c.JSON(500, types.ErrorResponse{
+			Error: err.Error(),
+		})
 		return
 	}
 

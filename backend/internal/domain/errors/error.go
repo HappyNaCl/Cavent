@@ -3,6 +3,9 @@ package errors
 import "errors"
 
 var (
+	// General Errors
+	ErrMissingFields = errors.New("missing required fields")
+	
 	// Register Errors
 	ErrInvalidEmail = errors.New("invalid email")
 	ErrInvalidInviteCode = errors.New("invalid invite code")
@@ -15,4 +18,7 @@ var (
 
 	// Login Errors
 	ErrInvalidCredentials = errors.New("invalid credentials")
+
+	// Update Interests Errors
+	ErrInterestLength = errors.New("please select at least one interest")
 )
