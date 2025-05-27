@@ -3,7 +3,14 @@ import { z } from "zod";
 export const EventSchema = z
   .object({
     title: z.string().nonempty("Event title is required"),
-    category: z.string().nonempty("Event category is required"),
+    category: z
+      .array(
+        z.object({
+          id: z.string().nonempty("Category ID is required"),
+          name: z.string().nonempty("Category name is required"),
+        })
+      )
+      .min(1, "Event category is required"),
     eventType: z.enum(["single", "recurring"]).default("single").optional(),
     ticketType: z.enum(["ticketed", "free"]).default("ticketed").optional(),
     startDate: z.date().refine(

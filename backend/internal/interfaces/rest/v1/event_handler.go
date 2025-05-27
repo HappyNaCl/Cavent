@@ -13,7 +13,6 @@ import (
 	"github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/hibiken/asynq"
-	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -55,19 +54,31 @@ func (e *EventHandler) CreateEvent(c *gin.Context) {
 	}
 
 	now := time.Now()
+	startTime := time.Unix(req.StartTime, 0)
 
-	if time.Unix(req.StartTime, 0).Before(now) {
+	if startTime.Before(now) {
 		c.JSON(http.StatusBadRequest, &types.ErrorResponse{
-			Error: errors.ErrInvalidStartDate.Error(),
+			Error: errors.ErrInvalidStartTime.Error(),
 		})
 		return
 	}
 
-	if req.EndTime != nil && !time.Unix(*req.EndTime, 0).After(time.Unix(req.StartTime, 0)) {
-		c.JSON(http.StatusBadRequest, &types.ErrorResponse{
-			Error: errors.ErrInvalidEndTime.Error(),
-		})
-		return
+	if req.EndTime != nil {
+		endTime := time.Unix(*req.EndTime, 0)
+		if endTime.Before(startTime) {
+			c.JSON(http.StatusBadRequest, &types.ErrorResponse{
+				Error: errors.ErrInvalidEndTime.Error(),
+			})
+			return
+		}
+
+		if endTime.Day() != startTime.Day() {
+			c.JSON(http.StatusBadRequest, &types.ErrorResponse{
+				Error: errors.ErrEndDateMustBeSameDay.Error(),
+			})
+			return
+		}
+		
 	}
 
 	file, header, err := c.Request.FormFile("banner")
@@ -118,7 +129,6 @@ func (e *EventHandler) CreateEvent(c *gin.Context) {
 	}
 
 	userId, _ := c.Get("sub")
-	zap.L().Sugar().Infof("User ID: %v", userId)
 	com.CreatedById = userId.(string)	
 
 	result, err := e.eventService.CreateEvent(com)

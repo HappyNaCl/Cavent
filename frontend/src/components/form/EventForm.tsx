@@ -44,6 +44,8 @@ import { Textarea } from "../ui/textarea";
 import { LucideCalendarDays, LucideClock, LucideMapPin } from "lucide-react";
 import axios from "axios";
 import api from "@/lib/axios";
+import { Category } from "@/interface/Category";
+import CategorySelector from "../input/CategorySelector";
 
 export const EventForm = () => {
   const [step, setStep] = useState(0);
@@ -62,7 +64,7 @@ export const EventForm = () => {
   const form = useForm<z.infer<typeof EventSchema>>({
     defaultValues: {
       title: "",
-      category: "",
+      category: [],
       startDate: now,
       startTime: format(now, "HH:mm"),
       location: "",
@@ -88,6 +90,14 @@ export const EventForm = () => {
       form.setValue("tickets", undefined);
     }
   }, [watchTicketType, append, form, fields.length]);
+
+  const onCategoryChange = (selectedCategories: Category[]) => {
+    const categoryValues = selectedCategories.map((cat) => ({
+      id: cat.id,
+      name: cat.name,
+    }));
+    form.setValue("category", categoryValues);
+  };
 
   const onSubmit = async (formData: unknown) => {
     const values = form.getValues();
@@ -150,7 +160,7 @@ export const EventForm = () => {
             {index < totalSteps - 1 && (
               <div
                 className={cn(
-                  "w-64 h-0.5",
+                  "lg:w-64 w-32 h-0.5",
                   index < step ? "bg-primary" : "bg-primary/30"
                 )}
               />
@@ -197,31 +207,9 @@ export const EventForm = () => {
                       </FormItem>
                     )}
                   />
-
-                  <FormField
-                    key="category"
-                    control={form.control}
-                    name="category"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Event Category</FormLabel>
-                        <FormControl>
-                          <TextInput
-                            type="text"
-                            id="category"
-                            placeholder="Category"
-                            onChange={field.onChange}
-                            value={field.value}
-                            className="border border-gray-300 rounded-lg px-4 py-6"
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Enter the event's category
-                        </FormDescription>
-                      </FormItem>
-                    )}
-                  />
                 </div>
+
+                <CategorySelector onChange={onCategoryChange} />
 
                 <div className="flex flex-col gap-8">
                   <span className="text-2xl font-bold">Date & Time</span>
