@@ -6,9 +6,26 @@ export const EventSchema = z
     category: z.string().nonempty("Event category is required"),
     eventType: z.enum(["single", "recurring"]).default("single").optional(),
     ticketType: z.enum(["ticketed", "free"]).default("ticketed").optional(),
-    startDate: z.date().refine((date) => date > new Date(), {
-      message: "Start date must be in the future",
-    }),
+    startDate: z.date().refine(
+      (date) => {
+        const now = new Date();
+        const today = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate()
+        );
+        const inputDate = new Date(
+          date.getFullYear(),
+          date.getMonth(),
+          date.getDate()
+        );
+        console.log(today, inputDate);
+        return inputDate >= today;
+      },
+      {
+        message: "Start date must be today or in the future",
+      }
+    ),
     startTime: z.string().nonempty("Start time is required"),
     endTime: z.string().optional(),
     location: z.string().nonempty("Location is required"),
@@ -47,8 +64,16 @@ export const EventDetailsSchema = z.object({
   category: z.string().nonempty("Event category is required"),
   eventType: z.enum(["single", "recurring"]).default("single").optional(),
   ticketType: z.enum(["ticketed", "free"]).default("ticketed").optional(),
-  startDate: z.date().refine((date) => date > new Date(), {
-    message: "Start date must be in the future",
+  startDate: z.date().refine((date) => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const inputDate = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    );
+    console.log(today, inputDate);
+    return inputDate >= today;
   }),
   startTime: z.string().nonempty("Start time is required"),
   endTime: z.string().optional(),

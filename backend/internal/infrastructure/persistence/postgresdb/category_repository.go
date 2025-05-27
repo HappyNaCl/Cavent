@@ -6,11 +6,11 @@ import (
 	"gorm.io/gorm"
 )
 
-type CategoryRepository struct {
+type CategoryGormRepo struct {
 	db *gorm.DB
 }
 
-func (c *CategoryRepository) GetAllCategory() ([]*model.CategoryType, error) {
+func (c *CategoryGormRepo) GetAllCategory() ([]*model.CategoryType, error) {
 	var categoryTypes []*model.CategoryType
 	err := c.db.
 		Preload("Categories", func(db *gorm.DB) *gorm.DB {
@@ -25,8 +25,8 @@ func (c *CategoryRepository) GetAllCategory() ([]*model.CategoryType, error) {
 	return categoryTypes, nil
 }
 
-func NewCategoryRepository(db *gorm.DB) repo.CategoryRepository {
-	return &CategoryRepository{
+func NewCategoryGormRepo(db *gorm.DB) repo.CategoryRepository {
+	return &CategoryGormRepo{
 		db: db,
 	}
 }

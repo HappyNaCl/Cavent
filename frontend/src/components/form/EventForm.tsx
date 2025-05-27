@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/card";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { z } from "zod";
+import { z, ZodError } from "zod";
 import {
   EventBannerSchema,
   EventDetailsSchema,
@@ -100,11 +100,15 @@ export const EventForm = () => {
 
     const result = currentSchema.safeParse(values);
     if (!result.success) {
-      toast.error(result.error.message);
+      const error: ZodError = result.error;
+      toast.error(error.errors[0].message);
       return;
     }
 
     console.log(step);
+    fields.forEach((field) => {
+      console.log(field);
+    });
 
     if (step < totalSteps - 1) {
       setStep(step + 1);
@@ -122,6 +126,8 @@ export const EventForm = () => {
       setStep(step - 1);
     }
   };
+
+  const formValuesForReview = watch();
 
   return (
     <div className="space-y-12 w-full">
@@ -304,7 +310,7 @@ export const EventForm = () => {
                               type="time"
                               value={field.value}
                               onChange={field.onChange}
-                              className="py-6"
+                              className="h-12"
                             />
                             <FormDescription>
                               The event start time
@@ -325,7 +331,7 @@ export const EventForm = () => {
                               type="time"
                               value={field.value}
                               onChange={field.onChange}
-                              className="py-6"
+                              className="h-12"
                             />
                             <FormDescription>
                               The event end time
@@ -651,77 +657,125 @@ export const EventForm = () => {
               </form>
             </Form>
           )}
-
           {step === 3 && (
             <Form {...form}>
+              {" "}
+              {/* Still good to wrap with Form for context if needed */}
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="grid gap-y-4"
+                className="grid gap-y-8" // Increased gap slightly
               >
-                <div className="border-3 border-black rounded-2xl p-10">
-                  <div className="flex flex-col gap-4">
-                    <img
-                      className="w-full h-100 object-cover rounded-lg"
-                      src={URL.createObjectURL(getValues("banner") as File)}
-                      alt=""
-                    />
-                    <div className="flex flex-col gap-14">
-                      <div className="flex flex-col gap-2 py-3">
-                        <span className="font-bold text-5xl">
-                          {getValues("title")}
+                <div className="border-2 border-gray-200 rounded-2xl p-6 md:p-10 shadow-md">
+                  {" "}
+                  {/* Softer border, shadow */}
+                  <div className="flex flex-col gap-6">
+                    {formValuesForReview.banner && ( // Check if banner exists
+                      <img
+                        className="w-full h-auto max-h-[400px] object-cover rounded-lg" // max-h for responsiveness
+                        src={URL.createObjectURL(
+                          formValuesForReview.banner as File
+                        )}
+                        alt={`${formValuesForReview.title || "Event"} banner`}
+                      />
+                    )}
+                    <div className="flex flex-col gap-8 md:gap-10">
+                      {" "}
+                      {/* Adjusted gaps */}
+                      <div className="flex flex-col gap-1 py-3">
+                        <span className="font-bold text-3xl md:text-5xl break-words">
+                          {formValuesForReview.title}
                         </span>
-                        <span className="text-xl text-gray-500">
-                          {getValues("eventType") === "recurring"
+                        <span className="text-lg md:text-xl text-gray-500">
+                          {formValuesForReview.eventType === "recurring"
                             ? "Recurring Event"
                             : "Single Event"}
                         </span>
                       </div>
                       <div className="flex flex-col gap-2">
-                        <span className="text-2xl font-semibold">
+                        <span className="text-xl md:text-2xl font-semibold">
                           Date and Time
                         </span>
-                        <span className="text-xl flex flex-row gap-4 items-center">
-                          <LucideCalendarDays />
-                          {format(getValues("startDate"), "PPP")}
-                        </span>
-                        <span className="text-xl flex flex-row gap-4 items-center">
-                          <LucideClock />
-                          {getValues("startTime")} {"-"}{" "}
-                          {getValues("endTime") === undefined
-                            ? "Done"
-                            : getValues("endTime")}
+                        {formValuesForReview.startDate && (
+                          <span className="text-lg md:text-xl flex flex-row gap-3 items-center">
+                            {" "}
+                            {/* Reduced gap */}
+                            <LucideCalendarDays className="text-primary" />
+                            {format(
+                              new Date(formValuesForReview.startDate),
+                              "PPP"
+                            )}{" "}
+                            {/* Ensure startDate is a Date */}
+                          </span>
+                        )}
+                        <span className="text-lg md:text-xl flex flex-row gap-3 items-center">
+                          <LucideClock className="text-primary" />
+                          {formValuesForReview.startTime || "Not set"}
+                          {formValuesForReview.endTime &&
+                            ` - ${formValuesForReview.endTime}`}
                         </span>
                       </div>
                       <div className="flex flex-col gap-2">
-                        <span className="text-2xl font-semibold">Location</span>
-                        <span className="text-xl flex flex-row gap-4 items-center">
-                          <LucideMapPin />
-                          {getValues("location")}
+                        <span className="text-xl md:text-2xl font-semibold">
+                          Location
+                        </span>
+                        <span className="text-lg md:text-xl flex flex-row gap-3 items-center">
+                          <LucideMapPin className="text-primary" />
+                          {formValuesForReview.location || "Not specified"}
                         </span>
                       </div>
                       <div className="flex flex-col gap-2">
-                        <span className="text-2xl font-semibold">
+                        <span className="text-xl md:text-2xl font-semibold">
                           Event Description
                         </span>
-                        <pre className="text-xl font-sans text-gray-600">
-                          {getValues("description")}
+                        <pre className="text-base md:text-lg font-sans text-gray-700 whitespace-pre-wrap break-words bg-gray-50 p-3 rounded-md">
+                          {" "}
+                          {/* Improved styling */}
+                          {formValuesForReview.description ||
+                            "No description provided."}
                         </pre>
                       </div>
                     </div>
                   </div>
-
-                  {getValues("ticketType") === "ticketed" && (
-                    <div className="flex flex-col gap-4">
-                      <span className="text-xl font-semibold">Ticketing</span>
-                      {fields.map((field) => (
-                        <div key={field.id} className="flex flex-col gap-2">
-                          <span>Ticket Name: {field.name}</span>
-                          <span>Ticket Price: {field.price}</span>
-                          <span>Ticket Quantity: {field.quantity}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  {/* MODIFIED TICKETING DISPLAY */}
+                  {formValuesForReview.ticketType === "ticketed" &&
+                    formValuesForReview.tickets &&
+                    formValuesForReview.tickets.length > 0 && (
+                      <div className="flex flex-col gap-6 mt-8 pt-6 border-t border-gray-200">
+                        {" "}
+                        {/* Added spacing and separator */}
+                        <span className="text-xl md:text-2xl font-semibold">
+                          Ticketing
+                        </span>
+                        {formValuesForReview.tickets.map((ticket, index) => (
+                          <div
+                            // Use the id from the `fields` array for a stable key if available,
+                            // otherwise fallback to index. This assumes `fields` and `formValuesForReview.tickets`
+                            // maintain the same order.
+                            key={fields[index]?.id || `review-ticket-${index}`}
+                            className="p-4 border border-gray-200 rounded-lg shadow-sm bg-white" // Card-like appearance for each ticket
+                          >
+                            <p className="font-medium text-lg">
+                              Ticket:{" "}
+                              <span className="font-normal">
+                                {ticket.name || "Unnamed Ticket"}
+                              </span>
+                            </p>
+                            <p className="text-gray-600">
+                              Price:{" "}
+                              <span className="font-normal">
+                                ${(ticket.price || 0).toFixed(2)}
+                              </span>
+                            </p>
+                            <p className="text-gray-600">
+                              Quantity:{" "}
+                              <span className="font-normal">
+                                {ticket.quantity || 0}
+                              </span>
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                 </div>
                 <div className="flex justify-between">
                   <Button
@@ -734,7 +788,7 @@ export const EventForm = () => {
                     Back
                   </Button>
                   <Button type="submit" size="sm" className="font-medium">
-                    {step === totalSteps - 1 ? "Submit" : "Next"}
+                    Submit Event
                   </Button>
                 </div>
               </form>

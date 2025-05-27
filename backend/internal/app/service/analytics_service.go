@@ -14,7 +14,7 @@ type AnalyticsService struct {
 
 func NewAnalyticsService(db *gorm.DB) *AnalyticsService {
 	return &AnalyticsService{
-		repository: postgresdb.NewAnalyticsRepository(db),
+		repository: postgresdb.NewAnalyticsGormRepo(db),
 	}
 }
 

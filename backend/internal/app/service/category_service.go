@@ -15,7 +15,7 @@ type CategoryService struct {
 
 func NewCategoryService(db *gorm.DB, redis *redis.Client) *CategoryService {
 	return &CategoryService{
-		categoryRepo: postgresdb.NewCategoryRepository(db),
+		categoryRepo: postgresdb.NewCategoryGormRepo(db),
 	}
 }
 
