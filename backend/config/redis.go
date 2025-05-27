@@ -12,6 +12,7 @@ func ConnectRedis() (*redis.Client, error) {
 	url := os.Getenv("REDIS_URL")
 	client := redis.NewClient(&redis.Options{
 		Addr: url,
+		DB: 0,
 	})
 
 	_, err := client.Ping(context.Background()).Result()

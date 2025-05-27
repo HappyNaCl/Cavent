@@ -2,10 +2,12 @@ package main
 
 import (
 	"flag"
+	"os"
 
 	"github.com/HappyNaCl/Cavent/backend/config"
 	migration "github.com/HappyNaCl/Cavent/backend/internal/infrastructure/persistence/postgresdb/migration"
 	seeder "github.com/HappyNaCl/Cavent/backend/internal/infrastructure/persistence/postgresdb/seeder"
+	"github.com/HappyNaCl/Cavent/backend/internal/infrastructure/queue"
 	v1 "github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
@@ -40,6 +42,15 @@ func main(){
 		panic(err)
 	}
 
+
+	redisAddr := os.Getenv("REDIS_URL")
+	// Setup Asynq client
+	_, err = queue.InitClient(redisAddr)
+	if err != nil {
+		panic(err)
+	}
+
+	// Setup Gin router
 	r := v1.Init(db, redis)
     
 	migrate := flag.Bool("migrate", false, "Run migrations")

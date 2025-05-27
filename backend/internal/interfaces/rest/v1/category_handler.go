@@ -15,7 +15,7 @@ type CategoryHandler struct {
 }
 
 func (h *CategoryHandler) SetupRoutes(v1 *gin.RouterGroup) {
-	v1.GET("/category", h.GetAllCategory)
+	v1.GET("/category", h.getAllCategory)
 }
 
 func NewCategoryHandler(db *gorm.DB, redis *redis.Client) types.Route {

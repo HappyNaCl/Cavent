@@ -8,7 +8,7 @@ import (
 
 type Ticket struct {
     Id            uuid.UUID `gorm:"type:uuid;primaryKey"`
-    UserId        uuid.UUID
+    UserId        string
     User          User
     TicketTypeId  uuid.UUID
     TicketType    TicketType

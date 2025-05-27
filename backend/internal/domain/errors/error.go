@@ -5,6 +5,7 @@ import "errors"
 var (
 	// General Errors
 	ErrMissingFields = errors.New("missing required fields")
+	ErrInvalidUUID = errors.New("invalid UUID format")
 	
 	// Register Errors
 	ErrInvalidEmail = errors.New("invalid email")

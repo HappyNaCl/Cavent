@@ -18,7 +18,7 @@ func SetupLogger() *zap.Logger {
 			panic(err)
 		}
 		zap.ReplaceGlobals(logger)
-		return nil
+		return logger
 	}
 	
 	logger, err := zap.NewProduction()
