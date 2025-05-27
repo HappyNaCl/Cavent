@@ -42,12 +42,13 @@ services:
   asynqmon:
     image: hibiken/asynqmon:latest
     container_name: cavent-asynqmon
+    command: ["--redis-addr=redis:6379", "--redis-db=1"]
+    depends_on:
+      - redis
     environment:
       - REDIS_ADDR=redis:6379
     ports:
       - "8081:8080"
-    depends_on:
-      - redis
     networks:
       - network
 

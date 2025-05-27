@@ -42,6 +42,8 @@ import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "../ui/textarea";
 import { LucideCalendarDays, LucideClock, LucideMapPin } from "lucide-react";
+import axios from "axios";
+import api from "@/lib/axios";
 
 export const EventForm = () => {
   const [step, setStep] = useState(0);
@@ -58,7 +60,6 @@ export const EventForm = () => {
   const now = new Date();
 
   const form = useForm<z.infer<typeof EventSchema>>({
-    // resolver: zodResolver(EventSchema),
     defaultValues: {
       title: "",
       category: "",
@@ -78,14 +79,15 @@ export const EventForm = () => {
     name: "tickets",
   });
 
+  const watchTicketType = watch("ticketType");
+
   useEffect(() => {
     if (form.getValues("ticketType") === "ticketed" && fields.length === 0) {
       append({ name: "", price: 0, quantity: 0 });
     } else if (form.getValues("ticketType") === "free") {
       form.setValue("tickets", undefined);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [watch("ticketType")]);
+  }, [watchTicketType, append, form, fields.length]);
 
   const onSubmit = async (formData: unknown) => {
     const values = form.getValues();
@@ -105,17 +107,18 @@ export const EventForm = () => {
       return;
     }
 
-    console.log(step);
-    fields.forEach((field) => {
-      console.log(field);
-    });
-
     if (step < totalSteps - 1) {
       setStep(step + 1);
     } else {
-      console.log(formData);
-      setStep(0);
-      form.reset();
+      try {
+        // const res = await api.post("/event/");
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          toast.error(
+            `Error: ${error.response?.data?.error || "An error occurred"}`
+          );
+        }
+      }
 
       toast.success("Form successfully submitted");
     }

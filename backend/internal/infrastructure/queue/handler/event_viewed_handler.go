@@ -8,6 +8,7 @@ import (
 	"github.com/HappyNaCl/Cavent/backend/internal/app/service"
 	"github.com/HappyNaCl/Cavent/backend/internal/infrastructure/queue/tasks"
 	"github.com/hibiken/asynq"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -22,6 +23,7 @@ func NewEventViewedHandler(db *gorm.DB) *EventViewedHandler {
 }
 
 func (h *EventViewedHandler) Handle(ctx context.Context, task *asynq.Task) error {
+	zap.L().Sugar().Infof("Processing task: %s", task.Type())
 	var payload tasks.EventViewPayload
 
 	if err := json.Unmarshal(task.Payload(), &payload); err != nil {

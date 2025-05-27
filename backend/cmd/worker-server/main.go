@@ -26,5 +26,7 @@ func main() {
 	redisAddr := os.Getenv("REDIS_URL")
 	
 	eventViewHandler := handler.NewEventViewedHandler(db)
-	queue.StartWorker(redisAddr, eventViewHandler)
+	imageUploadHandler := handler.NewImageUploadHandler()
+
+	queue.StartWorker(redisAddr, eventViewHandler, imageUploadHandler)
 }

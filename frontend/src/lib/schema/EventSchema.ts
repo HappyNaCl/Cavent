@@ -19,7 +19,7 @@ export const EventSchema = z
           date.getMonth(),
           date.getDate()
         );
-        console.log(today, inputDate);
+
         return inputDate >= today;
       },
       {

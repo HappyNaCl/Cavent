@@ -34,4 +34,11 @@ var (
 	ErrInvalidBannerFormat = errors.New("banner image must be a valid image format (jpg, jpeg, png, gif)")
 	ErrInvalidTicketPrice = errors.New("ticket price must be a positive integer")
 	ErrInvalidTicketQuantity = errors.New("ticket quantity must be more than or equal to 1")
+
+
+	// Supabase Errors 
+	ErrSupabaseRequestFailed = errors.New("supabase request failed")
+	ErrSupabaseBucketMissing = errors.New("missing SUPABASE_BUCKET environment variable")
+	ErrSupabaseUrlMissing = errors.New("missing SUPABASE_URL environment variable")
+	ErrSupabaseKeyMissing  = errors.New("missing SUPABASE_KEY environment variable")	
 )

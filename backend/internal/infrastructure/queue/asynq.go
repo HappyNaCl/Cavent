@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/HappyNaCl/Cavent/backend/internal/infrastructure/queue/handler"
+	"github.com/HappyNaCl/Cavent/backend/internal/infrastructure/queue/tasks"
 	"github.com/hibiken/asynq"
 )
 
@@ -17,9 +18,8 @@ func NewServer(redisAddr string) *asynq.Server {
 			Concurrency: 10,
 			StrictPriority: true,
 			Queues: map[string]int{
-				"default": 10,
-				"critical": 3,
-				"low": 1,
+				tasks.TypeEventView: 10,
+				tasks.TypeImageUpload: 5,
 			},
 			RetryDelayFunc: func(n int, err error, t *asynq.Task) time.Duration {
 				return time.Duration(n) * time.Second
@@ -28,10 +28,11 @@ func NewServer(redisAddr string) *asynq.Server {
 	)
 }
 
-func StartWorker(redisAddr string, eventView *handler.EventViewedHandler){
+func StartWorker(redisAddr string, eventView *handler.EventViewedHandler, imageUpload *handler.ImageUploadHandler){
 	srv := NewServer(redisAddr)
 	mux := asynq.NewServeMux()
-	mux.HandleFunc("event_viewed", eventView.Handle)
+	mux.HandleFunc(tasks.TypeEventView, eventView.Handle)
+	mux.HandleFunc(tasks.TypeImageUpload, imageUpload.Handle)
 
 	if err := srv.Run(mux); err != nil {
 		panic(err)

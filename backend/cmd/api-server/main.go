@@ -45,13 +45,13 @@ func main(){
 
 	redisAddr := os.Getenv("REDIS_URL")
 	// Setup Asynq client
-	_, err = queue.InitClient(redisAddr)
+	client, err := queue.InitClient(redisAddr)
 	if err != nil {
 		panic(err)
 	}
 
 	// Setup Gin router
-	r := v1.Init(db, redis)
+	r := v1.Init(db, redis, client)
     
 	migrate := flag.Bool("migrate", false, "Run migrations")
 	seed := flag.Bool("seed", false, "Run seeders")
