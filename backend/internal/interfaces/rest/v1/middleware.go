@@ -3,6 +3,7 @@ package v1
 import (
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1/types"
 	"github.com/gin-gonic/gin"
@@ -15,7 +16,7 @@ func AuthMiddleware() gin.HandlerFunc{
 		tokenString := c.Request.Header.Get("Authorization")
 		if tokenString == "" {
 			c.JSON(http.StatusUnauthorized, &types.ErrorResponse{
-				Error: "unauthorized1",
+				Error: "unauthorized",
 			})
 			c.Abort()
 			return
@@ -28,7 +29,7 @@ func AuthMiddleware() gin.HandlerFunc{
 
 		if err != nil  || !token.Valid {
 			c.JSON(http.StatusUnauthorized,  &types.ErrorResponse{
-				Error: "unauthorized2",
+				Error: "unauthorized",
 			})
 			c.Abort()
 			return
@@ -38,6 +39,25 @@ func AuthMiddleware() gin.HandlerFunc{
 		if !ok {
 			c.JSON(http.StatusUnauthorized,  &types.ErrorResponse{
 				Error: "invalid claims",
+			})
+			c.Abort()
+			return
+		}
+
+		expFloat, ok := claims["exp"].(float64)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, &types.ErrorResponse{
+				Error: "invalid exp claim",
+			})
+			c.Abort()
+			return
+		}
+		exp := int64(expFloat)
+		now := time.Now().Unix()
+
+		if now > exp {
+			c.JSON(http.StatusUnauthorized, &types.ErrorResponse{
+				Error: "token expired",
 			})
 			c.Abort()
 			return

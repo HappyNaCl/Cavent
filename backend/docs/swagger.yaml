@@ -19,6 +19,24 @@ definitions:
       role:
         type: string
     type: object
+  common.CategoryResult:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  common.CategoryTypeResult:
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/common.CategoryResult'
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+    type: object
   request.LoginRequest:
     properties:
       email:
@@ -48,6 +66,17 @@ definitions:
     - email
     - name
     - password
+    type: object
+  request.UpdateUserInterestRequest:
+    properties:
+      categoryIds:
+        items:
+          type: string
+        type: array
+      userId:
+        type: string
+    required:
+    - categoryIds
     type: object
   response.CheckMeResponse:
     properties:
@@ -118,7 +147,7 @@ paths:
             $ref: '#/definitions/types.ErrorResponse'
       summary: Login a user with OAuth
       tags:
-      - auth
+      - Auth
   /auth/{provider}/callback:
     get:
       consumes:
@@ -147,7 +176,7 @@ paths:
             $ref: '#/definitions/types.ErrorResponse'
       summary: OAuth Callback
       tags:
-      - auth
+      - Auth
   /auth/login:
     post:
       consumes:
@@ -182,12 +211,18 @@ paths:
             $ref: '#/definitions/types.ErrorResponse'
       summary: Login a user
       tags:
-      - auth
+      - Auth
   /auth/logout:
     get:
       consumes:
       - application/json
       description: Logout user by clearing the refresh token cookie
+      parameters:
+      - description: Bearer token for authentication
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -203,14 +238,22 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Logout user
       tags:
-      - auth
+      - Auth
   /auth/me:
     get:
       consumes:
       - application/json
       description: Get the current user's information
+      parameters:
+      - description: Bearer token for authentication
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -231,14 +274,22 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Check current user
       tags:
-      - auth
+      - Auth
   /auth/refresh:
     get:
       consumes:
       - application/json
       description: Refresh the access token using the refresh token
+      parameters:
+      - description: Bearer token for authentication
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -259,9 +310,11 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Refresh access token
       tags:
-      - auth
+      - Auth
   /auth/register:
     post:
       consumes:
@@ -296,5 +349,106 @@ paths:
             $ref: '#/definitions/types.ErrorResponse'
       summary: Register a new user
       tags:
-      - auth
+      - Auth
+  /category:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all categories
+      parameters:
+      - description: Bearer token for authentication
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/types.SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/common.CategoryTypeResult'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all categories
+      tags:
+      - Category
+  /user/interest:
+    get:
+      consumes:
+      - application/json
+      description: Get user interests
+      parameters:
+      - description: Bearer token for authentication
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user interests
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      description: Update user interests
+      parameters:
+      - description: Bearer token for authentication
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Update user interests request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateUserInterestRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update user interests
+      tags:
+      - User
 swagger: "2.0"

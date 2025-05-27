@@ -51,7 +51,7 @@ func (a *AuthHandler) SetupRoutes(v1 *gin.RouterGroup) {
 // RegisterUser godoc
 // @Summary Register a new user
 // @Description Register a new user with name, email, and password
-// @Tags auth
+// @Tags Auth
 // @Accept json
 // @Produce json
 // @Param request body request.RegisterRequest true "Register Request"
@@ -119,7 +119,7 @@ func (a *AuthHandler) registerUser(c *gin.Context) {
 // LoginUser godoc
 // @Summary Login a user
 // @Description Login a user with email and password
-// @Tags auth
+// @Tags Auth
 // @Accept json
 // @Produce json
 // @Param request body request.LoginRequest true "Login Request"
@@ -185,7 +185,7 @@ func (a *AuthHandler) loginUser(c *gin.Context) {
 // LoginOAuthUser godoc
 // @Summary Login a user with OAuth
 // @Description Login a user with OAuth provider
-// @Tags auth
+// @Tags Auth
 // @Accept json
 // @Produce json
 // @Param provider path string true "OAuth Provider" Enums(google, github, etc.)
@@ -202,7 +202,7 @@ func (a *AuthHandler) loginOAuthUser(c *gin.Context) {
 // OAuthCallback godoc
 // @Summary OAuth Callback
 // @Description Handle OAuth callback after user authentication
-// @Tags auth
+// @Tags Auth
 // @Accept json
 // @Produce json
 // @Param provider path string true "OAuth Provider" Enums(google, github, etc.)
@@ -263,13 +263,15 @@ func (a *AuthHandler) handleOAuthCallback(c *gin.Context) {
 // CheckMe godoc
 // @Summary Check current user
 // @Description Get the current user's information
-// @Tags auth
+// @Tags Auth
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Bearer token for authentication"
 // @Success 200 {object} types.SuccessResponse{data=response.CheckMeResponse}
 // @Failure 401 {object} types.ErrorResponse
 // @Failure 500 {object} types.ErrorResponse
 // @Router /auth/me [get]
+// @Security     BearerAuth
 func (a *AuthHandler) checkMe(c *gin.Context){
 	userId, ok := c.Get("sub")
 	if !ok {
@@ -304,13 +306,15 @@ func (a *AuthHandler) checkMe(c *gin.Context){
 // Refresh godoc
 // @Summary Refresh access token
 // @Description Refresh the access token using the refresh token
-// @Tags auth
+// @Tags Auth
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Bearer token for authentication"
 // @Success 200 {object} types.SuccessResponse{data=response.RefreshResponse}
 // @Failure 401 {object} types.ErrorResponse
 // @Failure 500 {object} types.ErrorResponse
 // @Router /auth/refresh [get]
+// @Security     BearerAuth
 func (a *AuthHandler) refresh(c *gin.Context) {
 	appDomain := os.Getenv("APP_DOMAIN")
 	refreshToken, err := c.Cookie("refresh_token")
@@ -406,12 +410,14 @@ func (a *AuthHandler) refresh(c *gin.Context) {
 // Logout godoc
 // @Summary Logout user
 // @Description Logout user by clearing the refresh token cookie
-// @Tags auth
+// @Tags Auth
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Bearer token for authentication"
 // @Success 200 {object} types.SuccessResponse{data=interface{}}
 // @Failure 500 {object} types.ErrorResponse
 // @Router /auth/logout [get]	
+// @Security     BearerAuth
 func (a *AuthHandler) logout(c *gin.Context) {
 	appDomain := os.Getenv("APP_DOMAIN")
 
