@@ -12,7 +12,10 @@ type EventGormRepo struct {
 
 // CreateEvent implements repo.EventRepository.
 func (e *EventGormRepo) CreateEvent(event *model.Event) (*model.Event, error) {
-	panic("unimplemented")
+	if err := e.db.Create(event).Error; err != nil {
+		return nil, err
+	}
+	return event, nil
 }
 
 func NewEventGormRepo(db *gorm.DB) repo.EventRepository {

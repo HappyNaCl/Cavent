@@ -1,8 +1,10 @@
 package postgresdb
 
 import (
+	"github.com/HappyNaCl/Cavent/backend/internal/domain/errors"
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/model"
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/repo"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -57,6 +59,20 @@ func (u *UserGormRepo) UpdateUserInterests(userId string, interestIds []string) 
 	}
 
 	return nil
+}
+
+func (u *UserGormRepo) GetCampusId(userId string) (*uuid.UUID, error) {
+	var user model.User
+	err := u.db.Model(&model.User{}).Select("campus_id").Where("id = ?", userId).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+
+	if user.CampusId == nil {
+		return nil, errors.ErrUserNotInCampus
+	}
+	
+	return user.CampusId, nil
 }
 
 func NewUserGormRepo(db *gorm.DB) repo.UserRepository {

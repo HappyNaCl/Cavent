@@ -17,12 +17,14 @@ import (
 
 type EventService struct {
 	eventRepo repo.EventRepository
+	userRepo repo.UserRepository
 	asynqClient *asynq.Client
 }
 
 func NewEventService(db *gorm.DB, client *asynq.Client) *EventService {
 	return &EventService{
 		eventRepo: postgresdb.NewEventGormRepo(db),
+		userRepo: postgresdb.NewUserGormRepo(db),
 		asynqClient: client,
 	}
 }
@@ -35,7 +37,7 @@ func (e EventService) CreateEvent(com *command.CreateEventCommand) (*command.Cre
 		return nil, err
 	}
 
-	_, err = e.asynqClient.Enqueue(asynqTask, asynq.MaxRetry(5), asynq.Queue(tasks.TypeImageUpload))
+	_, err = e.asynqClient.Enqueue(asynqTask, asynq.MaxRetry(5), asynq.Queue(tasks.TypeImageUpload), )
 	if err != nil {
 		return nil, err
 	}
@@ -64,6 +66,12 @@ func (e EventService) CreateEvent(com *command.CreateEventCommand) (*command.Cre
 	if com.EndTime != nil {
 		event.EndTime = com.EndTime
 	} 
+
+	campusId, err := e.userRepo.GetCampusId(com.CreatedById)
+	if err != nil {
+		return nil, err
+	}
+	event.CampusId = *campusId
 
 	eventModel, err := e.eventRepo.CreateEvent(event)
 	if err != nil {

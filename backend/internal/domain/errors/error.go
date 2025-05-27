@@ -34,7 +34,7 @@ var (
 	ErrInvalidBannerFormat = errors.New("banner image must be a valid image format (jpg, jpeg, png, gif)")
 	ErrInvalidTicketPrice = errors.New("ticket price must be a positive integer")
 	ErrInvalidTicketQuantity = errors.New("ticket quantity must be more than or equal to 1")
-
+	ErrUserNotInCampus = errors.New("user does not belong to a campus")
 
 	// Supabase Errors 
 	ErrSupabaseRequestFailed = errors.New("supabase request failed")

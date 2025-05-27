@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 )
 
-
 type UserResult struct {
 	Id          	string
     CampusId        *uuid.UUID

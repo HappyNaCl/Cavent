@@ -22,5 +22,7 @@ func NewEventResultFromEvent(event *model.Event) *common.EventResult {
 		BannerUrl:   event.BannerUrl,
 		EndTime:   	 event.EndTime,
 		Description: event.Description,
+		CreatedAt:   event.CreatedAt,
+		UpdatedAt:   event.UpdatedAt,
 	}
 }

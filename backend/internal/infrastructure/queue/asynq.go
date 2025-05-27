@@ -19,7 +19,7 @@ func NewServer(redisAddr string) *asynq.Server {
 			StrictPriority: true,
 			Queues: map[string]int{
 				tasks.TypeEventView: 10,
-				tasks.TypeImageUpload: 5,
+				tasks.TypeImageUpload: 10,
 			},
 			RetryDelayFunc: func(n int, err error, t *asynq.Task) time.Duration {
 				return time.Duration(n) * time.Second
