@@ -3,6 +3,7 @@ package v1
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/HappyNaCl/Cavent/backend/internal/app/command"
@@ -11,7 +12,7 @@ import (
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/errors"
 	"github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1/dto/request"
 	"github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1/types"
-	"github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1/utils"
+	fileUtils "github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/hibiken/asynq"
 	"gorm.io/gorm"
@@ -23,6 +24,7 @@ type EventHandler struct{
 
 func (e *EventHandler) SetupRoutes(v1 *gin.RouterGroup) {
 	v1.POST("/event", e.CreateEvent)
+	v1.GET("/event", e.GetEvents)
 }
 
 func NewEventHandler(db *gorm.DB, client *asynq.Client) types.Route {
@@ -31,6 +33,25 @@ func NewEventHandler(db *gorm.DB, client *asynq.Client) types.Route {
 	}
 }
 
+// CreateEvent godoc
+// @Summary Create a new event
+// @Description Create a new event with details and optional tickets
+// @Tags Event
+// @Accept multipart/form-data
+// @Produce json
+// @Param title formData string true "Event title"
+// @Param event_type formData string true "Event type (single or recurring)"
+// @Param ticket_type formData string true "Ticket type (ticketed or free)"
+// @Param start_time formData int64 true "Event start time in Unix timestamp"
+// @Param end_time formData int64 false "Event end time in Unix timestamp (optional, must be same day as start time)"
+// @Param location formData string true "Event location"
+// @Param description formData string false "Event description (optional)"
+// @Param banner formData file true "Event banner image"
+// @Param ticket formData string false "JSON string of tickets (optional, required if ticket_type is ticketed)"
+// @Success 201 {object} types.SuccessResponse{data=common.EventResult} "Event created successfully"
+// @Failure 400 {object} types.ErrorResponse "Bad request"
+// @Failure 500 {object} types.ErrorResponse "Internal server error"
+// @Router /v1/event [post]
 func (e *EventHandler) CreateEvent(c *gin.Context) {
 	var req request.CreateEventRequest
 	if err := c.ShouldBind(&req); err != nil {
@@ -91,7 +112,7 @@ func (e *EventHandler) CreateEvent(c *gin.Context) {
 	}
 
 	var tickets []common.TicketResult
-	if req.Ticket != nil  {
+	if req.Ticket != nil && req.TicketType == "ticketed" {
 		if err := json.Unmarshal([]byte(*req.Ticket), &tickets); err != nil {
 			c.JSON(http.StatusBadRequest, &types.ErrorResponse{
 				Error: "invalid ticket format: " + err.Error(),
@@ -100,7 +121,7 @@ func (e *EventHandler) CreateEvent(c *gin.Context) {
 		}
 	}
 
-	fileBytes, fileExt, err := utils.ReadMultipartFile(file, header)
+	fileBytes, fileExt, err := fileUtils.ReadMultipartFile(file, header)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, &types.ErrorResponse{
 			Error: err.Error(),
@@ -153,5 +174,39 @@ func (e *EventHandler) CreateEvent(c *gin.Context) {
 	c.JSON(http.StatusCreated, &types.SuccessResponse{
 		Message: "success",
 		Data: result.Result,
+	})
+}
+
+// GetEvents godoc
+// @Summary Get all events
+// @Description Get a list of events with pagination
+// @Tags Event
+// @Accept json
+// @Produce json
+// @Param limit query int false "Number of events to return (default is 20)"
+// @Success 200 {object} types.SuccessResponse{data=[]common.BriefEventResult} "List of events"
+// @Failure 500 {object} types.ErrorResponse "Internal server error"
+// @Router /v1/event [get]
+func (e *EventHandler) GetEvents(c *gin.Context) {
+	limit := 20
+
+	if limitStr := c.Query("limit"); limitStr != "" {
+		if limitValue, err := strconv.Atoi(limitStr); err == nil && limitValue > 0 {
+			limit = limitValue
+		} 
+	}
+
+
+	events, err := e.eventService.GetEvents(&command.GetEventsCommand{Limit: limit})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, &types.ErrorResponse{
+			Error: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, &types.SuccessResponse{
+		Message: "success",
+		Data: events.Result,
 	})
 }

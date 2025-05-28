@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/HappyNaCl/Cavent/backend/internal/app/command"
+	"github.com/HappyNaCl/Cavent/backend/internal/app/common"
 	"github.com/HappyNaCl/Cavent/backend/internal/app/mapper"
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/factory"
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/repo"
@@ -82,5 +83,21 @@ func (e EventService) CreateEvent(com *command.CreateEventCommand) (*command.Cre
 	eventResult := mapper.NewEventResultFromEvent(eventModel)
 	return &command.CreateEventCommandResult{
 		Result: eventResult,
+	}, nil
+}
+
+func (e EventService) GetEvents(com *command.GetEventsCommand) (*command.GetEventsCommandResult, error) {
+	events, err := e.eventRepo.GetEvents(com.Limit)
+	if err != nil {
+		return nil, err
+	}
+
+	eventResults := make([]*common.BriefEventResult, 0, len(events))
+	for _, event := range events {
+		eventResults = append(eventResults, mapper.NewBriefEventResultFromEvent(event))
+	}
+
+	return &command.GetEventsCommandResult{
+		Result: eventResults,
 	}, nil
 }

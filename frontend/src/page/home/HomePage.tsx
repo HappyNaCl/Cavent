@@ -50,7 +50,7 @@ export default function HomePage() {
   return (
     <div>
       <h1>Hello, {user.name}</h1>
-      <LogoutButton />
+      <section className="flex flex-col w-full "></section>
     </div>
   );
 }
