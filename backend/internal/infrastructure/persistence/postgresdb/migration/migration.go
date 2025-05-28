@@ -12,6 +12,7 @@ func Migrate(db *gorm.DB) error {
         &model.EventView{},
         &model.Ticket{},
         &model.TicketType{},
+        "event_categories",
         &model.Event{},
         &model.Category{},
         &model.CategoryType{},

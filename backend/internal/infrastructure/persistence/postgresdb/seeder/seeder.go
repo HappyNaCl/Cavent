@@ -4,15 +4,36 @@ import (
 	"fmt"
 	"math/rand/v2"
 	"os"
+	"time"
 
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/model"
 	"github.com/google/uuid"
 	"github.com/jaswdr/faker/v2"
 	"go.uber.org/zap"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
+// Entry point for seeding
 func Seed(db *gorm.DB) error {
+	if err := seedTagTypesAndCategories(db); err != nil {
+		return err
+	}
+	if err := seedCampuses(db); err != nil {
+		return err
+	}
+	if err := seedUsers(db); err != nil {
+		return err
+	}
+	if err := seedEvents(db); err != nil {
+		return err
+	}
+
+	zap.L().Sugar().Info("Database seeded successfully!")
+	return nil
+}
+
+func seedTagTypesAndCategories(db *gorm.DB) error {
 	tagData := []struct {
 		TypeName string
 		Tags     []string
@@ -32,118 +53,182 @@ func Seed(db *gorm.DB) error {
 		{"Fashion & Beauty", []string{"Fashion Shows", "Beauty Workshops", "Makeup Classes", "Style Consultations"}},
 	}
 
-	campusLogo := fmt.Sprintf("%s/storage/v1/object/public/%s/assets/binus.png", os.Getenv("SUPABASE_PROJECT_URL"), os.Getenv("SUPABASE_BUCKET_NAME"))
-	campus := &model.Campus{
-		Id: uuid.New(),
-		Name: "Binus University",
-		LogoUrl: campusLogo,
-		Description: "Best University of The West",
-		InviteCode: "AAAAAA",
-	}
-
-	err := db.Create(campus).Error
-	if err != nil {
-		zap.L().Sugar().Fatal("Failed to seed campus!")
-		return err
-	}
-
+	var allCategories []model.Category
 	for _, item := range tagData {
-		if err := seedTagTypeWithTags(db, item.TypeName, item.Tags); err != nil {
-			zap.L().Sugar().Fatalf("Failed to see tag %v", item)
+		tagType := model.CategoryType{
+			Id:   uuid.New(),
+			Name: item.TypeName,
+		}
+		if err := db.Create(&tagType).Error; err != nil {
 			return err
+		}
+
+		for _, tagName := range item.Tags {
+			allCategories = append(allCategories, model.Category{
+				Id:             uuid.New(),
+				Name:           tagName,
+				CategoryTypeId: tagType.Id,
+			})
 		}
 	}
 
-
-	zap.L().Sugar().Info("Database seeded successfully!")
+	if len(allCategories) > 0 {
+		return db.CreateInBatches(&allCategories, 50).Error
+	}
 	return nil
 }
 
-func seedTagTypeWithTags(db *gorm.DB, typeName string, tagNames []string) error {
-	tagType := model.CategoryType{
-		Id:   uuid.New(),
-		Name: typeName,
-	}
+func seedCampuses(db *gorm.DB) error {
+	fake := faker.New()
+	rng := rand.New(rand.NewPCG(0, 0))
 
-	if err := db.Create(&tagType).Error; err != nil {
+	campusLogo := fmt.Sprintf("%s/storage/v1/object/public/%s/assets/binus.png",
+		os.Getenv("SUPABASE_PROJECT_URL"), os.Getenv("SUPABASE_BUCKET_NAME"))
+
+	initialCampus := model.Campus{
+		Id:          uuid.New(),
+		Name:        "Binus University",
+		LogoUrl:     campusLogo,
+		Description: "Best University of The West",
+		InviteCode:  "AAAAAA",
+	}
+	if err := db.Create(&initialCampus).Error; err != nil {
+		zap.L().Sugar().Errorf("Failed to seed main campus: %v", err)
 		return err
 	}
 
-	var tags []model.Category
-	for _, name := range tagNames {
-		tags = append(tags, model.Category{
-			Id:        uuid.New(),
-			Name:      name,
-			CategoryTypeId: tagType.Id,
+	var campuses []model.Campus
+	for i := 0; i < 10; i++ {
+		campuses = append(campuses, model.Campus{
+			Id:          uuid.New(),
+			Name:        fake.Lorem().Sentence(2),
+			LogoUrl:     fmt.Sprintf("https://picsum.photos/id/%d/500/350", rng.IntN(200)),
+			Description: fake.Lorem().Paragraph(2),
+			InviteCode:  fake.RandomLetter() + fake.RandomLetter() + fake.RandomLetter() + fake.RandomLetter() + fake.RandomLetter() + fake.RandomLetter(),
 		})
 	}
 
-	return insertTags(db, tags)
+	return db.CreateInBatches(&campuses, 10).Error
 }
 
-func insertTags(db *gorm.DB, tags []model.Category) error {
-	for _, tag := range tags {
-		if err := db.Create(&tag).Error; err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func seedCampus(db *gorm.DB) error {
-	faker := faker.New()
+func seedUsers(db *gorm.DB) error {
+	fake := faker.New()
 	rng := rand.New(rand.NewPCG(0, 0))
 
+	var campusIds []uuid.UUID
+	if err := db.Model(&model.Campus{}).Pluck("id", &campusIds).Error; err != nil {
+		return err
+	}
 
-	for i := 0; i < 10; i++ {
-		campus := &model.Campus{
-			Id:          uuid.New(),
-			Name:        faker.Lorem().Sentence(2),
-			LogoUrl: 	 fmt.Sprintf(`https://picsum.photos/id/%d/500/350`, rng.IntN(200)),
-			Description: faker.Lorem().Paragraph(2),
-			InviteCode:  faker.RandomLetter() + faker.RandomLetter() + faker.RandomLetter() + faker.RandomLetter() + faker.RandomLetter() + faker.RandomLetter(),
-		}
-		
-		err := db.Create(campus).Error
+	var users []model.User
+	for i := 0; i < 50; i++ {
+		campusId := campusIds[rng.IntN(len(campusIds))]
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte("testing"), bcrypt.DefaultCost)
 		if err != nil {
-			zap.L().Sugar().Errorf("Failed to seed campus: %v", err)
-			return err
+			zap.L().Sugar().Errorf("Failed to hash password: %v", err)	
+			panic(err)
 		}
+
+		users = append(users, model.User{
+			Id:        uuid.NewString(),
+			Provider:  "credential",
+			Name:      fake.Person().Name(),
+			Email:     fake.Internet().Email(),
+			Password:  string(hashedPassword),
+			CampusId:  &campusId,
+			AvatarUrl: fmt.Sprintf("https://picsum.photos/id/%d/200/200", rng.IntN(200)),
+		})
 	}
 
-	return nil
+	return db.CreateInBatches(&users, 20).Error
 }
 
-func seedUser(db *gorm.DB) error {
+func seedEvents(db *gorm.DB) error {
 	fake := faker.New()
+	rng := rand.New(rand.NewPCG(0, 0))
 
-	for i := 0; i < 100; i++ {
-		user := &model.User{
-			Id:       uuid.NewString(),
-			Name:     fake.Person().Name(),
-			Email:    fake.Internet().Email(),
-			Password: fake.Internet().Password(),
-		}
+	var userIds []string
+	var campusIds []uuid.UUID
+	var categories []model.Category
 
-		if err := db.Create(user).Error; err != nil {
-			return err
-		}
+	if err := db.Model(&model.User{}).Pluck("id", &userIds).Error; err != nil {
+		return err
 	}
-
-	return nil
-}
-
-
-func seedEvent(db *gorm.DB) error {
-	fake := faker.New()
+	if err := db.Model(&model.Campus{}).Pluck("id", &campusIds).Error; err != nil {
+		return err
+	}
+	if err := db.Find(&categories).Error; err != nil {
+		return err
+	}
 
 	for i := 0; i < 500; i++ {
-		event := &model.Event{
-			Id:          uuid.New(),
-			Title: fake.Lorem().Sentence(4),
+		startTime := fake.Time().TimeBetween(time.Now(), time.Now().AddDate(0, 2, 30))
+		var endTime *time.Time
+		if rng.IntN(2) == 0 {
+			t := fake.Time().TimeBetween(startTime, startTime.Add(2*time.Hour))
+			endTime = &t
+		}
 
+		categoryCount := rng.IntN(3) + 1
+		categoriesToAdd := getUniqueRandomCategories(categories, categoryCount, rng)
+
+		ticketType := []string{"free", "ticketed"}[rng.IntN(2)]
+
+		var tickets []model.TicketType
+		if ticketType == "ticketed" {
+			ticketTypeCount := rng.IntN(3) + 1
+			for j := 0; j < ticketTypeCount; j++ {
+				ticket := model.TicketType{
+					Id:          uuid.New(),
+					Name:        fake.Lorem().Sentence(2),
+					Price:       float64(rng.IntN(100) + 1),
+					Quantity:    int(rng.IntN(100) + 20), 
+				}
+				tickets = append(tickets, ticket)
+			}
+		}
+
+		event := model.Event{
+			Id:          uuid.New(),
+			Title:       fake.Lorem().Sentence(4),
+			Description: ptr(fake.Lorem().Paragraph(3)),
+			StartTime:   startTime,
+			EndTime:     endTime,
+			EventType:   []string{"single", "recurring"}[rng.IntN(2)],
+			TicketType:  ticketType,
+			CreatedById: userIds[rng.IntN(len(userIds))],
+			CampusId:    campusIds[rng.IntN(len(campusIds))],
+			Location:    fake.Address().City(),
+			BannerUrl:   fmt.Sprintf("https://picsum.photos/seed/%d/800/400", rng.IntN(200)),
+			Categories:  categoriesToAdd,
+			TicketTypes: tickets,
+		}
+
+		if err := db.Create(&event).Error; err != nil {
+			zap.L().Sugar().Errorf("Failed to create event: %v", err)
+			return err
 		}
 	}
 
 	return nil
+}
+
+// Utility Functions
+
+func ptr[T any](v T) *T {
+	return &v
+}
+
+func getUniqueRandomCategories(categories []model.Category, count int, rng *rand.Rand) []model.Category {
+	selected := make([]model.Category, 0, count)
+	available := make([]model.Category, len(categories))
+	copy(available, categories)
+
+	for i := 0; i < count && len(available) > 0; i++ {
+		index := rng.IntN(len(available))
+		selected = append(selected, available[index])
+		available = append(available[:index], available[index+1:]...)
+	}
+
+	return selected
 }
