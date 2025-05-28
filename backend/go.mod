@@ -12,6 +12,7 @@ require (
 	github.com/gorilla/securecookie v1.1.1 // indirect
 	github.com/gorilla/sessions v1.1.1 // indirect
 	github.com/hibiken/asynq v0.25.1 // indirect
+	github.com/jaswdr/faker/v2 v2.5.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/markbates/goth v1.81.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect

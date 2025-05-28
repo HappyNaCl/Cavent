@@ -2,10 +2,12 @@ package postgresdb
 
 import (
 	"fmt"
+	"math/rand/v2"
 	"os"
 
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/model"
 	"github.com/google/uuid"
+	"github.com/jaswdr/faker/v2"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -85,5 +87,63 @@ func insertTags(db *gorm.DB, tags []model.Category) error {
 			return err
 		}
 	}
+	return nil
+}
+
+func seedCampus(db *gorm.DB) error {
+	faker := faker.New()
+	rng := rand.New(rand.NewPCG(0, 0))
+
+
+	for i := 0; i < 10; i++ {
+		campus := &model.Campus{
+			Id:          uuid.New(),
+			Name:        faker.Lorem().Sentence(2),
+			LogoUrl: 	 fmt.Sprintf(`https://picsum.photos/id/%d/500/350`, rng.IntN(200)),
+			Description: faker.Lorem().Paragraph(2),
+			InviteCode:  faker.RandomLetter() + faker.RandomLetter() + faker.RandomLetter() + faker.RandomLetter() + faker.RandomLetter() + faker.RandomLetter(),
+		}
+		
+		err := db.Create(campus).Error
+		if err != nil {
+			zap.L().Sugar().Errorf("Failed to seed campus: %v", err)
+			return err
+		}
+	}
+
+	return nil
+}
+
+func seedUser(db *gorm.DB) error {
+	fake := faker.New()
+
+	for i := 0; i < 100; i++ {
+		user := &model.User{
+			Id:       uuid.NewString(),
+			Name:     fake.Person().Name(),
+			Email:    fake.Internet().Email(),
+			Password: fake.Internet().Password(),
+		}
+
+		if err := db.Create(user).Error; err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+
+func seedEvent(db *gorm.DB) error {
+	fake := faker.New()
+
+	for i := 0; i < 500; i++ {
+		event := &model.Event{
+			Id:          uuid.New(),
+			Title: fake.Lorem().Sentence(4),
+
+		}
+	}
+
 	return nil
 }
