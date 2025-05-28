@@ -4,9 +4,11 @@ import (
 	"time"
 
 	"github.com/HappyNaCl/Cavent/backend/internal/app/common"
+	"github.com/google/uuid"
 )
 
 type CreateEventCommand struct {
+	CategoryId  uuid.UUID
 	CreatedById string
 	Title   	string
 	EventType 	string

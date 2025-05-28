@@ -31,15 +31,13 @@ export default function HomePage() {
   if (!user) return null;
 
   return (
-    <div>
-      <section className="flex flex-col w-full items-center py-12 px-24">
-        <span className="text-4xl font-semibold self-start py-2">Events</span>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 py-4">
-          {events.map((event) => (
-            <EventCard event={event} />
-          ))}
-        </div>
-      </section>
-    </div>
+    <section className="flex flex-col w-full items-center py-12 px-24">
+      <span className="text-4xl font-semibold self-start py-2">Events</span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 py-4">
+        {events.map((event) => (
+          <EventCard event={event} />
+        ))}
+      </div>
+    </section>
   );
 }

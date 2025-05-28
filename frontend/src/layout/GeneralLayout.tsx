@@ -4,13 +4,13 @@ import { Toaster } from "sonner";
 
 export default function GeneralLayout() {
   return (
-    <div className="flex flex-col h-screen">
+    <>
       <Navbar />
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1">
         <Outlet />
       </div>
       <Toaster />
       {/* <Footer /> */}
-    </div>
+    </>
   );
 }

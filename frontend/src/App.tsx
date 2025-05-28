@@ -7,7 +7,7 @@ import CreateEventPage from "./page/event/CreateEventPage";
 
 function App() {
   return (
-    <main className="w-screen h-fit min-h-screen">
+    <main className="h-screen min-h-fit">
       <Routes>
         <Route path="/" element={<GeneralLayout />}>
           <Route index element={<HomePage />} />

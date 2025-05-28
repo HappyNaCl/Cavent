@@ -67,7 +67,7 @@ export const EventForm = () => {
   const form = useForm<z.infer<typeof EventSchema>>({
     defaultValues: {
       title: "",
-      category: [],
+      category: { id: "", name: "" },
       startDate: now,
       startTime: format(now, "HH:mm"),
       location: "",
@@ -95,13 +95,10 @@ export const EventForm = () => {
   }, [watchTicketType, append, form, fields.length]);
 
   const onCategoryChange = useCallback(
-    (selectedCategories: Category[]) => {
-      const categoryValues = selectedCategories.map((cat) => ({
-        id: cat.id,
-        name: cat.name,
-      }));
-      form.setValue("category", categoryValues);
-      console.log(form.getValues("category"));
+    (selectedCategory: Category | null) => {
+      if (selectedCategory) {
+        form.setValue("category", selectedCategory);
+      }
     },
     [form]
   );
@@ -138,9 +135,7 @@ export const EventForm = () => {
       try {
         const formDataToSubmit = new FormData();
         formDataToSubmit.append("title", formData.title);
-        formData.category.forEach((cat) =>
-          formDataToSubmit.append("categoryId", cat.id)
-        );
+        formDataToSubmit.append("categoryId", formData.category.id);
         formDataToSubmit.append("eventType", formData.eventType);
         formDataToSubmit.append("ticketType", formData.ticketType);
         const startTime = getUnixTimeWithTime(
@@ -726,6 +721,9 @@ export const EventForm = () => {
                             ? "Recurring Event"
                             : "Single Event"}
                         </span>
+                        <span className="text-lg md:text-xl text-black bg-yellow-500 w-fit px-2 py-1 rounded-md">
+                          {formValuesForReview.category.name}
+                        </span>
                       </div>
                       <div className="flex flex-col gap-2">
                         <span className="text-xl md:text-2xl font-semibold">
@@ -734,13 +732,11 @@ export const EventForm = () => {
                         {formValuesForReview.startDate && (
                           <span className="text-lg md:text-xl flex flex-row gap-3 items-center">
                             {" "}
-                            {/* Reduced gap */}
                             <LucideCalendarDays className="text-primary" />
                             {format(
                               new Date(formValuesForReview.startDate),
                               "PPP"
                             )}{" "}
-                            {/* Ensure startDate is a Date */}
                           </span>
                         )}
                         <span className="text-lg md:text-xl flex flex-row gap-3 items-center">

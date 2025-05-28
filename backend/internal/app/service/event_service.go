@@ -13,6 +13,7 @@ import (
 	"github.com/HappyNaCl/Cavent/backend/internal/infrastructure/queue/tasks"
 	"github.com/google/uuid"
 	"github.com/hibiken/asynq"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -33,15 +34,6 @@ func NewEventService(db *gorm.DB, client *asynq.Client) *EventService {
 
 func (e EventService) CreateEvent(com *command.CreateEventCommand) (*command.CreateEventCommandResult, error) {
 	eventId := uuid.New()
-	asynqTask, err := tasks.NewImageUploadTask(com.BannerBytes, com.BannerExt, "events/" + eventId.String() + com.BannerExt)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = e.asynqClient.Enqueue(asynqTask, asynq.MaxRetry(5), asynq.Queue(tasks.TypeImageUpload), )
-	if err != nil {
-		return nil, err
-	}
 
 	publicUrl := fmt.Sprintf("%s/storage/v1/object/public/%s/%s", 
 							 os.Getenv("SUPABASE_PROJECT_URL"), 
@@ -51,6 +43,7 @@ func (e EventService) CreateEvent(com *command.CreateEventCommand) (*command.Cre
 	factory := factory.NewEventFactory()
 	event := factory.GetEvent(
 		eventId,
+		com.CategoryId,
 		com.CreatedById,
 		com.Title,
 		com.EventType,
@@ -74,8 +67,18 @@ func (e EventService) CreateEvent(com *command.CreateEventCommand) (*command.Cre
 		return nil, err
 	}
 	event.CampusId = *campusId
-	
+	zap.L().Sugar().Infof("%s", event.CategoryId)
 	eventModel, err := e.eventRepo.CreateEvent(event)
+	if err != nil {
+		return nil, err
+	}
+
+	asynqTask, err := tasks.NewImageUploadTask(com.BannerBytes, com.BannerExt, "events/" + eventId.String() + com.BannerExt)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = e.asynqClient.Enqueue(asynqTask, asynq.MaxRetry(5), asynq.Queue(tasks.TypeImageUpload), )
 	if err != nil {
 		return nil, err
 	}

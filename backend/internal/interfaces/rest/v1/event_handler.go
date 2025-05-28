@@ -14,6 +14,7 @@ import (
 	"github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1/types"
 	fileUtils "github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/hibiken/asynq"
 	"gorm.io/gorm"
 )
@@ -129,8 +130,17 @@ func (e *EventHandler) CreateEvent(c *gin.Context) {
 		return
 	}
 
+	categoryUUID, err := uuid.Parse(req.CategoryId)
+	if err != nil || categoryUUID == uuid.Nil {
+		c.JSON(http.StatusBadRequest, &types.ErrorResponse{
+			Error: errors.ErrInvalidUUID.Error(),
+		})
+		return
+	}
+
 	com := &command.CreateEventCommand{
 		Title:       req.Title,
+		CategoryId:  categoryUUID,
 		EventType:   req.EventType,
 		TicketType:  req.TicketType,
 		StartTime:   time.Unix(req.StartTime, 0),

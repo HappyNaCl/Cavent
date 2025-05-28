@@ -1,5 +1,6 @@
 import { BriefEvent } from "@/interface/BriefEvent";
 import { Calendar, MapPin, Ticket } from "lucide-react";
+import Image from "../ui/image";
 
 type Props = {
   event: BriefEvent;
@@ -17,7 +18,7 @@ export default function EventCard({ event }: Props) {
 
   return (
     <div className="max-w-sm rounded-2xl overflow-hidden shadow-md bg-white hover:shadow-lg transition">
-      <img
+      <Image
         src={event.bannerUrl}
         alt={event.title}
         className="w-full h-48 object-cover"

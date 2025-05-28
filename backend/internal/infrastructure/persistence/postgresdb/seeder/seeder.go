@@ -169,8 +169,6 @@ func seedEvents(db *gorm.DB) error {
 			endTime = &t
 		}
 
-		categoryCount := rng.IntN(3) + 1
-		categoriesToAdd := getUniqueRandomCategories(categories, categoryCount, rng)
 
 		ticketType := []string{"free", "ticketed"}[rng.IntN(2)]
 
@@ -200,7 +198,7 @@ func seedEvents(db *gorm.DB) error {
 			CampusId:    campusIds[rng.IntN(len(campusIds))],
 			Location:    fake.Address().City(),
 			BannerUrl:   fmt.Sprintf("https://picsum.photos/seed/%d/800/400", rng.IntN(200)),
-			Categories:  categoriesToAdd,
+			CategoryId:  categories[rng.IntN(len(categories))].Id,
 			TicketTypes: tickets,
 		}
 
@@ -217,18 +215,4 @@ func seedEvents(db *gorm.DB) error {
 
 func ptr[T any](v T) *T {
 	return &v
-}
-
-func getUniqueRandomCategories(categories []model.Category, count int, rng *rand.Rand) []model.Category {
-	selected := make([]model.Category, 0, count)
-	available := make([]model.Category, len(categories))
-	copy(available, categories)
-
-	for i := 0; i < count && len(available) > 0; i++ {
-		index := rng.IntN(len(available))
-		selected = append(selected, available[index])
-		available = append(available[:index], available[index+1:]...)
-	}
-
-	return selected
 }

@@ -8,7 +8,7 @@ type Ticket struct {
 
 type CreateEventRequest struct {
 	Title 		string 		`json:"title" form:"title" binding:"required"`
-	CategoryId 	[]string 	`json:"categoryId" form:"categoryId" binding:"required"`
+	CategoryId 	string 		`json:"categoryId" form:"categoryId" binding:"required"`
 	EventType 	string 		`json:"eventType" form:"eventType" binding:"required"`
 	TicketType 	string 		`json:"ticketType" form:"ticketType" binding:"required"`
 	StartTime 	int64		`json:"startTime" form:"startTime" binding:"required"`

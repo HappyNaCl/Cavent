@@ -10,17 +10,15 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { CategoryType } from "@/interface/CategoryType";
 import api from "@/lib/axios";
 import { toast } from "sonner";
-
-type Category = CategoryType["categories"][0];
+import { Category } from "@/interface/Category";
 
 type CategorySelectorProps = {
-  onChange: (selectedCategories: Category[]) => void;
+  onChange: (selectedCategory: Category | null) => void;
 };
 
 export default function CategorySelector({ onChange }: CategorySelectorProps) {
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedId, setSelectedId] = useState<string>("");
   const [categories, setCategories] = useState<CategoryType[]>([]);
-  const maxSelection = 3;
 
   useEffect(() => {
     async function fetchCategoryTypes() {
@@ -39,29 +37,18 @@ export default function CategorySelector({ onChange }: CategorySelectorProps) {
 
   useEffect(() => {
     const allCategories = categories.flatMap((type) => type.categories);
-    const selected = allCategories.filter((cat) =>
-      selectedIds.includes(cat.id)
-    );
+    const selected = allCategories.find((cat) => cat.id === selectedId) || null;
     onChange(selected);
-  }, [selectedIds, categories, onChange]);
+  }, [selectedId, categories, onChange]);
 
-  const toggleCategory = (categoryId: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(categoryId)
-        ? prev.filter((id) => id !== categoryId)
-        : prev.length < maxSelection
-        ? [...prev, categoryId]
-        : prev
-    );
+  const selectCategory = (categoryId: string) => {
+    setSelectedId((prev) => (prev === categoryId ? "" : categoryId));
   };
 
   return (
     <div className="w-full max-w-md space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Select Categories</h2>
-        <span className="text-sm text-muted-foreground">
-          {selectedIds.length} / {maxSelection} selected
-        </span>
+        <h2 className="text-2xl font-semibold">Select A Category</h2>
       </div>
       <ScrollArea className="h-64 rounded-md border p-2">
         <Accordion type="multiple" className="w-full">
@@ -70,19 +57,15 @@ export default function CategorySelector({ onChange }: CategorySelectorProps) {
               <AccordionTrigger className="text-lg">
                 {type.name}
               </AccordionTrigger>
-              <AccordionContent className="">
+              <AccordionContent>
                 {type.categories.map((category) => (
                   <label
                     key={category.id}
                     className="flex items-center space-x-2 border p-4"
                   >
                     <Checkbox
-                      checked={selectedIds.includes(category.id)}
-                      onCheckedChange={() => toggleCategory(category.id)}
-                      disabled={
-                        !selectedIds.includes(category.id) &&
-                        selectedIds.length >= maxSelection
-                      }
+                      checked={selectedId === category.id}
+                      onCheckedChange={() => selectCategory(category.id)}
                     />
                     <span>{category.name}</span>
                   </label>

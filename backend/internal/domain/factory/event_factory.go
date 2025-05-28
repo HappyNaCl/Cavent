@@ -14,7 +14,7 @@ func NewEventFactory() *EventFactory {
 	return &EventFactory{}
 }
 
-func (ef *EventFactory) GetEvent(id uuid.UUID, createdById, title, eventType,
+func (ef *EventFactory) GetEvent(id, categoryID uuid.UUID, createdById, title, eventType, 
 	ticketType, location, bannerUrl string, startTime int64, tickets []common.TicketResult,
 	) *model.Event {
 	ticketModels := make([]model.TicketType, 0, len(tickets))
@@ -33,6 +33,7 @@ func (ef *EventFactory) GetEvent(id uuid.UUID, createdById, title, eventType,
 		Id:          id,
 		Title:       title,
 		CreatedById: createdById,
+		CategoryId:  categoryID,
 		EventType:   eventType,
 		TicketType:  ticketType,
 		StartTime:   time.Unix(startTime, 0),

@@ -9,14 +9,9 @@ export default function Navbar() {
     { name: "About", to: "/about" },
   ];
 
-  //   const userLinks = [
-  //     { name: "Login", href: "/login" },
-  //     { name: "Sign Out", href: "/signout" },
-  //   ];
-
   return (
-    <div className="flex justify-between h-24 px-24 bg-slate-800 items-center">
-      <img src={Logo} alt="" className="h-[50%] object-contain" />
+    <div className="sticky top-0 z-50 flex justify-between h-24 px-24 bg-slate-800 items-center">
+      <img src={Logo} alt="Logo" className="h-[50%] object-contain" />
       <nav className="flex flex-row gap-18 h-full text-white list-none text-2xl">
         {midLinks.map((link) => (
           <Navlink key={link.to} to={link.to} name={link.name} />

@@ -3,14 +3,10 @@ import { z } from "zod";
 export const EventSchema = z
   .object({
     title: z.string().nonempty("Event title is required"),
-    category: z
-      .array(
-        z.object({
-          id: z.string().nonempty("Category ID is required"),
-          name: z.string().nonempty("Category name is required"),
-        })
-      )
-      .min(1, "Event category is required"),
+    category: z.object({
+      id: z.string().nonempty("Category ID is required"),
+      name: z.string().nonempty("Category name is required"),
+    }),
     eventType: z.enum(["single", "recurring"]).default("single"),
     ticketType: z.enum(["ticketed", "free"]).default("ticketed"),
     startDate: z.date().refine(
@@ -97,14 +93,10 @@ export const EventSchema = z
 export const EventDetailsSchema = z
   .object({
     title: z.string().nonempty("Event title is required"),
-    category: z
-      .array(
-        z.object({
-          id: z.string().nonempty("Category ID is required"),
-          name: z.string().nonempty("Category name is required"),
-        })
-      )
-      .min(1, "Event category is required"),
+    category: z.object({
+      id: z.string().nonempty("Category ID is required"),
+      name: z.string().nonempty("Category name is required"),
+    }),
     eventType: z.enum(["single", "recurring"]).default("single"),
     ticketType: z.enum(["ticketed", "free"]).default("ticketed"),
     startDate: z.date().refine((date) => {
