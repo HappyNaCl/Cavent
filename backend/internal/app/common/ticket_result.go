@@ -2,6 +2,6 @@ package common
 
 type TicketResult struct {
 	Name 	  string  `json:"name"`
-	Price     int     `json:"price"`
+	Price     float64 `json:"price"`
 	Quantity  int     `json:"quantity"`
 }

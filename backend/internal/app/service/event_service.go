@@ -57,6 +57,7 @@ func (e EventService) CreateEvent(com *command.CreateEventCommand) (*command.Cre
 		com.Location,
 		publicUrl,
 		com.StartTime.Unix(),
+		com.Ticket,
 	)
 
 	if com.Description != nil {
@@ -72,7 +73,7 @@ func (e EventService) CreateEvent(com *command.CreateEventCommand) (*command.Cre
 		return nil, err
 	}
 	event.CampusId = *campusId
-
+	
 	eventModel, err := e.eventRepo.CreateEvent(event)
 	if err != nil {
 		return nil, err

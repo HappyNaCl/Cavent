@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -31,10 +32,10 @@ func NewEventHandler(db *gorm.DB, client *asynq.Client) types.Route {
 }
 
 func (e *EventHandler) CreateEvent(c *gin.Context) {
-	var req *request.CreateEventRequest
+	var req request.CreateEventRequest
 	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, &types.ErrorResponse{
-			Error: errors.ErrMissingFields.Error(),
+			Error: err.Error(),
 		})
 		return
 	}
@@ -46,7 +47,7 @@ func (e *EventHandler) CreateEvent(c *gin.Context) {
 		return
 	}
 
-	if req.TicketType != "paid" && req.TicketType != "free" {
+	if req.TicketType != "ticketed" && req.TicketType != "free" {
 		c.JSON(http.StatusBadRequest, &types.ErrorResponse{
 			Error: errors.ErrInvalidTicketType.Error(),
 		})
@@ -89,6 +90,16 @@ func (e *EventHandler) CreateEvent(c *gin.Context) {
 		return
 	}
 
+	var tickets []common.TicketResult
+	if req.Ticket != nil  {
+		if err := json.Unmarshal([]byte(*req.Ticket), &tickets); err != nil {
+			c.JSON(http.StatusBadRequest, &types.ErrorResponse{
+				Error: "invalid ticket format: " + err.Error(),
+			})
+			return
+		}
+	}
+
 	fileBytes, fileExt, err := utils.ReadMultipartFile(file, header)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, &types.ErrorResponse{
@@ -120,7 +131,7 @@ func (e *EventHandler) CreateEvent(c *gin.Context) {
 		com.Description = nil
 	}
 
-	for _, ticket := range req.Ticket {
+	for _, ticket := range tickets {
 		com.Ticket = append(com.Ticket, common.TicketResult{
 			Name:     ticket.Name,
 			Price:    ticket.Price,

@@ -11,8 +11,8 @@ export const EventSchema = z
         })
       )
       .min(1, "Event category is required"),
-    eventType: z.enum(["single", "recurring"]).default("single").optional(),
-    ticketType: z.enum(["ticketed", "free"]).default("ticketed").optional(),
+    eventType: z.enum(["single", "recurring"]).default("single"),
+    ticketType: z.enum(["ticketed", "free"]).default("ticketed"),
     startDate: z.date().refine(
       (date) => {
         const now = new Date();
@@ -64,29 +64,82 @@ export const EventSchema = z
       path: ["tickets"],
       message: "At least one ticket is required when ticket type is ticketed",
     }
-  );
+  )
+  .superRefine((data, ctx) => {
+    if (
+      data.ticketType === "ticketed" &&
+      (!data.tickets || data.tickets.length === 0)
+    ) {
+      ctx.addIssue({
+        path: ["tickets"],
+        code: z.ZodIssueCode.custom,
+        message: "At least one ticket is required when ticket type is ticketed",
+      });
+    }
 
-export const EventDetailsSchema = z.object({
-  title: z.string().nonempty("Event title is required"),
-  category: z.string().nonempty("Event category is required"),
-  eventType: z.enum(["single", "recurring"]).default("single").optional(),
-  ticketType: z.enum(["ticketed", "free"]).default("ticketed").optional(),
-  startDate: z.date().refine((date) => {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const inputDate = new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate()
-    );
-    console.log(today, inputDate);
-    return inputDate >= today;
-  }),
-  startTime: z.string().nonempty("Start time is required"),
-  endTime: z.string().optional(),
-  location: z.string().nonempty("Location is required"),
-  description: z.string().optional(),
-});
+    if (!data.endTime) return;
+
+    const [startHour, startMinute] = data.startTime.split(":").map(Number);
+    const [endHour, endMinute] = data.endTime.split(":").map(Number);
+
+    const start = startHour * 60 + startMinute;
+    const end = endHour * 60 + endMinute;
+
+    if (end <= start) {
+      ctx.addIssue({
+        path: ["endTime"],
+        code: z.ZodIssueCode.custom,
+        message: "End time must be after start time",
+      });
+    }
+  });
+
+export const EventDetailsSchema = z
+  .object({
+    title: z.string().nonempty("Event title is required"),
+    category: z
+      .array(
+        z.object({
+          id: z.string().nonempty("Category ID is required"),
+          name: z.string().nonempty("Category name is required"),
+        })
+      )
+      .min(1, "Event category is required"),
+    eventType: z.enum(["single", "recurring"]).default("single"),
+    ticketType: z.enum(["ticketed", "free"]).default("ticketed"),
+    startDate: z.date().refine((date) => {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const inputDate = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate()
+      );
+      console.log(today, inputDate);
+      return inputDate >= today;
+    }),
+    startTime: z.string().nonempty("Start time is required"),
+    endTime: z.string().optional(),
+    location: z.string().nonempty("Location is required"),
+    description: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.endTime) return;
+
+    const [startHour, startMinute] = data.startTime.split(":").map(Number);
+    const [endHour, endMinute] = data.endTime.split(":").map(Number);
+
+    const start = startHour * 60 + startMinute;
+    const end = endHour * 60 + endMinute;
+
+    if (end <= start) {
+      ctx.addIssue({
+        path: ["endTime"],
+        code: z.ZodIssueCode.custom,
+        message: "End time must be after start time",
+      });
+    }
+  });
 
 export const EventBannerSchema = z.object({
   banner: z

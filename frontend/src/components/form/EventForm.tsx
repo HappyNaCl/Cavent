@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,6 +46,7 @@ import axios from "axios";
 import api from "@/lib/axios";
 import { Category } from "@/interface/Category";
 import CategorySelector from "../input/CategorySelector";
+import { useNavigate } from "react-router";
 
 export const EventForm = () => {
   const [step, setStep] = useState(0);
@@ -58,6 +59,8 @@ export const EventForm = () => {
     { title: "Ticketing", description: "Set up your ticketing options" },
     { title: "Review", description: "Review your event details" },
   ];
+
+  const nav = useNavigate();
 
   const now = new Date();
 
@@ -91,15 +94,28 @@ export const EventForm = () => {
     }
   }, [watchTicketType, append, form, fields.length]);
 
-  const onCategoryChange = (selectedCategories: Category[]) => {
-    const categoryValues = selectedCategories.map((cat) => ({
-      id: cat.id,
-      name: cat.name,
-    }));
-    form.setValue("category", categoryValues);
-  };
+  const onCategoryChange = useCallback(
+    (selectedCategories: Category[]) => {
+      const categoryValues = selectedCategories.map((cat) => ({
+        id: cat.id,
+        name: cat.name,
+      }));
+      form.setValue("category", categoryValues);
+      console.log(form.getValues("category"));
+    },
+    [form]
+  );
 
-  const onSubmit = async (formData: unknown) => {
+  function getUnixTimeWithTime(dateObj: Date, timeStr: string) {
+    const [hours, minutes] = timeStr.split(":").map(Number);
+
+    const combinedDate = new Date(dateObj);
+    combinedDate.setHours(hours, minutes, 0, 0); // Set hours, minutes, seconds, ms
+
+    return Math.floor(combinedDate.getTime() / 1000); // Unix time in seconds
+  }
+
+  const onSubmit = async (formData: z.infer<typeof EventSchema>) => {
     const values = form.getValues();
     const stepSchema = [
       EventDetailsSchema,
@@ -108,20 +124,57 @@ export const EventForm = () => {
     ];
     console.log(values);
 
-    const currentSchema = stepSchema[step];
-
-    const result = currentSchema.safeParse(values);
-    if (!result.success) {
-      const error: ZodError = result.error;
-      toast.error(error.errors[0].message);
-      return;
-    }
-
     if (step < totalSteps - 1) {
+      const currentSchema = stepSchema[step];
+
+      const result = currentSchema.safeParse(values);
+      if (!result.success) {
+        const error: ZodError = result.error;
+        toast.error(error.errors[0].message);
+        return;
+      }
       setStep(step + 1);
     } else {
       try {
-        // const res = await api.post("/event/");
+        const formDataToSubmit = new FormData();
+        formDataToSubmit.append("title", formData.title);
+        formData.category.forEach((cat) =>
+          formDataToSubmit.append("categoryId", cat.id)
+        );
+        formDataToSubmit.append("eventType", formData.eventType);
+        formDataToSubmit.append("ticketType", formData.ticketType);
+        const startTime = getUnixTimeWithTime(
+          new Date(formData.startDate),
+          formData.startTime
+        );
+        formDataToSubmit.append("startTime", startTime.toString());
+        if (formData.endTime) {
+          const endTime = getUnixTimeWithTime(
+            new Date(formData.startDate),
+            formData.endTime
+          );
+          formDataToSubmit.append("endTime", endTime.toString());
+        }
+        formDataToSubmit.append("location", formData.location);
+
+        if (formData.description) {
+          formDataToSubmit.append("description", formData.description);
+        }
+
+        formDataToSubmit.append("banner", formData.banner);
+        if (formData.ticketType === "ticketed") {
+          formDataToSubmit.append("tickets", JSON.stringify(formData.tickets));
+        }
+
+        formDataToSubmit.forEach((value, key) => {
+          console.log(key, value);
+        });
+
+        const res = await api.post("/event", formDataToSubmit);
+        if (res.status === 201) {
+          toast.success("Event created successfully");
+          nav("/");
+        }
       } catch (error) {
         if (axios.isAxiosError(error)) {
           toast.error(
@@ -129,8 +182,6 @@ export const EventForm = () => {
           );
         }
       }
-
-      toast.success("Form successfully submitted");
     }
   };
 
@@ -650,19 +701,15 @@ export const EventForm = () => {
           )}
           {step === 3 && (
             <Form {...form}>
-              {" "}
-              {/* Still good to wrap with Form for context if needed */}
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="grid gap-y-8" // Increased gap slightly
+                className="grid gap-y-8"
               >
                 <div className="border-2 border-gray-200 rounded-2xl p-6 md:p-10 shadow-md">
-                  {" "}
-                  {/* Softer border, shadow */}
                   <div className="flex flex-col gap-6">
-                    {formValuesForReview.banner && ( // Check if banner exists
+                    {formValuesForReview.banner && (
                       <img
-                        className="w-full h-auto max-h-[400px] object-cover rounded-lg" // max-h for responsiveness
+                        className="w-full h-auto max-h-[400px] object-cover rounded-lg"
                         src={URL.createObjectURL(
                           formValuesForReview.banner as File
                         )}
@@ -670,8 +717,6 @@ export const EventForm = () => {
                       />
                     )}
                     <div className="flex flex-col gap-8 md:gap-10">
-                      {" "}
-                      {/* Adjusted gaps */}
                       <div className="flex flex-col gap-1 py-3">
                         <span className="font-bold text-3xl md:text-5xl break-words">
                           {formValuesForReview.title}
@@ -719,15 +764,13 @@ export const EventForm = () => {
                           Event Description
                         </span>
                         <pre className="text-base md:text-lg font-sans text-gray-700 whitespace-pre-wrap break-words bg-gray-50 p-3 rounded-md">
-                          {" "}
-                          {/* Improved styling */}
                           {formValuesForReview.description ||
                             "No description provided."}
                         </pre>
                       </div>
                     </div>
                   </div>
-                  {/* MODIFIED TICKETING DISPLAY */}
+
                   {formValuesForReview.ticketType === "ticketed" &&
                     formValuesForReview.tickets &&
                     formValuesForReview.tickets.length > 0 && (
@@ -739,9 +782,6 @@ export const EventForm = () => {
                         </span>
                         {formValuesForReview.tickets.map((ticket, index) => (
                           <div
-                            // Use the id from the `fields` array for a stable key if available,
-                            // otherwise fallback to index. This assumes `fields` and `formValuesForReview.tickets`
-                            // maintain the same order.
                             key={fields[index]?.id || `review-ticket-${index}`}
                             className="p-4 border border-gray-200 rounded-lg shadow-sm bg-white" // Card-like appearance for each ticket
                           >

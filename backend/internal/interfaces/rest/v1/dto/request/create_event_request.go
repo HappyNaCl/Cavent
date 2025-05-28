@@ -2,7 +2,7 @@ package request
 
 type Ticket struct {
 	Name        string `json:"name" form:"name" binding:"required"`
-	Price       int    `json:"price" form:"price" binding:"required"`
+	Price       float64 `json:"price" form:"price" binding:"required"`
 	Quantity    int    `json:"quantity" form:"quantity" binding:"required"`
 }
 
@@ -15,5 +15,5 @@ type CreateEventRequest struct {
 	EndTime 	*int64 		`json:"endTime" form:"endTime"`
 	Location 	string 		`json:"location" form:"location" binding:"required"`
 	Description *string 	`json:"description" form:"description"`
-	Ticket      []Ticket 	`json:"ticket" form:"ticket"`
+	Ticket      *string 	`json:"tickets" form:"tickets"`
 }

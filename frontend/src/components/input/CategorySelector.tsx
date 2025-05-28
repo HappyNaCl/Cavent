@@ -37,7 +37,6 @@ export default function CategorySelector({ onChange }: CategorySelectorProps) {
     fetchCategoryTypes();
   }, []);
 
-  // Send selected category objects to parent
   useEffect(() => {
     const allCategories = categories.flatMap((type) => type.categories);
     const selected = allCategories.filter((cat) =>
@@ -75,7 +74,7 @@ export default function CategorySelector({ onChange }: CategorySelectorProps) {
                 {type.categories.map((category) => (
                   <label
                     key={category.id}
-                    className="flex items-center space-x-2 border p-4 border-b-gray-800"
+                    className="flex items-center space-x-2 border p-4"
                   >
                     <Checkbox
                       checked={selectedIds.includes(category.id)}

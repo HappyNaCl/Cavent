@@ -12,7 +12,19 @@ type EventGormRepo struct {
 
 // CreateEvent implements repo.EventRepository.
 func (e *EventGormRepo) CreateEvent(event *model.Event) (*model.Event, error) {
-	if err := e.db.Create(event).Error; err != nil {
+	tx := e.db.Begin()
+
+	if err := tx.Create(&event).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	for i := range event.TicketTypes {
+		event.TicketTypes[i].EventId = event.Id
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
 		return nil, err
 	}
 	return event, nil
