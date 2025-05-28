@@ -1,56 +1,45 @@
-import LogoutButton from "@/components/button/LogoutButton";
-import { useAuth } from "@/components/provider/AuthProvider";
+import EventCard from "@/components/cards/EventCard";
+import { BriefEvent } from "@/interface/BriefEvent";
 import api from "@/lib/axios";
 import { useAuthGuard } from "@/lib/hook/useAuthGuard";
 import axios from "axios";
-import { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function HomePage() {
   const user = useAuthGuard();
 
-  const location = useLocation();
-  const nav = useNavigate();
-  const { login } = useAuth();
+  const [events, setEvents] = useState<BriefEvent[]>([]);
 
   useEffect(() => {
-    async function fetchMe() {
-      const params = new URLSearchParams(location.search);
-      const token = params.get("token");
-
-      if (token) {
-        try {
-          const res = await api.get("/auth/me", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            withCredentials: true,
-          });
-          const userData = res.data.data.user;
-          login(userData, token);
-
-          nav("/", { replace: true });
-        } catch (error) {
-          if (axios.isAxiosError(error)) {
-            const errorMessage =
-              error.response?.data?.error || "An error occurred";
-            nav("/login");
-            toast.error(`Error: ${errorMessage}`);
-          }
+    async function fetchEvents() {
+      try {
+        const res = await api.get("/event");
+        setEvents(res.data.data);
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          const errorMessage =
+            error.response?.data?.error || "An error occurred";
+          toast.error(`Error: ${errorMessage}`);
         }
       }
     }
 
-    fetchMe();
-  }, [location, nav, login]);
+    fetchEvents();
+  }, []);
 
   if (!user) return null;
 
   return (
     <div>
-      <h1>Hello, {user.name}</h1>
-      <section className="flex flex-col w-full "></section>
+      <section className="flex flex-col w-full items-center py-12 px-24">
+        <span className="text-4xl font-semibold self-start">Event</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 py-4">
+          {events.map((event) => (
+            <EventCard event={event} />
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
