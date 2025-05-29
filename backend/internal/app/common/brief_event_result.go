@@ -11,4 +11,5 @@ type BriefEventResult struct {
 	BannerUrl 		string    `json:"bannerUrl"`
 	TicketType 		string    `json:"ticketType"`
 	TicketPrice 	float64   `json:"ticketPrice"`
+	CategoryName 	string    `json:"categoryName"`
 }

@@ -13,7 +13,7 @@ type EventGormRepo struct {
 // GetEvents implements repo.EventRepository.
 func (e *EventGormRepo) GetEvents(limit int) ([]*model.Event, error) {
 	var events []*model.Event
-	err := e.db.Preload("TicketTypes").Preload("Campus").Order("created_at DESC").Limit(limit).Find(&events).Error
+	err := e.db.Preload("TicketTypes").Preload("Campus").Preload("Category").Order("created_at DESC").Limit(limit).Find(&events).Error
 	if err != nil {
 		return nil, err
 	}

@@ -7,4 +7,5 @@ export interface BriefEvent {
   campusName: string;
   ticketPrice?: number;
   bannerUrl: string;
+  categoryName: string;
 }

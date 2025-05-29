@@ -43,6 +43,7 @@ func NewBriefEventResultFromEvent(event *model.Event) *common.BriefEventResult {
 		TicketPrice: cheapPrice,
 		Location:    event.Location,
 		BannerUrl:   event.BannerUrl,
+		CategoryName: event.Category.Name,
 	}
 }
 
