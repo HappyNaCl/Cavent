@@ -31,7 +31,7 @@ func Init(db *gorm.DB, redis *redis.Client, client *asynq.Client) *gin.Engine  {
 	userRoute := NewUserHandler(db, redis)
 	userRoute.SetupRoutes(v1)
 	
-	eventRoute := NewEventHandler(db, client)
+	eventRoute := NewEventHandler(db, redis, client)
 	eventRoute.SetupRoutes(v1)
 	
 	

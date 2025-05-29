@@ -7,5 +7,5 @@ type GetUserInterestsCommand struct {
 }
 
 type GetUserInterestsCommandResult struct {
-	CategoryTypes []*common.CategoryResult
+	Result []*common.CategoryResult
 }

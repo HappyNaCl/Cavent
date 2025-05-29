@@ -16,6 +16,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/hibiken/asynq"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
@@ -30,9 +31,9 @@ func (e *EventHandler) SetupRoutes(v1 *gin.RouterGroup) {
 	v1.GET("/event/recommendation", e.GetUserInterestedEvents)
 }
 
-func NewEventHandler(db *gorm.DB, client *asynq.Client) types.Route {
+func NewEventHandler(db *gorm.DB, redis *redis.Client, client *asynq.Client) types.Route {
 	return &EventHandler{
-		eventService: service.NewEventService(db, client),
+		eventService: service.NewEventService(db, redis, client),
 	}
 }
 
@@ -226,9 +227,12 @@ func (e *EventHandler) GetEvents(c *gin.Context) {
 func (e *EventHandler) GetUserInterestedEvents(c *gin.Context) {
 	userId, _ := c.Get("sub")
 
-	result, err := e.eventService.GetUserInterestedEvents(&command.GetUserInterestedEventsCommand{
-		UserId: userId.(string),
-	})
+	result, err := e.eventService.GetUserInterestedEvents(
+		c.Request.Context(),
+		&command.GetUserInterestedEventsCommand{
+			UserId: userId.(string),
+		},
+	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, &types.ErrorResponse{
 			Error: err.Error(),

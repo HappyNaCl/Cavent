@@ -144,7 +144,7 @@ func (u UserHandler) GetUserInterests(c *gin.Context) {
 		return
 	}
 
-	result, err := u.userService.GetUserInterests(&command.GetUserInterestsCommand{
+	result, err := u.userService.GetUserInterests(c.Request.Context(), &command.GetUserInterestsCommand{
 		UserId: userId.(string),
 	})
 	if err != nil {
@@ -156,6 +156,6 @@ func (u UserHandler) GetUserInterests(c *gin.Context) {
 
 	c.JSON(http.StatusOK, types.SuccessResponse{
 		Message: "success",
-		Data:    result.CategoryTypes,
+		Data:    result.Result,
 	})
 }
