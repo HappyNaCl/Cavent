@@ -6,6 +6,7 @@ type BriefEventResult struct {
 	Id       		uuid.UUID `json:"id"`
 	Title    		string    `json:"title"`
 	StartDate 		int64     `json:"startDate"`
+	EndDate   		*int64    `json:"endDate,omitempty"`
 	CampusName 		string    `json:"campusName"`
 	Location 		string    `json:"location"`
 	BannerUrl 		string    `json:"bannerUrl"`

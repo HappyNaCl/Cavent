@@ -32,7 +32,9 @@ export default function EventGrid() {
 
   return (
     <section className="flex flex-col w-full items-center gap-6">
-      <span className="text-4xl font-semibold self-start py-2">Events</span>
+      <span className="text-4xl font-semibold self-start py-2">
+        Upcoming Events
+      </span>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 gap-y-8 py-4">
         {events.map((event) => (
           <EventCard event={event} />

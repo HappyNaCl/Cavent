@@ -16,6 +16,7 @@ type CategoryHandler struct {
 
 func (h *CategoryHandler) SetupRoutes(v1 *gin.RouterGroup) {
 	v1.GET("/category", h.getAllCategory)
+	v1.GET("/category/type", h.getAllCategoryTypes)
 }
 
 func NewCategoryHandler(db *gorm.DB, redis *redis.Client) types.Route {
@@ -47,5 +48,21 @@ func (h *CategoryHandler) getAllCategory(c *gin.Context) {
 	c.JSON(http.StatusOK, &types.SuccessResponse{
 		Message: "success",
 		Data: result.CategoryTypes,
+	})
+}
+
+
+func (h *CategoryHandler) getAllCategoryTypes(c *gin.Context) {
+	result, err := h.categoryService.GetAllCategoryTypes()
+	if err != nil {
+		c.JSON(500, types.ErrorResponse{
+			Error: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, &types.SuccessResponse{
+		Message: "success",
+		Data: result.Result,
 	})
 }

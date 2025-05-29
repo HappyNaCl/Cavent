@@ -45,3 +45,19 @@ func NewCategoriesResultFromCategory(category []*model.Category) []*common.Categ
 
 	return categoryResults
 }
+
+func NewCategoryTypeResultFromCategoryType(categoryType []*model.CategoryType) []*common.CategoryTypeResult {
+	if categoryType == nil {
+		return nil
+	}
+
+	categoryTypeResults := make([]*common.CategoryTypeResult, 0, len(categoryType))
+	for _, catType := range categoryType {
+		categoryTypeResults = append(categoryTypeResults, &common.CategoryTypeResult{
+			Id:   catType.Id.String(),
+			Name: catType.Name,
+		})
+	}
+
+	return categoryTypeResults
+}

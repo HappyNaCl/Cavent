@@ -18,6 +18,13 @@ export default function EventCard({ event }: Props) {
     minute: "2-digit",
     hour12: true,
   });
+
+  const endDateObj = new Date(event.endDate ? event.endDate * 1000 : 1000);
+  const endTime = endDateObj.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
   return (
     <div className="max-w-sm rounded-xl overflow-hidden shadow bg-white">
       <div className="relative w-full h-40">
@@ -44,13 +51,13 @@ export default function EventCard({ event }: Props) {
           </div>
 
           <div className="flex-1 space-y-1">
-            <h2 className="text-md font-semibold text-gray-900 leading-snug line-clamp-2">
+            <h2 className="text-lg font-semibold text-gray-900 leading-snug line-clamp-2">
               {event.title}
             </h2>
             <p className="text-md text-gray-500">{event.campusName}</p>
 
             <p className="text-sm text-gray-500">
-              {startTime || "00:00 AM"} - "00:00 PM"
+              {startTime || "00:00 AM"} - {event.endDate ? endTime : "Done"}
             </p>
 
             <div className="flex items-center gap-3 text-sm text-gray-700 font-medium mt-1">

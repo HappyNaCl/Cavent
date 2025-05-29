@@ -33,11 +33,19 @@ func NewBriefEventResultFromEvent(event *model.Event) *common.BriefEventResult {
 	}
 
 	cheapPrice := getCheapestTicketPrice(event.TicketTypes)
+	var endDate *int64
+	if event.EndTime != nil {
+		endDate = new(int64)
+		*endDate = event.EndTime.Unix()
+	} else {
+		endDate = nil
+	}
 
 	return &common.BriefEventResult{
 		Id:          event.Id,
 		Title:       event.Title,
 		StartDate: 	 event.StartTime.Unix(),
+		EndDate:  	 endDate,
         CampusName:  event.Campus.Name,
 		TicketType:  event.TicketType,
 		TicketPrice: cheapPrice,

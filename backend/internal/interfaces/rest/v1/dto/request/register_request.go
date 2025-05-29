@@ -1,6 +1,10 @@
 package request
 
-import "github.com/HappyNaCl/Cavent/backend/internal/app/command"
+import (
+	"strings"
+
+	"github.com/HappyNaCl/Cavent/backend/internal/app/command"
+)
 
 type RegisterRequest struct {
 	Name 			string `json:"name" form:"name" binding:"required"`
@@ -13,7 +17,7 @@ type RegisterRequest struct {
 func (r RegisterRequest) ToCommand() *command.RegisterUserCommand {
 	return &command.RegisterUserCommand{
 		Name: r.Name,
-		Email: r.Email,
+		Email: strings.ToLower(r.Email),
 		Password: r.Password,
 		ConfirmPassword: r.ConfirmPassword,
 		InviteCode: r.InviteCode,

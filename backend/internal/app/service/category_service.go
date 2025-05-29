@@ -29,3 +29,14 @@ func (cs *CategoryService) GetAllCategory() (*command.GetCategoriesCommandResult
 		CategoryTypes: mapper.NewCategoryTypeResultFromCategoryTypes(categoryTypes),
 	}, nil
 }
+
+func (cs *CategoryService) GetAllCategoryTypes() (*command.GetCategoryTypesCommandResult, error) {
+	categoryTypes, err := cs.categoryRepo.GetAllCategoryTypes()
+	if err != nil {
+		return nil, err
+	}
+
+	return &command.GetCategoryTypesCommandResult{
+		Result: mapper.NewCategoryTypeResultFromCategoryType(categoryTypes),
+	}, nil
+}
