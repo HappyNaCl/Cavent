@@ -5,8 +5,8 @@ export default function CreateEventPage() {
   useAuthGuard();
 
   return (
-    <div className="flex flex-col gap-8 items-center justify-center px-36 py-24">
+    <>
       <EventForm />
-    </div>
+    </>
   );
 }

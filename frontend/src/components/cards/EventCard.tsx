@@ -1,5 +1,5 @@
 import { BriefEvent } from "@/interface/BriefEvent";
-import { Calendar, MapPin, Ticket } from "lucide-react";
+import { Ticket, Star } from "lucide-react";
 import Image from "../ui/image";
 
 type Props = {
@@ -7,55 +7,65 @@ type Props = {
 };
 
 export default function EventCard({ event }: Props) {
-  const startDate = new Date(event.startDate * 1000).toLocaleDateString(
-    "en-US",
-    {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    }
-  );
+  const dateObj = new Date(event.startDate * 1000);
 
+  const day = dateObj.getDate();
+  const month = dateObj
+    .toLocaleDateString("en-US", { month: "short" })
+    .toUpperCase();
+  const startTime = dateObj.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
   return (
-    <div className="max-w-sm rounded-2xl overflow-hidden shadow-md bg-white hover:shadow-lg transition">
-      <div className="relative w-full h-48 overflow-hidden rounded-t-2xl">
+    <div className="max-w-sm rounded-xl overflow-hidden shadow bg-white">
+      <div className="relative w-full h-40">
         <Image
           src={event.bannerUrl}
           alt={event.title}
-          className="w-full h-48 object-cover"
+          className="w-full h-full object-cover"
         />
-        <div className="absolute bottom-2 left-2 bg-yellow-500 bg-opacity-60 text-white text-xs font-semibold px-3 py-1 rounded-full select-none">
+        <div className="absolute top-2 left-2 bg-yellow-400 text-black text-xs font-semibold px-2 py-1 rounded">
           {event.categoryName}
+        </div>
+        <div className="absolute top-2 right-2">
+          <Star className="w-5 h-5 text-gray-400" />
         </div>
       </div>
 
-      <div className="p-4 space-y-2">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold">{event.title}</h2>
-          <span className="text-xs bg-yellow-100 text-yellow-600 px-2 py-1 rounded-full capitalize">
-            {event.ticketType}
-          </span>
-        </div>
-        <p className="text-gray-500 text-sm">{event.campusName}</p>
+      <div className="p-4">
+        <div className="flex gap-3">
+          <div className="text-center">
+            <div className="text-xs font-medium text-purple-600">{month}</div>
+            <div className="text-lg font-bold text-gray-800 leading-none">
+              {day}
+            </div>
+          </div>
 
-        <div className="flex items-center gap-2 text-gray-700 text-sm">
-          <Calendar className="w-4 h-4" /> {startDate}
-        </div>
+          <div className="flex-1 space-y-1">
+            <h2 className="text-md font-semibold text-gray-900 leading-snug line-clamp-2">
+              {event.title}
+            </h2>
+            <p className="text-md text-gray-500">{event.campusName}</p>
 
-        <div className="flex items-center gap-2 text-gray-700 text-sm">
-          <MapPin className="w-4 h-4" /> {event.location}
-        </div>
+            <p className="text-sm text-gray-500">
+              {startTime || "00:00 AM"} - "00:00 PM"
+            </p>
 
-        <div className="flex items-center gap-2 text-sm font-medium">
-          <Ticket className="w-4 h-4 text-gray-700" />
-          {event.ticketType === "free" ? (
-            <span className="text-green-600">Free Entry</span>
-          ) : (
-            <span className="text-gray-900">
-              ${event.ticketPrice?.toFixed(2)}
-            </span>
-          )}
+            <div className="flex items-center gap-3 text-sm text-gray-700 font-medium mt-1">
+              <div className="flex items-center gap-1">
+                <Ticket className="w-4 h-4 relative top-[1px]" />
+                {event.ticketType === "free"
+                  ? "Free"
+                  : `$${event.ticketPrice?.toFixed(0)}`}
+              </div>
+              <div className="flex items-center gap-1 text-blue-600">
+                <Star className="w-4 h-4 fill-current relative top-[1px]" />
+                10 interested
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

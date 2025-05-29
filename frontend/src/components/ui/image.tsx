@@ -45,7 +45,7 @@ export default function Image({
   };
 
   return (
-    <div className="w-full relative inline-block">
+    <div className={`w-full relative inline-block ${className}`}>
       {loading &&
         (spinner || (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -56,7 +56,7 @@ export default function Image({
         <img
           src={imgSrc}
           alt={alt}
-          className={`transition-opacity duration-300 ${className} ${
+          className={`transition-opacity duration-300 object-cover w-full h-full ${
             loading ? "opacity-0" : "opacity-100"
           }`}
           onLoad={handleLoad}
