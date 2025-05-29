@@ -46,7 +46,7 @@ function slugify(name: string) {
 
 export default function CategoryLinkCarousel() {
   return (
-    <section className="relative w-full space-y-12">
+    <section className="relative w-full space-y-12 py-4">
       <h2 className="text-4xl font-semibold">Explore Categories</h2>
       <Carousel opts={{ align: "start", loop: false }}>
         <CarouselContent className="ml-0 flex">
@@ -61,8 +61,8 @@ export default function CategoryLinkCarousel() {
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="-left-6" />
-        <CarouselNext className="-right-6" />
+        <CarouselPrevious className="text-2xl -left-6" />
+        <CarouselNext className="text-2xl -right-6" />
       </Carousel>
     </section>
   );

@@ -104,3 +104,29 @@ func (e EventService) GetEvents(com *command.GetEventsCommand) (*command.GetEven
 		Result: eventResults,
 	}, nil
 }
+
+func (e EventService) GetUserInterestedEvents(com *command.GetUserInterestedEventsCommand) (*command.GetUserInterestedEventsCommandResult, error){
+	categories, err := e.userRepo.GetUserInterests(com.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	categoryIds := make([]uuid.UUID, 0, len(categories))
+	for _, category := range categories {
+		categoryIds = append(categoryIds, category.Id)
+	}
+
+	events, err := e.eventRepo.GetEventsByCategories(categoryIds, 8)
+	if err != nil {
+		return nil, err
+	}
+
+	eventResults := make([]*common.BriefEventResult, 0, len(events))
+	for _, event := range events {
+		eventResults = append(eventResults, mapper.NewBriefEventResultFromEvent(event))
+	}
+
+	return &command.GetUserInterestedEventsCommandResult{
+		Result: eventResults,
+	}, nil
+}

@@ -1,8 +1,11 @@
 package postgresdb
 
 import (
+	"time"
+
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/model"
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/repo"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -13,7 +16,8 @@ type EventGormRepo struct {
 // GetEvents implements repo.EventRepository.
 func (e *EventGormRepo) GetEvents(limit int) ([]*model.Event, error) {
 	var events []*model.Event
-	err := e.db.Preload("TicketTypes").Preload("Campus").Preload("Category").Order("start_time ASC").Limit(limit).Find(&events).Error
+	err := e.db.Preload("TicketTypes").Preload("Campus").Preload("Category").
+		Where("start_time > ?", time.Now()).Order("start_time ASC").Limit(limit).Find(&events).Error
 	if err != nil {
 		return nil, err
 	}
@@ -38,6 +42,18 @@ func (e *EventGormRepo) CreateEvent(event *model.Event) (*model.Event, error) {
 		return nil, err
 	}
 	return event, nil
+}
+
+func (e *EventGormRepo) GetEventsByCategories(categories []uuid.UUID, limit int) ([]*model.Event, error) {
+	var events []*model.Event
+	err := e.db.Preload("TicketTypes").Preload("Campus").Preload("Category").
+		Where("category_id IN ?", categories).
+		Where("start_time > ?", time.Now()).
+		Order("start_time ASC").Limit(limit).Find(&events).Error
+	if err != nil {
+		return nil, err
+	}
+	return events, nil
 }
 
 func NewEventGormRepo(db *gorm.DB) repo.EventRepository {

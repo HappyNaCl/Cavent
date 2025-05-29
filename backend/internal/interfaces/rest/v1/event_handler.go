@@ -26,6 +26,8 @@ type EventHandler struct{
 func (e *EventHandler) SetupRoutes(v1 *gin.RouterGroup) {
 	v1.POST("/event", e.CreateEvent)
 	v1.GET("/event", e.GetEvents)
+
+	v1.GET("/event/recommendation", e.GetUserInterestedEvents)
 }
 
 func NewEventHandler(db *gorm.DB, client *asynq.Client) types.Route {
@@ -218,5 +220,24 @@ func (e *EventHandler) GetEvents(c *gin.Context) {
 	c.JSON(http.StatusOK, &types.SuccessResponse{
 		Message: "success",
 		Data: events.Result,
+	})
+}
+
+func (e *EventHandler) GetUserInterestedEvents(c *gin.Context) {
+	userId, _ := c.Get("sub")
+
+	result, err := e.eventService.GetUserInterestedEvents(&command.GetUserInterestedEventsCommand{
+		UserId: userId.(string),
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, &types.ErrorResponse{
+			Error: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, &types.SuccessResponse{
+		Message: "success",
+		Data: result.Result,
 	})
 }

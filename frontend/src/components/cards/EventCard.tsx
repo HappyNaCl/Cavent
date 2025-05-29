@@ -26,7 +26,7 @@ export default function EventCard({ event }: Props) {
     hour12: true,
   });
   return (
-    <div className="max-w-sm rounded-xl overflow-hidden shadow bg-white">
+    <div className="max-w-sm rounded-xl overflow-hidden shadow bg-white hover:shadow-lg transition-shadow duration-300">
       <div className="relative w-full h-40">
         <Image
           src={event.bannerUrl}
