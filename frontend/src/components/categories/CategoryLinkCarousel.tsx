@@ -41,7 +41,7 @@ const categories = [
 ];
 
 function slugify(name: string) {
-  return name.toLowerCase().replace(/\s+/g, "-").replace(/&/g, "and");
+  return name.toLowerCase().replace(/\s+/g, "").replace(/&/g, "-");
 }
 
 export default function CategoryLinkCarousel() {

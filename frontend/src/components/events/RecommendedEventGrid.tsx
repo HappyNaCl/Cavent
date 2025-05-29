@@ -1,4 +1,3 @@
-import { Link } from "react-router";
 import EventCard from "../cards/EventCard";
 import { useEffect, useState } from "react";
 import { BriefEvent } from "@/interface/BriefEvent";
@@ -12,11 +11,7 @@ export default function RecommendedEventGrid() {
   useEffect(() => {
     async function fetchEvents() {
       try {
-        const res = await api.get("/event/recommendation", {
-          params: {
-            limit: 8,
-          },
-        });
+        const res = await api.get("/event/recommendation");
         setEvents(res.data.data);
       } catch (error) {
         if (axios.isAxiosError(error)) {
@@ -40,9 +35,6 @@ export default function RecommendedEventGrid() {
           <EventCard event={event} />
         ))}
       </div>
-      <Link to={"/events"} className="text-blue-600 hover:underline text-lg">
-        Show More
-      </Link>
     </section>
   );
 }

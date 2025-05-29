@@ -9,8 +9,8 @@ export default function HomePage() {
   return (
     <>
       <CategoryLinkCarousel />
-      <EventGrid />
       <RecommendedEventGrid />
+      <EventGrid />
     </>
   );
 }
