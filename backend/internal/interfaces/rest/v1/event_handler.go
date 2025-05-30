@@ -24,11 +24,12 @@ type EventHandler struct{
 	eventService *service.EventService
 }
 
-func (e *EventHandler) SetupRoutes(v1 *gin.RouterGroup) {
-	v1.POST("/event", e.CreateEvent)
-	v1.GET("/event", e.GetEvents)
+func (e *EventHandler) SetupRoutes(v1Protected, v1Public *gin.RouterGroup) {
+	v1Protected.POST("/event", e.CreateEvent)
+	v1Public.GET("/event", e.GetEvents)
 
-	v1.GET("/event/recommendation", e.GetUserInterestedEvents)
+	v1Protected.GET("/event/recommendation", e.GetUserInterestedEvents)
+	v1Public.GET("/event/random", e.GetRandomCategorizedEvents)
 }
 
 func NewEventHandler(db *gorm.DB, redis *redis.Client, client *asynq.Client) types.Route {
@@ -243,5 +244,20 @@ func (e *EventHandler) GetUserInterestedEvents(c *gin.Context) {
 	c.JSON(http.StatusOK, &types.SuccessResponse{
 		Message: "success",
 		Data: result.Result,
+	})
+}
+
+func (e *EventHandler) GetRandomCategorizedEvents(c *gin.Context) {
+	result, err := e.eventService.GetRandomEvents(c.Request.Context(), &command.GetRandomEventsCommand{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, &types.ErrorResponse{
+			Error: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, &types.SuccessResponse{
+		Message: "success",
+		Data:    result.Result,
 	})
 }

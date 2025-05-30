@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"math/rand/v2"
 	"os"
 
 	"github.com/HappyNaCl/Cavent/backend/internal/app/command"
@@ -24,7 +25,9 @@ import (
 type EventService struct {
 	eventRepo repo.EventRepository
 	userRepo repo.UserRepository
+	categoryRepo repo.CategoryRepository
 	userInterestCache cache.UserInterestCache
+	categoriesCache cache.CategoriesCache
 	asynqClient *asynq.Client
 }
 
@@ -32,7 +35,9 @@ func NewEventService(db *gorm.DB, redis *redis.Client, client *asynq.Client) *Ev
 	return &EventService{
 		eventRepo: postgresdb.NewEventGormRepo(db),
 		userRepo: postgresdb.NewUserGormRepo(db),
+		categoryRepo: postgresdb.NewCategoryGormRepo(db),
 		userInterestCache: rediscache.NewUserInterestCache(redis),
+		categoriesCache: rediscache.NewCategoriesCache(redis),
 		asynqClient: client,
 	}
 }
@@ -132,7 +137,6 @@ func (e EventService) GetUserInterestedEvents(ctx context.Context, com *command.
 		zap.L().Sugar().Infof("Cache hit for user interests: %s", com.UserId)
 	}
 
-	// Proceed to fetch events based on categories
 	categoryIds := make([]uuid.UUID, 0, len(categories))
 	for _, category := range categories {
 		categoryIds = append(categoryIds, category.Id)
@@ -149,6 +153,51 @@ func (e EventService) GetUserInterestedEvents(ctx context.Context, com *command.
 	}
 
 	return &command.GetUserInterestedEventsCommandResult{
+		Result: eventResults,
+	}, nil
+}
+
+func (e EventService) GetRandomEvents(ctx context.Context, com *command.GetRandomEventsCommand) (*command.GetRandomEventsCommandResult, error) {
+	categories, err := e.categoriesCache.GetAllCategories(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("cache lookup failed: %w", err)
+	}
+	if categories == nil {
+		zap.L().Sugar().Info("Cache miss for all categories")
+		
+		categoriesResult, err := e.categoryRepo.GetAllCategory()
+		if err != nil {
+			return nil, fmt.Errorf("db lookup failed: %w", err)
+		}
+		categories = mapper.NewCategoryResultsFromCategoryType(categoriesResult)
+		err = e.categoriesCache.SetAllCategories(ctx, categories)
+		if err != nil {
+			return nil, fmt.Errorf("failed to set categories in cache: %w", err)
+		}
+		zap.L().Sugar().Infof("Cache miss for categories:all, cached %d categories", len(categories))
+	}else {
+		zap.L().Sugar().Info("Cache hit for categories:all")
+	}
+
+	randomCategoryAmount := 3
+
+	categoryIds := make([]uuid.UUID, 0, randomCategoryAmount)
+	for range randomCategoryAmount {
+		categoryIds = append(categoryIds, categories[rand.IntN(len(categories))].Id)
+		categories = append(categories[:len(categories)-1], categories[len(categories):]...)
+	}
+
+	events, err := e.eventRepo.GetEventsByCategories(categoryIds, 8)
+	if err != nil {
+		return nil, err
+	}
+
+	eventResults := make([]*common.BriefEventResult, 0, len(events))
+	for _, event := range events {
+		eventResults = append(eventResults, mapper.NewBriefEventResultFromEvent(event))
+	}
+
+	return &command.GetRandomEventsCommandResult{
 		Result: eventResults,
 	}, nil
 }

@@ -4,14 +4,17 @@ import { BriefEvent } from "@/interface/BriefEvent";
 import api from "@/lib/axios";
 import axios from "axios";
 import { toast } from "sonner";
+import { useAuth } from "../provider/AuthProvider";
 
 export default function RecommendedEventGrid() {
   const [events, setEvents] = useState<BriefEvent[]>([]);
+  const { user } = useAuth();
 
   useEffect(() => {
     async function fetchEvents() {
       try {
-        const res = await api.get("/event/recommendation");
+        const url = user ? "/event/recommendation" : "/event/random";
+        const res = await api.get(url);
         setEvents(res.data.data);
       } catch (error) {
         if (axios.isAxiosError(error)) {
@@ -23,7 +26,7 @@ export default function RecommendedEventGrid() {
     }
 
     fetchEvents();
-  }, []);
+  }, [user]);
 
   return (
     <section className="flex flex-col w-full items-center gap-6">

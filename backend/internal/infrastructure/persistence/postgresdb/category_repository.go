@@ -10,7 +10,6 @@ type CategoryGormRepo struct {
 	db *gorm.DB
 }
 
-// GetAllCategoryTypes implements repo.CategoryRepository.
 func (c *CategoryGormRepo) GetAllCategoryTypes() ([]*model.CategoryType, error) {
 	var categoryTypes []*model.CategoryType
 	err := c.db.

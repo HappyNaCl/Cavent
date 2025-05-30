@@ -20,19 +20,22 @@ func Init(db *gorm.DB, redis *redis.Client, client *asynq.Client) *gin.Engine  {
 		AllowHeaders: []string{"Origin", "Content-Type", "Authorization"},
 	}))
 
-	v1 := r.Group("/api/v1")
+	v1Protected := r.Group("/api/v1")
+	v1Protected.Use(AuthMiddleware())
+
+	v1Public := r.Group("/api/v1")
 
 	authRoute := NewAuthRoute(db, redis)
-	authRoute.SetupRoutes(v1)
+	authRoute.SetupRoutes(v1Protected, v1Public)
 
 	categoryRoute := NewCategoryHandler(db, redis)
-	categoryRoute.SetupRoutes(v1)
+	categoryRoute.SetupRoutes(v1Protected, v1Public)
 
 	userRoute := NewUserHandler(db, redis)
-	userRoute.SetupRoutes(v1)
+	userRoute.SetupRoutes(v1Protected, v1Public)
 	
 	eventRoute := NewEventHandler(db, redis, client)
-	eventRoute.SetupRoutes(v1)
+	eventRoute.SetupRoutes(v1Protected, v1Public)
 	
 	
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

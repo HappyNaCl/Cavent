@@ -46,6 +46,24 @@ func NewCategoriesResultFromCategory(category []*model.Category) []*common.Categ
 	return categoryResults
 }
 
+func NewCategoryResultsFromCategoryType(categoryType []*model.CategoryType) []*common.CategoryResult {
+	if categoryType == nil {
+		return nil
+	}
+
+	categoryResults := make([]*common.CategoryResult, 0, len(categoryType))
+	for _, catType := range categoryType {
+		for _, cat := range catType.Categories {
+			categoryResults = append(categoryResults, &common.CategoryResult{
+				Id:   cat.Id,
+				Name: cat.Name,
+			})
+		}
+	}
+
+	return categoryResults
+}
+
 func NewCategoryTypeResultFromCategoryType(categoryType []*model.CategoryType) []*common.CategoryTypeResult {
 	if categoryType == nil {
 		return nil

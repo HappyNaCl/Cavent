@@ -25,9 +25,9 @@ func NewUserHandler(db *gorm.DB, redis *redis.Client) types.Route {
 	}
 }
 
-func (u UserHandler) SetupRoutes(v1 *gin.RouterGroup) {
-	v1.PUT("/user/interest", u.UpdateUserInterest)
-	v1.GET("/user/interest", u.GetUserInterests)
+func (u UserHandler) SetupRoutes(v1Protected, v1Public *gin.RouterGroup) {
+	v1Protected.PUT("/user/interest", u.UpdateUserInterest)
+	v1Protected.GET("/user/interest", u.GetUserInterests)
 }
 
 // UpdateUserInterest godoc

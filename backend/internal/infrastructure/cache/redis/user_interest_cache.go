@@ -65,11 +65,6 @@ func (c *UserInterestCache) SetUserInterest(ctx context.Context, userId string, 
 
 func (c *UserInterestCache) Invalidate(ctx context.Context, userId string) error {
 	key := fmt.Sprintf(CACHE_USER_INTEREST_KEY, userId)
-
-	err := c.redis.Del(ctx, key).Err()
-	if err != nil {
-		return fmt.Errorf("failed to invalidate user interest cache: %w", err)
-	}
-
-	return nil
+	
+	return c.redis.Del(ctx, key).Err()
 }
