@@ -37,6 +37,8 @@ func Init(db *gorm.DB, redis *redis.Client, client *asynq.Client) *gin.Engine  {
 	eventRoute := NewEventHandler(db, redis, client)
 	eventRoute.SetupRoutes(v1Protected, v1Public)
 	
+	favRoute := NewFavoriteHandler(db, redis)
+	favRoute.SetupRoutes(v1Protected, v1Public)
 	
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	return r

@@ -1,6 +1,8 @@
 import { BriefEvent } from "@/interface/BriefEvent";
 import { Ticket, Star } from "lucide-react";
 import Image from "../ui/image";
+import FavoriteButton from "../button/FavoriteButton";
+import { useState } from "react";
 
 type Props = {
   event: BriefEvent;
@@ -25,6 +27,8 @@ export default function EventCard({ event }: Props) {
     minute: "2-digit",
     hour12: true,
   });
+
+  const [favCount, setFavCount] = useState(event.favoriteCount);
   return (
     <div className="max-w-sm rounded-xl overflow-hidden shadow bg-white hover:shadow-lg transition-shadow duration-300">
       <div className="relative w-full h-40">
@@ -37,7 +41,16 @@ export default function EventCard({ event }: Props) {
           {event.categoryName}
         </div>
         <div className="absolute top-2 right-2">
-          <Star className="w-5 h-5 text-gray-400" />
+          <FavoriteButton
+            eventId={event.id}
+            onUnauthorized={() => {
+              alert("login");
+            }}
+            onSuccess={(newCount) => {
+              setFavCount(newCount);
+            }}
+            isFavorited={event.isFavorited}
+          />
         </div>
       </div>
 
@@ -69,7 +82,7 @@ export default function EventCard({ event }: Props) {
               </div>
               <div className="flex items-center gap-1 text-blue-600">
                 <Star className="w-4 h-4 fill-current relative top-[1px]" />
-                10 interested
+                {favCount} interested
               </div>
             </div>
           </div>

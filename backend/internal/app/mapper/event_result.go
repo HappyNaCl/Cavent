@@ -27,7 +27,7 @@ func NewEventResultFromEvent(event *model.Event) *common.EventResult {
 	}
 }
 
-func NewBriefEventResultFromEvent(event *model.Event) *common.BriefEventResult {
+func NewBriefEventResultFromEvent(event *model.Event, isFavorited bool) *common.BriefEventResult {
 	if event == nil {
 		return nil
 	}
@@ -52,6 +52,8 @@ func NewBriefEventResultFromEvent(event *model.Event) *common.BriefEventResult {
 		Location:    event.Location,
 		BannerUrl:   event.BannerUrl,
 		CategoryName: event.Category.Name,
+		FavoriteCount: event.FavoriteCount,
+		IsFavorited: isFavorited,
 	}
 }
 

@@ -7,8 +7,12 @@ import (
 )
 
 type UserFavorite struct {
-	UserId  	uuid.UUID 	`gorm:"type:uuid;primaryKey"`
+	UserId  	string 		`gorm:"primaryKey"`
 	EventId 	uuid.UUID 	`gorm:"type:uuid;primaryKey"`
+
+	Event    	Event     	`gorm:"foreignKey:EventId"`
+	User     	User      	`gorm:"foreignKey:UserId"`
+
 	CreatedAt 	time.Time `json:"createdAt" gorm:"autoCreateTime"`
 	UpdatedAt 	time.Time `json:"updatedAt" gorm:"autoUpdateTime"`
 }

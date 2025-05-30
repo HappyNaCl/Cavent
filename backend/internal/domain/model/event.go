@@ -19,6 +19,7 @@ type Event struct {
     Location    string    
     Description *string
     BannerUrl   string
+    FavoriteCount int64   `json:"interestCount" gorm:"default:0"`
 	CreatedAt   time.Time `json:"createdAt" gorm:"autoCreateTime"`
 	UpdatedAt   time.Time `json:"updatedAt" gorm:"autoUpdateTime"`
 

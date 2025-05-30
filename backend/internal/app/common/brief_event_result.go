@@ -13,4 +13,6 @@ type BriefEventResult struct {
 	TicketType 		string    `json:"ticketType"`
 	TicketPrice 	float64   `json:"ticketPrice"`
 	CategoryName 	string    `json:"categoryName"`
+	FavoriteCount 	int64     `json:"favoriteCount"`
+	IsFavorited 	bool       `json:"isFavorited,omitempty"`
 }

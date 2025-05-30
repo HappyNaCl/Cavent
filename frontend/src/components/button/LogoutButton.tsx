@@ -16,7 +16,7 @@ export default function LogoutButton() {
       if (res.status === 200) {
         toast.success("Logout successful!");
         logout();
-        nav("/login");
+        nav("/auth");
       }
     } catch (error) {
       toast.error(`Error: ${error}`);

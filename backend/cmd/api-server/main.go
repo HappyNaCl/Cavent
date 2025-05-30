@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
 
@@ -65,6 +66,12 @@ func main(){
 			zap.L().Sugar().Infof("Error migrating database: %v", err.Error())
 			panic(err)
 		}
+		
+		err = redis.FlushAll(context.Background()).Err()
+		if err != nil {
+			zap.L().Sugar().Infof("Error flushing redis: %v", err.Error())
+			panic(err)
+		}
 	}
 
 	if seed != nil && *seed {
@@ -79,6 +86,11 @@ func main(){
 		err := migration.Migrate(db)
 		if err != nil {
 			zap.L().Sugar().Infof("Error migrating database: %v", err.Error())
+			panic(err)
+		}
+		err = redis.FlushAll(context.Background()).Err()
+		if err != nil {
+			zap.L().Sugar().Infof("Error flushing redis: %v", err.Error())
 			panic(err)
 		}
 		err = seeder.Seed(db)

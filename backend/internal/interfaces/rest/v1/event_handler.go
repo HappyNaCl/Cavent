@@ -17,6 +17,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/hibiken/asynq"
 	"github.com/redis/go-redis/v9"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -210,8 +211,15 @@ func (e *EventHandler) GetEvents(c *gin.Context) {
 		} 
 	}
 
+	var userId *string = nil
+	userQuery := c.Query("user")
+	if userQuery != "" {
+		userId = &userQuery
+	}
 
-	events, err := e.eventService.GetEvents(&command.GetEventsCommand{Limit: limit})
+	zap.L().Sugar().Infof("Fetching events with limit: %d, userId: %v", limit, userId)
+
+	events, err := e.eventService.GetEvents(&command.GetEventsCommand{Limit: limit, UserId: userId})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, &types.ErrorResponse{
 			Error: err.Error(),

@@ -20,4 +20,5 @@ type EventResult struct {
 	BannerUrl 	string 		`json:"bannerUrl"`
 	CreatedAt 	time.Time 	`json:"createdAt"`
 	UpdatedAt 	time.Time 	`json:"updatedAt"`
+	IsFavorited bool       `json:"isFavorited,omitempty"`
 }

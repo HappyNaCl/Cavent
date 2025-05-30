@@ -35,16 +35,16 @@ func NewAuthRoute(db *gorm.DB, redis *redis.Client) types.Route {
 }
 
 func (a *AuthHandler) SetupRoutes(v1Protected *gin.RouterGroup, v1Public *gin.RouterGroup) {
-	v1Protected.POST("/auth/register", a.registerUser)
-	v1Protected.POST("/auth/login", a.loginUser)
+	v1Public.POST("/auth/register", a.registerUser)
+	v1Public.POST("/auth/login", a.loginUser)
 
-	v1Protected.GET("/auth/:provider", a.loginOAuthUser)
-	v1Protected.GET("/auth/:provider/callback", a.handleOAuthCallback)
+	v1Public.GET("/auth/:provider", a.loginOAuthUser)
+	v1Public.GET("/auth/:provider/callback", a.handleOAuthCallback)
 
-	v1Protected.GET("/auth/refresh", a.refresh)
+	v1Public.GET("/auth/refresh", a.refresh)
 
-	v1Public.GET("/auth/me", a.checkMe)
-	v1Public.GET("/auth/logout", a.logout)
+	v1Protected.GET("/auth/me", a.checkMe)
+	v1Protected.GET("/auth/logout", a.logout)
 }
 
 // RegisterUser godoc

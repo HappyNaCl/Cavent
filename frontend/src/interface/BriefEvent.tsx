@@ -9,4 +9,6 @@ export interface BriefEvent {
   ticketPrice?: number;
   bannerUrl: string;
   categoryName: string;
+  favoriteCount: number;
+  isFavorited?: boolean;
 }

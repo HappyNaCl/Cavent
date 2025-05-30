@@ -15,6 +15,7 @@ export default function RecommendedEventGrid() {
       try {
         const url = user ? "/event/recommendation" : "/event/random";
         const res = await api.get(url);
+        console.log(res);
         setEvents(res.data.data);
       } catch (error) {
         if (axios.isAxiosError(error)) {
@@ -35,7 +36,7 @@ export default function RecommendedEventGrid() {
       </span>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 gap-y-8 py-4">
         {events.map((event) => (
-          <EventCard event={event} />
+          <EventCard key={event.id} event={event} />
         ))}
       </div>
     </section>

@@ -5,9 +5,11 @@ import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { BriefEvent } from "@/interface/BriefEvent";
 import { Link } from "react-router";
+import { useAuth } from "../provider/AuthProvider";
 
 export default function EventGrid() {
   const [events, setEvents] = useState<BriefEvent[]>([]);
+  const { user } = useAuth();
 
   useEffect(() => {
     async function fetchEvents() {
@@ -15,8 +17,10 @@ export default function EventGrid() {
         const res = await api.get("/event", {
           params: {
             limit: 8,
+            user: user?.id,
           },
         });
+        console.log(res.data.data);
         setEvents(res.data.data);
       } catch (error) {
         if (axios.isAxiosError(error)) {
@@ -37,7 +41,7 @@ export default function EventGrid() {
       </span>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 gap-y-8 py-4">
         {events.map((event) => (
-          <EventCard event={event} />
+          <EventCard key={event.id} event={event} />
         ))}
       </div>
       <Link to={"/events"} className="text-blue-600 hover:underline text-lg">

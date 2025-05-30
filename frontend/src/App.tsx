@@ -4,19 +4,20 @@ import HomePage from "./page/home/HomePage";
 import PreferencePage from "./page/profile/PreferencePage";
 import GeneralLayout from "./layout/GeneralLayout";
 import CreateEventPage from "./page/event/CreateEventPage";
+import HomeLayout from "./layout/HomeLayout";
 
 function App() {
   return (
     <main className="w-full min-h-screen">
       <Routes>
-        <Route path="/" element={<GeneralLayout />}>
-          <Route index element={<HomePage />} />
-          <Route path="profile">
-            <Route path="interest" element={<PreferencePage />} />
-          </Route>
-          <Route path="event">
-            <Route path="create" element={<CreateEventPage />} />
-          </Route>
+        <Route path="/" element={<HomeLayout />}>
+          <Route index element={<HomePage />}></Route>
+        </Route>
+        <Route path="profile" element={<GeneralLayout />}>
+          <Route path="interest" element={<PreferencePage />} />
+        </Route>
+        <Route path="event" element={<GeneralLayout />}>
+          <Route path="create" element={<CreateEventPage />} />
         </Route>
         <Route path="/auth" element={<AuthPage />} />
       </Routes>

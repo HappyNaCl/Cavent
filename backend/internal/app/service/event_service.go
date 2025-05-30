@@ -11,6 +11,7 @@ import (
 	"github.com/HappyNaCl/Cavent/backend/internal/app/mapper"
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/cache"
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/factory"
+	"github.com/HappyNaCl/Cavent/backend/internal/domain/model"
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/repo"
 	rediscache "github.com/HappyNaCl/Cavent/backend/internal/infrastructure/cache/redis"
 	"github.com/HappyNaCl/Cavent/backend/internal/infrastructure/persistence/postgresdb"
@@ -26,8 +27,11 @@ type EventService struct {
 	eventRepo repo.EventRepository
 	userRepo repo.UserRepository
 	categoryRepo repo.CategoryRepository
+	favoriteRepo repo.FavoriteRepository
+
 	userInterestCache cache.UserInterestCache
 	categoriesCache cache.CategoriesCache
+
 	asynqClient *asynq.Client
 }
 
@@ -36,6 +40,8 @@ func NewEventService(db *gorm.DB, redis *redis.Client, client *asynq.Client) *Ev
 		eventRepo: postgresdb.NewEventGormRepo(db),
 		userRepo: postgresdb.NewUserGormRepo(db),
 		categoryRepo: postgresdb.NewCategoryGormRepo(db),
+		favoriteRepo: postgresdb.NewFavoriteGormRepo(db),
+
 		userInterestCache: rediscache.NewUserInterestCache(redis),
 		categoriesCache: rediscache.NewCategoriesCache(redis),
 		asynqClient: client,
@@ -107,10 +113,29 @@ func (e EventService) GetEvents(com *command.GetEventsCommand) (*command.GetEven
 	}
 
 	eventResults := make([]*common.BriefEventResult, 0, len(events))
-	for _, event := range events {
-		eventResults = append(eventResults, mapper.NewBriefEventResultFromEvent(event))
-	}
+	if com.UserId == nil {
+		for _, event := range events {
+			eventResults = append(eventResults, mapper.NewBriefEventResultFromEvent(event, false))
+		}
+	}else {
+		eventIds := e.GetEventIds(events)
+		isFavorites, err := e.checkFavorited(*com.UserId, eventIds)
+		if err != nil {
+			return nil, err
+		}
 
+		for _, event := range events {
+			var favorited bool
+			if isFavorite, exists := isFavorites[event.Id]; exists {
+				favorited = isFavorite
+			} else {
+				favorited = false
+			}
+			zap.L().Sugar().Infof("%v", isFavorites)
+			eventResults = append(eventResults, mapper.NewBriefEventResultFromEvent(event, favorited))
+		}
+	}
+	
 	return &command.GetEventsCommandResult{
 		Result: eventResults,
 	}, nil
@@ -147,9 +172,22 @@ func (e EventService) GetUserInterestedEvents(ctx context.Context, com *command.
 		return nil, err
 	}
 
+	eventIds := e.GetEventIds(events)
+	isFavorites, err := e.checkFavorited(com.UserId, eventIds)
+	if err != nil {
+		return nil, err
+	}
+
 	eventResults := make([]*common.BriefEventResult, 0, len(events))
 	for _, event := range events {
-		eventResults = append(eventResults, mapper.NewBriefEventResultFromEvent(event))
+		var favorited bool
+		if isFavorite, exists := isFavorites[event.Id]; exists {
+			favorited = isFavorite
+		} else {
+			favorited = false
+		}
+
+		eventResults = append(eventResults, mapper.NewBriefEventResultFromEvent(event, favorited))
 	}
 
 	return &command.GetUserInterestedEventsCommandResult{
@@ -194,10 +232,29 @@ func (e EventService) GetRandomEvents(ctx context.Context, com *command.GetRando
 
 	eventResults := make([]*common.BriefEventResult, 0, len(events))
 	for _, event := range events {
-		eventResults = append(eventResults, mapper.NewBriefEventResultFromEvent(event))
+		eventResults = append(eventResults, mapper.NewBriefEventResultFromEvent(event, false))
 	}
 
 	return &command.GetRandomEventsCommandResult{
 		Result: eventResults,
 	}, nil
+}
+
+
+func (e EventService) checkFavorited(userId string, eventIds []uuid.UUID) (map[uuid.UUID]bool, error) {
+	results, err := e.favoriteRepo.IsFavorited(userId, eventIds)
+	if err != nil {
+		zap.L().Sugar().Errorf("Failed to check favorited status: %v", err)
+		return nil, err
+	}
+
+	return results, nil
+}
+
+func (e EventService) GetEventIds(events []*model.Event) []uuid.UUID {
+	eventIds := make([]uuid.UUID, 0, len(events))
+	for _, event := range events {
+		eventIds = append(eventIds, event.Id)
+	}
+	return eventIds
 }
