@@ -6,9 +6,10 @@ import { useState } from "react";
 
 type Props = {
   event: BriefEvent;
+  onUnauthorized: () => void;
 };
 
-export default function EventCard({ event }: Props) {
+export default function EventCard({ event, onUnauthorized }: Props) {
   const dateObj = new Date(event.startDate * 1000);
 
   const day = dateObj.getDate();
@@ -43,9 +44,7 @@ export default function EventCard({ event }: Props) {
         <div className="absolute top-2 right-2">
           <FavoriteButton
             eventId={event.id}
-            onUnauthorized={() => {
-              alert("login");
-            }}
+            onUnauthorized={onUnauthorized}
             onSuccess={(newCount) => {
               setFavCount(newCount);
             }}

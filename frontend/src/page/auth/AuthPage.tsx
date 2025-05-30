@@ -1,21 +1,32 @@
 import GoogleButton from "@/components/button/GoogleButton";
 import Logo from "@/assets/Logo.png";
 import Divider from "@/components/ui/divider";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LoginForm from "@/components/form/LoginForm";
 import RegisterForm from "@/components/form/RegisterForm";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import { useUnauthGuard } from "@/lib/hook/useUnauthGuard";
+import { useLocation } from "react-router";
 
 export default function AuthPage() {
   useUnauthGuard();
 
   const [isLogin, setIsLogin] = useState(true);
+  const location = useLocation();
+
+  const login = location.state?.login; // Get the login state from location state
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
   };
+
+  useEffect(() => {
+    if (login !== undefined) {
+      setIsLogin(login);
+    }
+    console.log("Login state from location:", login);
+  }, [login]);
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen h-fit bg-gray-700 lg:justify-around items-center p-4 sm:p-6 lg:p-0">

@@ -7,7 +7,10 @@ interface NavlinkProps {
 
 export default function Navlink({ to, name }: NavlinkProps) {
   const location = useLocation();
-  const isActive = location.pathname === to;
+  const isActive =
+    to === "/"
+      ? location.pathname === "/"
+      : location.pathname === to || location.pathname.startsWith(to + "/");
 
   return (
     <div className="h-full w-fit relative group flex items-center">

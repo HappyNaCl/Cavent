@@ -7,7 +7,11 @@ import { BriefEvent } from "@/interface/BriefEvent";
 import { Link } from "react-router";
 import { useAuth } from "../provider/AuthProvider";
 
-export default function EventGrid() {
+type EventGridProps = {
+  onUnauthorized: () => void;
+};
+
+export default function EventGrid({ onUnauthorized }: EventGridProps) {
   const [events, setEvents] = useState<BriefEvent[]>([]);
   const { user } = useAuth();
 
@@ -20,7 +24,6 @@ export default function EventGrid() {
             user: user?.id,
           },
         });
-        console.log(res.data.data);
         setEvents(res.data.data);
       } catch (error) {
         if (axios.isAxiosError(error)) {
@@ -32,7 +35,7 @@ export default function EventGrid() {
     }
 
     fetchEvents();
-  }, []);
+  }, [user]);
 
   return (
     <section className="flex flex-col w-full items-center gap-6">
@@ -41,7 +44,11 @@ export default function EventGrid() {
       </span>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 gap-y-8 py-4">
         {events.map((event) => (
-          <EventCard key={event.id} event={event} />
+          <EventCard
+            key={event.id}
+            event={event}
+            onUnauthorized={onUnauthorized}
+          />
         ))}
       </div>
       <Link to={"/events"} className="text-blue-600 hover:underline text-lg">

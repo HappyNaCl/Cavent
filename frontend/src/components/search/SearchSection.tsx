@@ -23,10 +23,12 @@ export default function SearchSection() {
       <div className="absolute inset-0 bg-black opacity-50"></div>
 
       <div className="relative z-10 text-white font-semibold w-2/3 flex flex-col items-center justify-center gap-4">
-        <SearchAnimation
-          prefix="Explore a world of events. Find what "
-          words={words}
-        />
+        <SearchAnimation words={words}>
+          <span>
+            Explore a world of <span className="text-yellow-300">events </span>
+            that{" "}
+          </span>
+        </SearchAnimation>
         <div className="w-3/4 mt-4">
           <SearchBar
             value={query}

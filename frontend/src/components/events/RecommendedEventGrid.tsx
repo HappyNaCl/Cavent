@@ -6,7 +6,13 @@ import axios from "axios";
 import { toast } from "sonner";
 import { useAuth } from "../provider/AuthProvider";
 
-export default function RecommendedEventGrid() {
+type RecommendedEventGridProps = {
+  onUnauthorized: () => void;
+};
+
+export default function RecommendedEventGrid({
+  onUnauthorized,
+}: RecommendedEventGridProps) {
   const [events, setEvents] = useState<BriefEvent[]>([]);
   const { user } = useAuth();
 
@@ -15,7 +21,6 @@ export default function RecommendedEventGrid() {
       try {
         const url = user ? "/event/recommendation" : "/event/random";
         const res = await api.get(url);
-        console.log(res);
         setEvents(res.data.data);
       } catch (error) {
         if (axios.isAxiosError(error)) {
@@ -36,7 +41,11 @@ export default function RecommendedEventGrid() {
       </span>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 gap-y-8 py-4">
         {events.map((event) => (
-          <EventCard key={event.id} event={event} />
+          <EventCard
+            key={event.id}
+            event={event}
+            onUnauthorized={onUnauthorized}
+          />
         ))}
       </div>
     </section>

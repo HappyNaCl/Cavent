@@ -1,8 +1,8 @@
 import { toast } from "sonner";
-import { Button } from "../ui/button";
 import { useNavigate } from "react-router";
 import api from "@/lib/axios";
 import { useAuth } from "../provider/AuthProvider";
+import { LogOutIcon } from "lucide-react";
 
 export default function LogoutButton() {
   const nav = useNavigate();
@@ -16,11 +16,16 @@ export default function LogoutButton() {
       if (res.status === 200) {
         toast.success("Logout successful!");
         logout();
-        nav("/auth");
+        nav("/");
       }
     } catch (error) {
       toast.error(`Error: ${error}`);
     }
   };
-  return <Button onClick={handleClick}>Logout</Button>;
+  return (
+    <div className="flex items-center gap-2 w-full py-2" onClick={handleClick}>
+      <LogOutIcon />
+      Logout
+    </div>
+  );
 }

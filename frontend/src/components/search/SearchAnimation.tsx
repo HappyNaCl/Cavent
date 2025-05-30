@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 
 interface TypingCycleProps {
-  prefix: string;
   words: string[];
   typingSpeed?: number;
   deletingSpeed?: number;
   pauseTime?: number;
+  children?: React.ReactNode;
 }
 
 export default function SearchAnimation({
-  prefix,
+  children,
   words,
   typingSpeed = 100,
   deletingSpeed = 50,
@@ -55,7 +55,7 @@ export default function SearchAnimation({
 
   return (
     <span className="font-montserrat font-bold text-4xl text-center">
-      {prefix}
+      {children}
       <span>{text}</span>
       <span className="animate-caret-blink">|</span>
     </span>
