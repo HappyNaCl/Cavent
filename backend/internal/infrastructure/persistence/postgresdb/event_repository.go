@@ -13,6 +13,17 @@ type EventGormRepo struct {
 	db *gorm.DB
 }
 
+// GetEventByID implements repo.EventRepository.
+func (e *EventGormRepo) GetEventByID(eventID uuid.UUID) (*model.Event, error) {
+	var event *model.Event
+	err := e.db.Preload("TicketTypes").Preload("Campus").Preload("Category").
+		Where("id = ?", eventID).First(&event).Error
+	if err != nil {
+		return nil, err
+	}
+	return event, nil
+}
+
 // GetEvents implements repo.EventRepository.
 func (e *EventGormRepo) GetEvents(limit int) ([]*model.Event, error) {
 	var events []*model.Event

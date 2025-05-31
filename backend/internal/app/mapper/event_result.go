@@ -5,7 +5,7 @@ import (
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/model"
 )
 
-func NewEventResultFromEvent(event *model.Event) *common.EventResult {
+func NewEventResultFromEvent(event *model.Event, isFavorited bool) *common.EventResult {
 	if event == nil {
 		return nil
 	}
@@ -24,6 +24,7 @@ func NewEventResultFromEvent(event *model.Event) *common.EventResult {
 		Description: event.Description,
 		CreatedAt:   event.CreatedAt,
 		UpdatedAt:   event.UpdatedAt,
+		IsFavorited: isFavorited,
 	}
 }
 

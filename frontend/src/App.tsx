@@ -5,6 +5,7 @@ import PreferencePage from "./page/profile/PreferencePage";
 import GeneralLayout from "./layout/GeneralLayout";
 import CreateEventPage from "./page/event/CreateEventPage";
 import HomeLayout from "./layout/HomeLayout";
+import EventDetailPage from "./page/event/EventDetailPage";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         </Route>
         <Route path="event" element={<GeneralLayout />}>
           <Route path="create" element={<CreateEventPage />} />
+          <Route path=":id" element={<EventDetailPage />}></Route>
         </Route>
         <Route path="/auth" element={<AuthPage />} />
       </Routes>

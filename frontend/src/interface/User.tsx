@@ -4,7 +4,7 @@ export default interface User {
   name: string;
   email: string;
   avatarUrl: string;
-  campusId: string;
+  campusId?: string;
   firstTimeLogin: boolean;
   role: string;
 }

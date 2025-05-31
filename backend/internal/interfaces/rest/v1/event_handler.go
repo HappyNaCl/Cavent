@@ -31,6 +31,8 @@ func (e *EventHandler) SetupRoutes(v1Protected, v1Public *gin.RouterGroup) {
 
 	v1Protected.GET("/event/recommendation", e.GetUserInterestedEvents)
 	v1Public.GET("/event/random", e.GetRandomCategorizedEvents)
+
+	v1Public.GET("/event/:eventId", e.GetEventDetails)
 }
 
 func NewEventHandler(db *gorm.DB, redis *redis.Client, client *asynq.Client) types.Route {
@@ -257,6 +259,48 @@ func (e *EventHandler) GetUserInterestedEvents(c *gin.Context) {
 
 func (e *EventHandler) GetRandomCategorizedEvents(c *gin.Context) {
 	result, err := e.eventService.GetRandomEvents(c.Request.Context(), &command.GetRandomEventsCommand{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, &types.ErrorResponse{
+			Error: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, &types.SuccessResponse{
+		Message: "success",
+		Data:    result.Result,
+	})
+}
+
+func (e *EventHandler) GetEventDetails(c *gin.Context) {
+	eventIdStr := c.Param("eventId")
+	if eventIdStr == "" {
+		c.JSON(http.StatusBadRequest, &types.ErrorResponse{
+			Error: "eventId is required",
+		})
+		return
+	}
+
+	eventId, err := uuid.Parse(eventIdStr)
+	if err != nil || eventId == uuid.Nil {
+		c.JSON(http.StatusBadRequest, &types.ErrorResponse{
+			Error: errors.ErrInvalidUUID.Error(),
+		})
+		return
+	}
+
+	var userId *string = nil
+
+	if userQuery := c.Query("user"); userQuery != "" {
+		userId = &userQuery
+	}
+
+	com := &command.GetEventDetailsCommand{
+		EventID: eventId,
+		UserId:  userId,
+	}
+
+	result, err := e.eventService.GetEventDetails(com)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, &types.ErrorResponse{
 			Error: err.Error(),

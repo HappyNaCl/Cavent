@@ -3,7 +3,7 @@ import { Button } from "../ui/button";
 import { useAuth } from "../provider/AuthProvider";
 import { toast } from "sonner";
 import axios from "axios";
-import { useState, useRef } from "react";
+import { useState, useRef, MouseEvent } from "react";
 import api from "@/lib/axios";
 
 type FavoriteButtonProps = {
@@ -26,7 +26,9 @@ export default function FavoriteButton({
   const lastClickRef = useRef(0);
   const throttleDelay = 1000;
 
-  const handleClick = async () => {
+  const handleClick = async (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+
     const now = Date.now();
     if (now - lastClickRef.current < throttleDelay) {
       return;

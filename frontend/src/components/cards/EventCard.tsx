@@ -2,7 +2,8 @@ import { BriefEvent } from "@/interface/BriefEvent";
 import { Ticket, Star } from "lucide-react";
 import Image from "../ui/image";
 import FavoriteButton from "../button/FavoriteButton";
-import { useState } from "react";
+import { MouseEvent, useState } from "react";
+import { useNavigate } from "react-router";
 
 type Props = {
   event: BriefEvent;
@@ -10,6 +11,8 @@ type Props = {
 };
 
 export default function EventCard({ event, onUnauthorized }: Props) {
+  const nav = useNavigate();
+
   const dateObj = new Date(event.startDate * 1000);
 
   const day = dateObj.getDate();
@@ -30,8 +33,17 @@ export default function EventCard({ event, onUnauthorized }: Props) {
   });
 
   const [favCount, setFavCount] = useState(event.favoriteCount);
+
+  const handleCardClick = (e: MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    nav("/event/" + event.id);
+  };
+
   return (
-    <div className="max-w-sm rounded-xl overflow-hidden shadow bg-white hover:shadow-lg transition-shadow duration-300">
+    <div
+      onClick={handleCardClick}
+      className="max-w-sm rounded-xl overflow-hidden shadow bg-white hover:shadow-lg transition-shadow duration-300"
+    >
       <div className="relative w-full h-40">
         <Image
           src={event.bannerUrl}

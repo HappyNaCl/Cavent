@@ -100,7 +100,7 @@ func (e EventService) CreateEvent(com *command.CreateEventCommand) (*command.Cre
 		return nil, err
 	}
 
-	eventResult := mapper.NewEventResultFromEvent(eventModel)
+	eventResult := mapper.NewEventResultFromEvent(eventModel, false)
 	return &command.CreateEventCommandResult{
 		Result: eventResult,
 	}, nil
@@ -237,6 +237,32 @@ func (e EventService) GetRandomEvents(ctx context.Context, com *command.GetRando
 
 	return &command.GetRandomEventsCommandResult{
 		Result: eventResults,
+	}, nil
+}
+
+func (e EventService) GetEventDetails(com *command.GetEventDetailsCommand) (*command.GetEventDetailsCommandResult, error) {
+	event, err := e.eventRepo.GetEventByID(com.EventID)
+	if err != nil {
+		return nil, err
+	}
+
+	if event == nil {
+		return nil, fmt.Errorf("event not found with ID: %s", com.EventID)
+	}
+
+	var favorited bool = false
+	if com.UserId != nil {
+		isFavorites, err := e.checkFavorited(*com.UserId, []uuid.UUID{event.Id})
+		if err != nil {
+			return nil, err
+		}
+		favorited = isFavorites[event.Id]
+	}
+
+	eventResult := mapper.NewEventResultFromEvent(event, favorited)
+
+	return &command.GetEventDetailsCommandResult{
+		Result: eventResult,
 	}, nil
 }
 
