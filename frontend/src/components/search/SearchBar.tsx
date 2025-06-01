@@ -10,7 +10,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import debounce from "@/lib/debounce";
-import { useNavigate, useSearchParams } from "react-router";
+import { createSearchParams, useNavigate, useSearchParams } from "react-router";
 
 export default function SearchBar() {
   const [query, setQuery] = useState("");
@@ -89,6 +89,14 @@ export default function SearchBar() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                nav({
+                  pathname: "/event/search",
+                  search: createSearchParams({ query: query }).toString(),
+                });
+              }
+            }}
             placeholder="Search..."
             className="flex-grow px-4 py-2 text-xl text-gray-800 placeholder-gray-400 bg-transparent focus:outline-none"
           />

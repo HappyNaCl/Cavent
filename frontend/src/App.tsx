@@ -6,6 +6,7 @@ import GeneralLayout from "./layout/GeneralLayout";
 import CreateEventPage from "./page/event/CreateEventPage";
 import HomeLayout from "./layout/HomeLayout";
 import EventDetailPage from "./page/event/EventDetailPage";
+import SearchResultPage from "./page/search/SearchResultPage";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomeLayout />}>
           <Route index element={<HomePage />}></Route>
+          <Route path="event/search" element={<SearchResultPage />} />
         </Route>
         <Route path="profile" element={<GeneralLayout />}>
           <Route path="interest" element={<PreferencePage />} />
