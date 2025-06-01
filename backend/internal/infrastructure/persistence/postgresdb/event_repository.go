@@ -5,12 +5,30 @@ import (
 
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/model"
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/repo"
+	"github.com/HappyNaCl/Cavent/backend/internal/infrastructure/persistence/postgresdb/paginate"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type EventGormRepo struct {
 	db *gorm.DB
+}
+
+// GetCampusEvents implements repo.EventRepository.
+func (e *EventGormRepo) GetCampusEvents(campusID uuid.UUID, pagination paginate.Pagination) (*paginate.Pagination, error) {
+	var events []*model.Event
+	err := e.db.Preload("TicketTypes").Preload("Campus").Preload("Category").
+		Scopes(paginate.Paginate(events, &pagination, e.db)).
+		Where("campus_id = ?", campusID).
+		Where("start_time > ?", time.Now()).
+		Order("start_time ASC").Find(&events).Error
+	
+	if err != nil {
+		return nil, err
+	}
+
+	pagination.Rows = events
+	return &pagination, nil
 }
 
 // GetEventByID implements repo.EventRepository.

@@ -11,6 +11,7 @@ import (
 	"github.com/HappyNaCl/Cavent/backend/internal/app/service"
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/errors"
 	"github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1/dto/request"
+	"github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1/dto/response"
 	"github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1/types"
 	fileUtils "github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1/utils"
 	"github.com/gin-gonic/gin"
@@ -33,6 +34,7 @@ func (e *EventHandler) SetupRoutes(v1Protected, v1Public *gin.RouterGroup) {
 	v1Public.GET("/event/random", e.GetRandomCategorizedEvents)
 
 	v1Public.GET("/event/:eventId", e.GetEventDetails)
+	v1Public.GET("/campus/:campusId/events", e.GetCampusEvents)
 }
 
 func NewEventHandler(db *gorm.DB, redis *redis.Client, client *asynq.Client) types.Route {
@@ -311,5 +313,79 @@ func (e *EventHandler) GetEventDetails(c *gin.Context) {
 	c.JSON(http.StatusOK, &types.SuccessResponse{
 		Message: "success",
 		Data:    result.Result,
+	})
+}
+
+func (e *EventHandler) GetCampusEvents(c *gin.Context) {
+	campusIdStr := c.Param("campusId")
+	if campusIdStr == "" {
+		c.JSON(http.StatusBadRequest, &types.ErrorResponse{
+			Error: "campusId is required",
+		})
+		return
+	}
+
+	campusId, err := uuid.Parse(campusIdStr)
+	if err != nil || campusId == uuid.Nil {
+		c.JSON(http.StatusBadRequest, &types.ErrorResponse{
+			Error: errors.ErrInvalidUUID.Error(),
+		})
+		return
+	}
+
+	page, err := strconv.Atoi(c.Query("page"))
+	if page <= 0 {
+		page = 1
+	}
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, &types.ErrorResponse{
+			Error: "invalid page number",
+		})
+		return
+	}
+
+	limit, err := strconv.Atoi(c.Query("limit"))
+	if limit <= 0 {
+		limit = 8
+	}
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, &types.ErrorResponse{
+			Error: "invalid limit number",
+		})
+		return
+	}
+
+	var userId *string = nil
+
+	if userQuery := c.Query("user"); userQuery != "" {
+		userId = &userQuery
+	}
+
+	com := &command.GetCampusEventsCommand{
+		CampusId:   campusId,
+		Limit: 	limit,
+		Page: 	page,
+		UserId: userId,
+	}
+
+	result, err := e.eventService.GetEventsByCampus(com)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, &types.ErrorResponse{
+			Error: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, &types.SuccessResponse{
+		Message: "success",
+		Data: response.PaginationResponse{
+			Rows:       result.Result,
+			TotalRows:  result.TotalRows,
+			TotalPages: result.TotalPages,
+			Page:       result.Page,
+			Limit:      result.Limit,
+		}  ,
 	})
 }

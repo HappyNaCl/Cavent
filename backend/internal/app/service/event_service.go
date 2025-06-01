@@ -15,6 +15,7 @@ import (
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/repo"
 	rediscache "github.com/HappyNaCl/Cavent/backend/internal/infrastructure/cache/redis"
 	"github.com/HappyNaCl/Cavent/backend/internal/infrastructure/persistence/postgresdb"
+	"github.com/HappyNaCl/Cavent/backend/internal/infrastructure/persistence/postgresdb/paginate"
 	"github.com/HappyNaCl/Cavent/backend/internal/infrastructure/queue/tasks"
 	"github.com/google/uuid"
 	"github.com/hibiken/asynq"
@@ -263,6 +264,39 @@ func (e EventService) GetEventDetails(com *command.GetEventDetailsCommand) (*com
 
 	return &command.GetEventDetailsCommandResult{
 		Result: eventResult,
+	}, nil
+}
+
+func (e EventService) GetEventsByCampus(com *command.GetCampusEventsCommand) (*command.GetCampusEventsCommandResult, error) {
+	results, err := e.eventRepo.GetCampusEvents(com.CampusId, paginate.Pagination{
+		Limit: com.Limit,
+		Page:  com.Page,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	events := make([]*common.BriefEventResult, 0, len(results.Rows.([]*model.Event)))
+	for _, event := range results.Rows.([]*model.Event) {
+		var favorited bool = false
+		if com.UserId != nil {
+			isFavorites, err := e.checkFavorited(*com.UserId, []uuid.UUID{event.Id})
+			if err != nil {
+				return nil, err
+			}
+			favorited = isFavorites[event.Id]
+		}
+
+		eventResult := mapper.NewBriefEventResultFromEvent(event, favorited)
+		events = append(events, eventResult)
+	}
+
+	return &command.GetCampusEventsCommandResult{
+		Result:     events,
+		TotalRows:  results.TotalRows,
+		TotalPages: results.TotalPages,
+		Page:       results.Page,
+		Limit:      results.Limit,
 	}, nil
 }
 

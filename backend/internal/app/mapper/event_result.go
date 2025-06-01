@@ -13,7 +13,6 @@ func NewEventResultFromEvent(event *model.Event, isFavorited bool) *common.Event
 	result := &common.EventResult{
 		Id:          event.Id,
 		Title:       event.Title,
-		CampusId:    event.CampusId,
 		CreatedById: event.CreatedById,
 		EventType:   event.EventType,
 		TicketType:  event.TicketType,

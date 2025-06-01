@@ -1,6 +1,8 @@
 import FavoriteButton from "@/components/button/FavoriteButton";
 import LoginModal, { LoginModalRef } from "@/components/dialog/LoginDialog";
+import { ShareModal } from "@/components/dialog/ShareDialog";
 import NotFound from "@/components/error/NotFound";
+import CampusEventCarousel from "@/components/events/CampusEventCarousel";
 import { useAuth } from "@/components/provider/AuthProvider";
 import EventDetailSkeleton from "@/components/skeleton/EventDetailSkeleton";
 import { Button } from "@/components/ui/button";
@@ -8,16 +10,18 @@ import Image from "@/components/ui/image";
 import { Event } from "@/interface/Event";
 import api from "@/lib/axios";
 import axios from "axios";
-import { Calendar, Clock, MapPin, Ticket } from "lucide-react";
+import { Calendar, Clock, MapPin, Share2, Ticket } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router";
 import { toast } from "sonner";
 
 export default function EventDetailPage() {
   const { id } = useParams();
+  const { user } = useAuth();
+
+  const [openShareDialog, setOpenShareDialog] = useState(false);
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
 
   const loginModalRef = useRef<LoginModalRef>(null);
 
@@ -95,7 +99,7 @@ export default function EventDetailPage() {
   }
 
   return (
-    <div className="mx-auto space-y-6">
+    <div className="w-full mx-auto space-y-6">
       <Image
         src={event.bannerUrl}
         alt="Event Banner"
@@ -111,15 +115,12 @@ export default function EventDetailPage() {
             onSuccess={() => {}}
             onUnauthorized={handleUnauthorized}
           />
-          <Button variant="ghost" size="icon">
-            <svg
-              width="20"
-              height="20"
-              fill="currentColor"
-              className="text-gray-600"
-            >
-              <path d="M15 8a3 3 0 10-2.83-2H8a3 3 0 000 6h4.17A3 3 0 1015 8zM8 10a2 2 0 110-4 2 2 0 010 4zm7 0a2 2 0 110-4 2 2 0 010 4z"></path>
-            </svg>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setOpenShareDialog(true)}
+          >
+            <Share2 />
           </Button>
         </div>
       </div>
@@ -201,7 +202,18 @@ export default function EventDetailPage() {
         </p>
       </div>
 
+      <CampusEventCarousel
+        campusId={event.campus.id}
+        campusName={event.campus.name}
+        unAuthorized={handleUnauthorized}
+      />
+
       <LoginModal ref={loginModalRef} />
+      <ShareModal
+        open={openShareDialog}
+        onOpenChange={setOpenShareDialog}
+        eventId={event.id}
+      />
     </div>
   );
 }

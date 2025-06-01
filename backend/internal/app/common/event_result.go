@@ -10,7 +10,6 @@ type EventResult struct {
 	Id     	 	uuid.UUID 	`json:"id"`
 	Title  	 	string 		`json:"title"`
 	CreatedById string 		`json:"createdById"`
-	CampusId 	uuid.UUID 	`json:"campusId"`
 	EventType 	string 		`json:"eventType"`
 	TicketType 	string 		`json:"ticketType"`
 	StartTime 	int64  	`json:"startTime"`
