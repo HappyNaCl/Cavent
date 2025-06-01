@@ -318,3 +318,19 @@ func (e EventService) GetEventIds(events []*model.Event) []uuid.UUID {
 	}
 	return eventIds
 }
+
+func (e EventService) SearchEvents(com *command.GetSearchEventCommand) (*command.GetSearchEventCommandResult, error) {
+	events, err := e.eventRepo.SearchEvents(com.Query)
+	if err != nil {
+		return nil, err
+	}
+
+	eventResults := make([]*common.EventSearchResult, 0, len(events))
+	for _, event := range events {
+		eventResults = append(eventResults, mapper.NewSearchResultFromEvent(event))
+	}
+
+	return &command.GetSearchEventCommandResult{
+		Result: eventResults,
+	}, nil
+}

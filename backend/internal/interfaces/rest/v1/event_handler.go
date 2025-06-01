@@ -35,6 +35,8 @@ func (e *EventHandler) SetupRoutes(v1Protected, v1Public *gin.RouterGroup) {
 
 	v1Public.GET("/event/:eventId", e.GetEventDetails)
 	v1Public.GET("/campus/:campusId/events", e.GetCampusEvents)
+
+	v1Public.GET("/event/search", e.SearchEvents)
 }
 
 func NewEventHandler(db *gorm.DB, redis *redis.Client, client *asynq.Client) types.Route {
@@ -387,5 +389,29 @@ func (e *EventHandler) GetCampusEvents(c *gin.Context) {
 			Page:       result.Page,
 			Limit:      result.Limit,
 		}  ,
+	})
+}
+
+
+func (e *EventHandler) SearchEvents(c *gin.Context) {
+	query := c.Query("query")
+	if query == "" {
+		c.JSON(http.StatusBadRequest, &types.ErrorResponse{
+			Error: "query parameter is required",
+		})
+		return
+	}
+
+	events, err := e.eventService.SearchEvents(&command.GetSearchEventCommand{Query: query})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, &types.ErrorResponse{
+			Error: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, &types.SuccessResponse{
+		Message: "success",
+		Data:    events.Result,
 	})
 }

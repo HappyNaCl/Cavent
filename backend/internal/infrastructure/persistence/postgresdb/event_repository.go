@@ -7,11 +7,29 @@ import (
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/repo"
 	"github.com/HappyNaCl/Cavent/backend/internal/infrastructure/persistence/postgresdb/paginate"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 type EventGormRepo struct {
 	db *gorm.DB
+}
+
+// SearchEvents implements repo.EventRepository.
+func (e *EventGormRepo) SearchEvents(query string) ([]*model.Event, error) {
+	var events []*model.Event
+	err := e.db.Raw(`
+		SELECT id, title, location, start_time, similarity(lower(title), ?) AS score
+		FROM events
+		ORDER BY score DESC
+		LIMIT 5
+	`, query).Scan(&events).Error
+	if err != nil {
+		return nil, err
+	}
+
+	zap.L().Sugar().Infof("Search query: %s, found %d events", query, len(events))
+	return events, nil
 }
 
 // GetCampusEvents implements repo.EventRepository.
@@ -22,7 +40,7 @@ func (e *EventGormRepo) GetCampusEvents(campusID uuid.UUID, pagination paginate.
 		Where("campus_id = ?", campusID).
 		Where("start_time > ?", time.Now()).
 		Order("start_time ASC").Find(&events).Error
-	
+
 	if err != nil {
 		return nil, err
 	}

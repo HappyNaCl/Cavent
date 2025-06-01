@@ -84,6 +84,19 @@ func NewBriefEventResultFromEvent(event *model.Event, isFavorited bool) *common.
 	}
 }
 
+func NewSearchResultFromEvent(event *model.Event) *common.EventSearchResult {
+	if event == nil {
+		return nil
+	}
+
+	return &common.EventSearchResult{
+		Id:          event.Id,
+		Title:       event.Title,
+		StartTime:   event.StartTime.Unix(),
+		Location:    event.Location,
+	}
+}
+
 func getCheapestTicketPrice(tickets []model.TicketType) float64 {
 	if len(tickets) == 0 {
 		return 0 

@@ -41,6 +41,15 @@ func Migrate(db *gorm.DB) error {
         return err
     }
 
+    err = db.Exec("CREATE EXTENSION IF NOT EXISTS pg_trgm;").Error
+    if err != nil {
+        return err
+    }
+
+    err = db.Exec("CREATE INDEX idx_trgm_title ON events USING gin (title gin_trgm_ops);").Error
+    if err != nil {
+        return err
+    }
 
     zap.L().Sugar().Info("Database migrated successfully!")
     return nil
