@@ -1,11 +1,8 @@
-import { useState } from "react";
 import BackgroundImage from "../../assets/image.png";
 import SearchBar from "./SearchBar";
 import SearchAnimation from "./SearchAnimation";
 
 export default function SearchSection() {
-  const [query, setQuery] = useState("");
-
   const words = [
     "excites you!",
     "motivates you!",
@@ -30,11 +27,7 @@ export default function SearchSection() {
           </span>
         </SearchAnimation>
         <div className="w-3/4 mt-4">
-          <SearchBar
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onClear={() => setQuery("")}
-          />
+          <SearchBar />
         </div>
       </div>
     </div>
