@@ -64,7 +64,7 @@ export default function FavoriteButton({
 
   return (
     <Button
-      className="bg-white rounded-3xl p-1 hover:bg-gray-100"
+      className="bg-white rounded-3xl p-1 hover:bg-gray-100 cursor-pointer"
       onClick={handleClick}
     >
       <Star

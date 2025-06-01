@@ -13,12 +13,14 @@ type EventResult struct {
 	CampusId 	uuid.UUID 	`json:"campusId"`
 	EventType 	string 		`json:"eventType"`
 	TicketType 	string 		`json:"ticketType"`
-	StartTime 	time.Time  	`json:"startTime"`
-	EndTime  	*time.Time  `json:"endTime"`
+	StartTime 	int64  	`json:"startTime"`
+	EndTime  	*int64  `json:"endTime"`
 	Location 	string 	   	`json:"location"`
 	Description *string 	`json:"description,omitempty"`
 	BannerUrl 	string 		`json:"bannerUrl"`
 	CreatedAt 	time.Time 	`json:"createdAt"`
 	UpdatedAt 	time.Time 	`json:"updatedAt"`
 	IsFavorited bool       `json:"isFavorited,omitempty"`
+	Tickets     []*TicketResult `json:"tickets,omitempty"`
+	Campus      BriefCampusResult `json:"campus"`
 }

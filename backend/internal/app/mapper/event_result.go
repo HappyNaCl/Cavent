@@ -9,23 +9,50 @@ func NewEventResultFromEvent(event *model.Event, isFavorited bool) *common.Event
 	if event == nil {
 		return nil
 	}
-
-	return &common.EventResult{
+	
+	result := &common.EventResult{
 		Id:          event.Id,
 		Title:       event.Title,
 		CampusId:    event.CampusId,
 		CreatedById: event.CreatedById,
 		EventType:   event.EventType,
 		TicketType:  event.TicketType,
-		StartTime:   event.StartTime,
+		StartTime:   event.StartTime.Unix(),
 		Location:    event.Location,
 		BannerUrl:   event.BannerUrl,
-		EndTime:   	 event.EndTime,
 		Description: event.Description,
 		CreatedAt:   event.CreatedAt,
 		UpdatedAt:   event.UpdatedAt,
 		IsFavorited: isFavorited,
 	}
+
+	if event.TicketType == "ticketed" {
+		tickets := make([]*common.TicketResult, 0, len(event.TicketTypes))
+		for _, ticket := range event.TicketTypes {
+			tickets = append(tickets, &common.TicketResult{
+				Id:          ticket.Id,
+				Name:        ticket.Name,
+				Price:       ticket.Price,
+				Quantity:    ticket.Quantity,
+			})
+		}
+		result.Tickets = tickets
+	}
+
+	if event.EndTime != nil {
+		endTime := event.EndTime.Unix()
+		result.EndTime = &endTime
+	} else {
+		result.EndTime = nil
+	}
+	
+	result.Campus = common.BriefCampusResult{
+		Id:   event.Campus.Id,
+		Name: event.Campus.Name,
+		ProfileUrl: event.Campus.LogoUrl,
+	}
+
+	return result
 }
 
 func NewBriefEventResultFromEvent(event *model.Event, isFavorited bool) *common.BriefEventResult {
