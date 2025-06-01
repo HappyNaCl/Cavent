@@ -1,7 +1,7 @@
 import { EventSearch } from "@/interface/EventSearch";
 import api from "@/lib/axios";
 import axios from "axios";
-import { Search, X } from "lucide-react";
+import { MapPin, Search, X } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
 import {
@@ -10,7 +10,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import debounce from "@/lib/debounce";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 
 export default function SearchBar() {
   const [query, setQuery] = useState("");
@@ -19,6 +19,15 @@ export default function SearchBar() {
   );
   const [isOpen, setIsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const searchQuery = searchParams.get("search_query");
+    if (searchQuery) {
+      setQuery(searchQuery);
+    }
+  }, [searchParams]);
 
   const handleClear = () => {
     setQuery("");
@@ -44,6 +53,7 @@ export default function SearchBar() {
 
         if (res.status === 200) {
           const results = res.data.data;
+          console.log(results);
           setEventSearchResults(results);
           setIsOpen(results.length > 0);
         }
@@ -107,8 +117,9 @@ export default function SearchBar() {
                 }}
               >
                 <p className="font-semibold text-gray-800">{event.title}</p>
-                <p className="text-sm text-gray-500">
-                  {new Date(event.startTime).toLocaleString()} •{" "}
+                <p className="text-sm text-gray-500 flex items-center gap-1">
+                  {new Date(event.startTime * 1000).toLocaleString()} •
+                  <MapPin className="w-4 h-4 inline text-gray-500" />
                   {event.location}
                 </p>
               </div>
