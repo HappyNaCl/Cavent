@@ -15,7 +15,7 @@ type Pagination struct {
 	TotalPages int         `json:"totalPages"`
 	Rows       interface{} `json:"rows"`
 	Filter     []string    `json:"filter"`
-	FilterArgs []string    `json:"filterArgs"`
+	FilterArgs [][]interface{}    `json:"filterArgs"`
 }
 
 func (p *Pagination) GetOffset() int {
@@ -43,15 +43,30 @@ func (p *Pagination) GetSort() string {
 	return p.Sort
 }
 
-func Paginate(value interface{}, pagination *Pagination, db *gorm.DB) func(db *gorm.DB) *gorm.DB {  
-    var totalRows int64 
-    db.Model(value).Count(&totalRows)   
-	
-    pagination.TotalRows = totalRows    
-    totalPages := int(math.Ceil(float64(totalRows) / float64(pagination.Limit)))    
-    pagination.TotalPages = totalPages  
+func Paginate(value interface{}, pagination *Pagination, db *gorm.DB) func(db *gorm.DB) *gorm.DB {
+    var totalRows int64
 
-    return func(db *gorm.DB) *gorm.DB { 
-        return db.Offset(pagination.GetOffset()).Limit(pagination.GetLimit()).Order(pagination.GetSort())   
-	}
+    countQuery := db.Model(value)
+    for i, filter := range pagination.Filter {
+        countQuery = countQuery.Where(filter, pagination.FilterArgs[i]...)
+    }
+
+    countQuery.Count(&totalRows)
+
+    pagination.TotalRows = totalRows
+    totalPages := int(math.Ceil(float64(totalRows) / float64(pagination.Limit)))
+    pagination.TotalPages = totalPages
+
+    return func(db *gorm.DB) *gorm.DB {
+        scopedDB := db
+
+        for i, filter := range pagination.Filter {
+            scopedDB = scopedDB.Where(filter, pagination.FilterArgs[i]...)
+        }
+
+        return scopedDB.
+            Offset(pagination.GetOffset()).
+            Limit(pagination.GetLimit()).
+            Order(pagination.GetSort())
+    }
 }

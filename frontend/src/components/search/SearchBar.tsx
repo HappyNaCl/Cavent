@@ -20,10 +20,10 @@ export default function SearchBar() {
   const [isOpen, setIsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
-    const searchQuery = searchParams.get("search_query");
+    const searchQuery = searchParams.get("query");
     if (searchQuery) {
       setQuery(searchQuery);
     }
@@ -34,6 +34,8 @@ export default function SearchBar() {
     setEventSearchResults([]);
     setIsOpen(false);
     inputRef.current?.focus();
+    searchParams.delete("query");
+    setSearchParams(searchParams, { replace: true });
   };
 
   const nav = useNavigate();
@@ -88,11 +90,14 @@ export default function SearchBar() {
             ref={inputRef}
             type="text"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setSearchParams({ query: e.target.value });
+            }}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 nav({
-                  pathname: "/event/search",
+                  pathname: "/event",
                   search: createSearchParams({ query: query }).toString(),
                 });
               }

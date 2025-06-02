@@ -13,6 +13,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { BriefEvent } from "@/interface/BriefEvent";
 import api from "@/lib/axios";
+import debounce from "@/lib/debounce";
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
@@ -25,15 +26,6 @@ export default function SearchResultPage() {
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<
     string[] | null
   >(null);
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [searchParams] = useSearchParams();
-
-  useEffect(() => {
-    const searchQuery = searchParams.get("search_query");
-    if (searchQuery) {
-      setSearchQuery(searchQuery);
-    }
-  }, [searchParams]);
 
   const priceOptions: Option[] = [
     { id: "free", label: "Free" },
@@ -50,68 +42,130 @@ export default function SearchResultPage() {
 
   const [page, setPage] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(false);
-  const [totalPage, setTotalPage] = useState<number>(2);
+  const [totalPage, setTotalPage] = useState<number>(1);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const limit = 20;
+  const requestCounterRef = useRef(0);
 
   useEffect(() => {
-    async function fetchFirstEvents() {
+    const query = searchParams.get("query");
+    if (query === null || query === "") {
+      if (searchParams.has("query")) {
+        const newParams = new URLSearchParams(searchParams);
+        newParams.delete("query");
+        setSearchParams(newParams, { replace: true });
+      }
+      setSearchQuery("");
+    } else {
+      setSearchQuery(query);
+    }
+  }, [searchParams, setSearchParams]);
+
+  useEffect(() => {
+    setPage(1);
+    setSearchedEvents([]);
+    setTotalPage(1);
+  }, [searchQuery, selectedPrice, selectedDate, selectedCategoryIds]);
+
+  useEffect(() => {
+    requestCounterRef.current += 1;
+    const currentRequestId = requestCounterRef.current;
+
+    const paramBuilder = () => {
+      const rawParams: Record<string, string | number> = {
+        limit: limit,
+        page: page,
+        query: searchQuery,
+        price: selectedPrice || "",
+        date: selectedDate || "",
+        categories: selectedCategoryIds ? selectedCategoryIds.join(",") : "",
+      };
+
+      const params: Record<string, string> = {};
+      for (const [key, value] of Object.entries(rawParams)) {
+        if (value !== "" && value !== null && value !== undefined) {
+          params[key] = String(value);
+        }
+      }
+      return params;
+    };
+
+    const fetchEvents = async () => {
+      if (currentRequestId !== requestCounterRef.current) {
+        console.log(
+          `Skipping outdated fetch request (ID: ${currentRequestId}, Current ID: ${requestCounterRef.current})`
+        );
+        return;
+      }
+
+      if (page > 1 && page > totalPage) {
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       try {
         const res = await api.get("/event/all", {
-          params: {
-            limit: limit,
-            page: 1,
-          },
-        });
-        if (res.status === 200) {
-          setSearchedEvents(res.data.data.rows);
-          setTotalPage(res.data.data.totalPages);
-        }
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          toast.error(`${error.response?.data.error}` || "An error occured");
-        }
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchFirstEvents();
-  }, []);
-
-  useEffect(() => {
-    if (page === 1) return;
-
-    async function fetchEvents() {
-      if (page > totalPage) return;
-      setLoading(true);
-      try {
-        const res = await api.get("/event/all", {
-          params: {
-            limit: limit,
-            page: page,
-          },
+          params: paramBuilder(),
         });
 
         if (res.status === 200) {
-          setSearchedEvents((prevEvents) => [
-            ...prevEvents,
-            ...res.data.data.rows,
-          ]);
-          setTotalPage(res.data.data.totalPages);
+          const newEvents = res.data.data.rows;
+          const newTotalPages = res.data.data.totalPages;
+
+          if (currentRequestId !== requestCounterRef.current) {
+            console.log(
+              `Fetch completed for outdated request (ID: ${currentRequestId}, Current ID: ${requestCounterRef.current}). Discarding results.`
+            );
+            setLoading(false);
+            return;
+          }
+
+          if (page === 1) {
+            setSearchedEvents(newEvents);
+          } else {
+            setSearchedEvents((prevEvents) => [...prevEvents, ...newEvents]);
+          }
+          setTotalPage(newTotalPages > 0 ? newTotalPages : 1);
         }
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          toast.error(`${error.response?.data.error}` || "An error occured");
+        if (currentRequestId === requestCounterRef.current) {
+          if (axios.isAxiosError(error)) {
+            toast.error(
+              error.response?.data?.error ||
+                "An error occurred while fetching events."
+            );
+          } else {
+            toast.error("An unexpected error occurred.");
+          }
+          if (page === 1) {
+            setSearchedEvents([]);
+            setTotalPage(1);
+          }
+        } else {
+          console.log(
+            `Error from outdated request (ID: ${currentRequestId}) ignored.`
+          );
         }
       } finally {
-        setLoading(false);
+        if (currentRequestId === requestCounterRef.current) {
+          setLoading(false);
+        }
       }
-    }
+    };
 
-    fetchEvents();
-  }, [page, totalPage]);
+    const debouncedFetch = debounce(fetchEvents, 500);
+    debouncedFetch();
+  }, [
+    page,
+    totalPage,
+    searchQuery,
+    selectedPrice,
+    selectedDate,
+    selectedCategoryIds /* removed totalPage */,
+  ]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -128,7 +182,7 @@ export default function SearchResultPage() {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [loading, page, totalPage]);
+  }, [loading, page, totalPage]); // totalPage is correctly a dependency here
 
   const handleUnauthorized = () => {
     if (loginModalRef.current) {
@@ -148,7 +202,7 @@ export default function SearchResultPage() {
             <FilterGroup
               options={priceOptions}
               value={selectedPrice}
-              onChange={setSelectedPrice}
+              onChange={(value) => setSelectedPrice(value as string | null)}
               allowDeselect={true}
             />
           </div>
@@ -158,7 +212,7 @@ export default function SearchResultPage() {
             <FilterGroup
               options={dateOptions}
               value={selectedDate}
-              onChange={setSelectedDate}
+              onChange={(value) => setSelectedDate(value as string | null)}
               allowDeselect={true}
             />
           </div>
@@ -167,7 +221,9 @@ export default function SearchResultPage() {
             <h1 className="text-xl font-semibold">Category</h1>
             <CategoryFilter
               values={selectedCategoryIds}
-              onChange={setSelectedCategoryIds}
+              onChange={(values) =>
+                setSelectedCategoryIds(values as string[] | null)
+              }
             />
           </div>
         </aside>
@@ -192,12 +248,23 @@ export default function SearchResultPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {searchedEvents.map((event) => (
-                <EventCard event={event} onUnauthorized={handleUnauthorized} />
+                <EventCard
+                  key={event.id}
+                  event={event}
+                  onUnauthorized={handleUnauthorized}
+                />
               ))}
 
               {loading &&
-                [1, 2, 3, 4, 5, 6, 7, 8].map(() => <EventCardSkeleton />)}
+                Array.from({ length: 6 }).map((_, index) => (
+                  <EventCardSkeleton key={`skeleton-${index}`} />
+                ))}
             </div>
+            {!loading && searchedEvents.length === 0 && (
+              <div className="text-center py-10 text-gray-500">
+                No events found matching your criteria.
+              </div>
+            )}
           </div>
         </main>
       </div>

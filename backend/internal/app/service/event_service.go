@@ -340,6 +340,8 @@ func (e EventService) GetAllEvents(com *command.GetAllEventCommand) (*command.Ge
 		Limit: com.Limit,
 		Page: com.Page,
 		Sort: "start_time ASC",
+		Filter: com.Filters,
+		FilterArgs: com.FilterArgs,
 	}
 
 	results, err := e.eventRepo.GetAllEvents(page)

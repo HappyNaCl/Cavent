@@ -7,7 +7,7 @@ type GetAllEventCommand struct {
 	Sort string
 	Page int
 	Filters []string
-	FilterArgs []string
+	FilterArgs [][]interface{}
 	UserId *string
 }
 

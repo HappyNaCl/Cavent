@@ -442,10 +442,75 @@ func (e *EventHandler) GetAllEvents(c *gin.Context) {
 		return
 	}
 
-	result, err := e.eventService.GetAllEvents(&command.GetAllEventCommand{
+	command := &command.GetAllEventCommand{
 		Limit: limit,
 		Page: page,
-	})
+	}
+
+	query := c.Query("query")
+	if query != "" {
+		command.Filters = append(command.Filters, "title ILIKE ?")
+		command.FilterArgs = append(command.FilterArgs, []interface{}{"%" + query + "%"})
+	}
+
+	price := c.Query("price")
+	if price != "" {
+		command.Filters = append(command.Filters, "ticket_type = ?")
+		if price == "free" {
+			command.FilterArgs = append(command.FilterArgs, []interface{}{"free"})
+		} else if price == "paid" {
+			command.FilterArgs = append(command.FilterArgs, []interface{}{"ticketed"})
+		} else {
+			c.JSON(http.StatusBadRequest, &types.ErrorResponse{
+				Error: "invalid price filter",
+			})
+			return
+		}
+	}
+
+	date := c.Query("date")
+	if date != "" {
+		if date == "today" {
+			startOfDay := time.Now().Truncate(24 * time.Hour)
+			endOfDay := startOfDay.Add(24 * time.Hour).Add(-time.Nanosecond)
+			command.Filters = append(command.Filters, "start_time BETWEEN ? AND ?")
+			command.FilterArgs = append(command.FilterArgs, []interface{}{startOfDay, endOfDay})
+		} else if date == "tomorrow" {
+			startOfTomorrow := time.Now().Truncate(24 * time.Hour).AddDate(0, 0, 1)
+			endOfTomorrow := startOfTomorrow.Add(24 * time.Hour).Add(-time.Nanosecond)
+			command.Filters = append(command.Filters, "start_time BETWEEN ? AND ?")
+			command.FilterArgs = append(command.FilterArgs, []interface{}{startOfTomorrow, endOfTomorrow})
+		} else if date == "this-week" {
+			now := time.Now()
+			weekday := int(now.Weekday())
+			if weekday == 0 {
+				weekday = 7
+			}
+			startOfWeek := now.Truncate(24 * time.Hour).AddDate(0, 0, -weekday+1)
+			endOfWeek := startOfWeek.AddDate(0, 0, 7).Add(-time.Nanosecond)
+			command.Filters = append(command.Filters, "start_time BETWEEN ? AND ?")
+			command.FilterArgs = append(command.FilterArgs, []interface{}{startOfWeek, endOfWeek})
+		} else if date == "this-month" {
+			now := time.Now()
+			startOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+			endOfMonth := startOfMonth.AddDate(0, 1, 0).Add(-time.Nanosecond)
+			command.Filters = append(command.Filters, "start_time BETWEEN ? AND ?")
+			command.FilterArgs = append(command.FilterArgs, []interface{}{startOfMonth, endOfMonth})
+		} else if date == "this-year" {
+			now := time.Now()
+			startOfYear := time.Date(now.Year(), time.January, 1, 0, 0, 0, 0, now.Location())
+			endOfYear := startOfYear.AddDate(1, 0, 0).Add(-time.Nanosecond)
+			command.Filters = append(command.Filters, "start_time BETWEEN ? AND ?")
+			command.FilterArgs = append(command.FilterArgs, []interface{}{startOfYear, endOfYear})
+		} else {
+			c.JSON(http.StatusBadRequest, &types.ErrorResponse{
+				Error: "invalid date filter",
+			})
+			return
+		}
+	}
+
+	result, err := e.eventService.GetAllEvents(command)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, &types.ErrorResponse{
