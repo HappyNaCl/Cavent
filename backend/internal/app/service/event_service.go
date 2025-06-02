@@ -334,3 +334,39 @@ func (e EventService) SearchEvents(com *command.GetSearchEventCommand) (*command
 		Result: eventResults,
 	}, nil
 }
+
+func (e EventService) GetAllEvents(com *command.GetAllEventCommand) (*command.GetAllEventCommandResult, error) {
+	page := paginate.Pagination{
+		Limit: com.Limit,
+		Page: com.Page,
+		Sort: "start_time ASC",
+	}
+
+	results, err := e.eventRepo.GetAllEvents(page)
+	if err != nil {
+		return nil, err
+	}
+	
+	events := make([]*common.BriefEventResult, 0, len(results.Rows.([]*model.Event)))
+	for _, event := range results.Rows.([]*model.Event) {
+		var favorited bool = false
+		if com.UserId != nil {
+			isFavorites, err := e.checkFavorited(*com.UserId, []uuid.UUID{event.Id})
+			if err != nil {
+				return nil, err
+			}
+			favorited = isFavorites[event.Id]
+		}
+
+		eventResult := mapper.NewBriefEventResultFromEvent(event, favorited)
+		events = append(events, eventResult)
+	}
+
+	return &command.GetAllEventCommandResult{
+		Limit: results.Limit,
+		Page: results.Page,
+		TotalPage: results.TotalPages,
+		TotalRows: int(results.TotalRows),
+		Result: events,
+	}, nil
+}

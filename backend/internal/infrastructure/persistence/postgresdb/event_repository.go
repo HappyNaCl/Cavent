@@ -49,6 +49,28 @@ func (e *EventGormRepo) GetCampusEvents(campusID uuid.UUID, pagination paginate.
 	return &pagination, nil
 }
 
+func (e *EventGormRepo) GetAllEvents(pagination paginate.Pagination) (*paginate.Pagination, error){
+	var events []*model.Event
+
+	query := e.db.Preload("TicketTypes").Preload("Campus").Preload("Category").
+			Scopes(paginate.Paginate(events, &pagination, e.db)).
+			Where("start_time > ?", time.Now())
+
+	for i, filter := range pagination.Filter{
+		query = query.Where(filter, pagination.FilterArgs[i])
+	}
+
+	err := query.Find(&events).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	pagination.Rows = events
+
+	return &pagination, nil
+}
+
 // GetEventByID implements repo.EventRepository.
 func (e *EventGormRepo) GetEventByID(eventID uuid.UUID) (*model.Event, error) {
 	var event *model.Event

@@ -175,7 +175,7 @@ export default function EventDetailPage() {
         <div className="flex items-center gap-3">
           <img
             src={event.campus.profileUrl}
-            alt="Cry Youth Movement"
+            alt={event.campus.name}
             className="w-10 h-10 rounded-full"
           />
           <div>

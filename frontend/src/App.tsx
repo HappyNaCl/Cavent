@@ -14,7 +14,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomeLayout />}>
           <Route index element={<HomePage />}></Route>
-          <Route path="event/search" element={<SearchResultPage />} />
+          <Route path="event" element={<SearchResultPage />} />
         </Route>
         <Route path="profile" element={<GeneralLayout />}>
           <Route path="interest" element={<PreferencePage />} />

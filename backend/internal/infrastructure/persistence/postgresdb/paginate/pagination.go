@@ -14,6 +14,8 @@ type Pagination struct {
 	TotalRows  int64       `json:"totalRows"`
 	TotalPages int         `json:"totalPages"`
 	Rows       interface{} `json:"rows"`
+	Filter     []string    `json:"filter"`
+	FilterArgs []string    `json:"filterArgs"`
 }
 
 func (p *Pagination) GetOffset() int {

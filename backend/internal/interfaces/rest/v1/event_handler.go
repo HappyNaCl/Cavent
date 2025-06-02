@@ -37,6 +37,7 @@ func (e *EventHandler) SetupRoutes(v1Protected, v1Public *gin.RouterGroup) {
 	v1Public.GET("/campus/:campusId/events", e.GetCampusEvents)
 
 	v1Public.GET("/event/search", e.SearchEvents)
+	v1Public.GET("/event/all", e.GetAllEvents)
 }
 
 func NewEventHandler(db *gorm.DB, redis *redis.Client, client *asynq.Client) types.Route {
@@ -414,4 +415,52 @@ func (e *EventHandler) SearchEvents(c *gin.Context) {
 		Message: "success",
 		Data:    events.Result,
 	})
+}
+
+func (e *EventHandler) GetAllEvents(c *gin.Context) {
+	page, err := strconv.Atoi(c.Query("page"))
+	if page <= 0 {
+		page = 1
+	}
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, &types.ErrorResponse{
+			Error: "invalid page number",
+		})
+		return
+	}
+
+	limit, err := strconv.Atoi(c.Query("limit"))
+	if limit <= 0 {
+		limit = 8
+	}
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, &types.ErrorResponse{
+			Error: "invalid limit number",
+		})
+		return
+	}
+
+	result, err := e.eventService.GetAllEvents(&command.GetAllEventCommand{
+		Limit: limit,
+		Page: page,
+	})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, &types.ErrorResponse{
+			Error: err.Error(),
+		})
+	}
+
+	c.JSON(http.StatusOK, &types.SuccessResponse{
+		Message: "success",
+		Data: &response.PaginationResponse{
+			Rows: result.Result,
+			TotalRows: int64(result.TotalRows),
+			TotalPages: result.TotalPage,
+			Page: result.Page,
+			Limit: result.Limit,
+		},
+	}) 
 }
