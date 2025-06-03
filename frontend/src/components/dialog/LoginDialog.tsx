@@ -26,8 +26,10 @@ const LoginModal = forwardRef<LoginModalRef>((_, ref) => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Login</DialogTitle>
-          <DialogDescription>Please log in to continue.</DialogDescription>
+          <DialogTitle className="text-xl">Login</DialogTitle>
+          <DialogDescription className="text-lg">
+            Please log in to continue.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="mt-4 flex flex-col gap-4">
