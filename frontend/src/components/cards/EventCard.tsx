@@ -7,7 +7,8 @@ import { useNavigate } from "react-router";
 
 type Props = {
   event: BriefEvent;
-  onUnauthorized: () => void;
+  onUnauthorized?: () => void;
+  onUnfavorite?: () => void;
 };
 
 export default function EventCard({ event, onUnauthorized }: Props) {
@@ -56,7 +57,9 @@ export default function EventCard({ event, onUnauthorized }: Props) {
         <div className="absolute top-2 right-2">
           <FavoriteButton
             eventId={event.id}
-            onUnauthorized={onUnauthorized}
+            onUnauthorized={() => {
+              onUnauthorized?.();
+            }}
             onSuccess={(newCount) => {
               setFavCount(newCount);
             }}

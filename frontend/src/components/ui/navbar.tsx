@@ -60,7 +60,7 @@ export default function Navbar() {
               Tickets
             </Link>
             <Link
-              to="/tickets"
+              to="/favorite"
               className="flex flex-col items-center gap-2 hover:text-yellow-400 transition"
             >
               <Star className="w-4 h-4" />

@@ -8,6 +8,7 @@ import HomeLayout from "./layout/HomeLayout";
 import EventDetailPage from "./page/event/EventDetailPage";
 import SearchResultPage from "./page/search/SearchResultPage";
 import CampusPage from "./page/campus/CampusPage";
+import FavoritePage from "./page/favorite/FavoritePage";
 
 function App() {
   return (
@@ -18,6 +19,10 @@ function App() {
           <Route path="event" element={<SearchResultPage />} />
           <Route path="campus" element={<CampusPage />} />
         </Route>
+        <Route path="favorite" element={<GeneralLayout />}>
+          <Route index element={<FavoritePage />} />
+        </Route>
+
         <Route path="profile" element={<GeneralLayout />}>
           <Route path="interest" element={<PreferencePage />} />
         </Route>

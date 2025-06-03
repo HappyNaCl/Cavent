@@ -384,3 +384,17 @@ func (e EventService) GetAllEvents(com *command.GetAllEventCommand) (*command.Ge
 		Result: events,
 	}, nil
 }
+
+func (e EventService) GetUserFavoritedEvent (com *command.GetUserFavoritedEventCommand) (*command.GetUserFavoritedEventResult, error){
+	events, err := e.eventRepo.GetUserFavoritedEvent(com.UserId)
+	if err != nil {
+		return nil, err
+	}
+	eventResults := make([]*common.BriefEventResult, 0, len(events))
+	for _, event := range events {
+		eventResults = append(eventResults, mapper.NewBriefEventResultFromEvent(event, true))
+	}
+	return &command.GetUserFavoritedEventResult{
+		Result: eventResults,
+	}, nil
+}

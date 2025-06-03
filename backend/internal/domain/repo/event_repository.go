@@ -14,4 +14,5 @@ type EventRepository interface {
 	GetCampusEvents(campusID uuid.UUID, pagination paginate.Pagination) (*paginate.Pagination, error)
 	SearchEvents(query string) ([]*model.Event, error) 
 	GetAllEvents(pagination paginate.Pagination) (*paginate.Pagination, error)
+	GetUserFavoritedEvent(userId string) ([]*model.Event, error)
 }

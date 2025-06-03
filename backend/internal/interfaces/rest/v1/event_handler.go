@@ -39,6 +39,8 @@ func (e *EventHandler) SetupRoutes(v1Protected, v1Public *gin.RouterGroup) {
 
 	v1Public.GET("/event/search", e.SearchEvents)
 	v1Public.GET("/event/all", e.GetAllEvents)
+
+	v1Protected.GET("/event/favorite", e.GetUserFavoritedEvents)
 }
 
 func NewEventHandler(db *gorm.DB, redis *redis.Client, client *asynq.Client) types.Route {
@@ -551,4 +553,30 @@ func (e *EventHandler) GetAllEvents(c *gin.Context) {
 			Limit: result.Limit,
 		},
 	}) 
+}
+
+func (e *EventHandler) GetUserFavoritedEvents(c *gin.Context) {
+	userId, exists := c.Get("sub")
+	if !exists {
+		c.JSON(http.StatusBadRequest, &types.ErrorResponse{
+			Error: errors.ErrMissingFields.Error(),
+		})
+		return
+	}
+
+	results, err := e.eventService.GetUserFavoritedEvent(&command.GetUserFavoritedEventCommand{
+		UserId: userId.(string),
+	})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, &types.ErrorResponse{
+			Error: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, &types.SuccessResponse{
+		Message: "success",
+		Data: results.Result,
+	})
 }

@@ -129,6 +129,24 @@ func (e *EventGormRepo) GetEventsByCategories(categories []uuid.UUID, limit int)
 	return events, nil
 }
 
+func (e *EventGormRepo) GetUserFavoritedEvent(userId string) ([]*model.Event, error) {
+    var events []*model.Event
+    err := e.db.Model(&model.Event{}).
+        Joins("JOIN user_favorites ON user_favorites.event_id = events.id").
+        Where("user_favorites.user_id = ?", userId).
+        Preload("TicketTypes").
+        Preload("Campus").
+        Preload("Category").
+        Order("events.start_time ASC").
+        Find(&events).Error
+
+    if err != nil {
+        return nil, err
+    }
+	
+    return events, nil
+}
+
 func NewEventGormRepo(db *gorm.DB) repo.EventRepository {
 	return &EventGormRepo{
 		db: db,
