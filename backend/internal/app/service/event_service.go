@@ -262,6 +262,18 @@ func (e EventService) GetEventDetails(com *command.GetEventDetailsCommand) (*com
 
 	eventResult := mapper.NewEventResultFromEvent(event, favorited)
 
+
+	asynqTask, err := tasks.NewEventViewPayload(com.UserId, com.EventID)
+	if err != nil {
+		return nil, err
+	}
+	
+	_, err = e.asynqClient.Enqueue(asynqTask, asynq.MaxRetry(5), asynq.Queue(tasks.TypeEventView))
+	if err != nil {
+		zap.L().Sugar().Errorf("Failed to enqueue event view task: %v", err)
+		return nil, err
+	}
+
 	return &command.GetEventDetailsCommandResult{
 		Result: eventResult,
 	}, nil

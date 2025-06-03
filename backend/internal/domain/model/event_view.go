@@ -10,7 +10,7 @@ type EventView struct {
     Id        uuid.UUID `json:"id" gorm:"type:uuid;primaryKey"`
     EventId   uuid.UUID `json:"eventId" gorm:"type:uuid;index"`
     Event     Event
-    UserId    string    `json:"userId" gorm:"type:uuid"`
+    UserId    *string    `json:"userId" gorm:"type:uuid"`
     User      User
 	CreatedAt time.Time `json:"createdAt" gorm:"autoCreateTime"`
 }
