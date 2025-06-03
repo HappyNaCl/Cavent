@@ -3,6 +3,7 @@ package v1
 import (
 	"net/http"
 
+	"github.com/HappyNaCl/Cavent/backend/internal/app/common"
 	"github.com/HappyNaCl/Cavent/backend/internal/app/service"
 	"github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1/types"
 	"github.com/gin-gonic/gin"
@@ -17,6 +18,8 @@ type CategoryHandler struct {
 func (h *CategoryHandler) SetupRoutes(v1Protected, v1Public *gin.RouterGroup) {
 	v1Public.GET("/category", h.getAllCategory)
 	v1Public.GET("/category/type", h.getAllCategoryTypes)
+
+	v1Public.GET("/category/all", h.getCategories)
 }
 
 func NewCategoryHandler(db *gorm.DB, redis *redis.Client) types.Route {
@@ -48,6 +51,27 @@ func (h *CategoryHandler) getAllCategory(c *gin.Context) {
 	c.JSON(http.StatusOK, &types.SuccessResponse{
 		Message: "success",
 		Data: result.CategoryTypes,
+	})
+}
+
+func (h *CategoryHandler) getCategories(c *gin.Context) {
+	result, err := h.categoryService.GetAllCategory()
+	if err != nil {
+		c.JSON(500, types.ErrorResponse{
+			Error: err.Error(),
+		})
+		return
+	}
+
+
+	categories := make([]*common.CategoryResult, 0)
+	for _, categoryType := range result.CategoryTypes {
+		categories = append(categories, categoryType.Categories...)
+	}
+
+	c.JSON(http.StatusOK, &types.SuccessResponse{
+		Message: "success",
+		Data: categories,
 	})
 }
 

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/HappyNaCl/Cavent/backend/internal/app/command"
@@ -508,6 +509,28 @@ func (e *EventHandler) GetAllEvents(c *gin.Context) {
 			})
 			return
 		}
+	}
+
+	categories := c.Query("categories")
+	if categories != "" {
+		command.Filters = append(command.Filters, "category_id IN (?)")
+		idsInterface := make([]interface{}, 0)
+		splittedCategories := strings.Split(categories, ",")
+		for _, category := range splittedCategories {
+			categoryId, err := uuid.Parse(strings.TrimSpace(category))
+			if err != nil || categoryId == uuid.Nil {
+				c.JSON(http.StatusBadRequest, &types.ErrorResponse{
+					Error: errors.ErrInvalidUUID.Error(),
+				})
+				return
+			}
+			idsInterface = append(idsInterface, categoryId)
+		}
+
+		zap.L().Sugar().Infof("Categories filter (raw): %v", categories)
+		zap.L().Sugar().Infof("Categories filter (parsed): %v", idsInterface)
+
+		command.FilterArgs = append(command.FilterArgs, []interface{}{idsInterface})
 	}
 
 	result, err := e.eventService.GetAllEvents(command)

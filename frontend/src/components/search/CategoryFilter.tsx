@@ -33,7 +33,7 @@ export function CategoryFilter({ values, onChange }: CategoryFilterProps) {
   useEffect(() => {
     async function fetchCategory() {
       try {
-        const res = await api.get("/category");
+        const res = await api.get("/category/all");
         if (res.status === 200) {
           setCategories(res.data.data);
         }
