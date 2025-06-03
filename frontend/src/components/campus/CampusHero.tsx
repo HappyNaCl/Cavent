@@ -4,11 +4,13 @@ import { useAuth } from "../provider/AuthProvider";
 type CampusHeroProps = {
   onUnauthorized: () => void;
   onNoCampusUserClick: () => void;
+  onAlreadyJoinedClick: () => void;
 };
 
 export default function CampusHero({
   onUnauthorized,
   onNoCampusUserClick,
+  onAlreadyJoinedClick,
 }: CampusHeroProps) {
   const { user } = useAuth();
 
@@ -17,6 +19,8 @@ export default function CampusHero({
       onUnauthorized();
     } else if (!user.campusId) {
       onNoCampusUserClick();
+    } else {
+      onAlreadyJoinedClick();
     }
   };
 

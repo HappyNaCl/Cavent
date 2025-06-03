@@ -42,7 +42,7 @@ export default function EventCard({ event, onUnauthorized }: Props) {
   return (
     <div
       onClick={handleCardClick}
-      className="max-w-sm rounded-xl overflow-hidden shadow cursor-pointer bg-white hover:shadow-lg transition-shadow duration-300"
+      className="max-w-sm min-h-80 rounded-xl border overflow-hidden shadow cursor-pointer bg-white hover:shadow-lg transition-shadow duration-300"
     >
       <div className="relative w-full h-40">
         <Image

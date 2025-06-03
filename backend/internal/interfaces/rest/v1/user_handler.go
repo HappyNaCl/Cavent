@@ -11,6 +11,7 @@ import (
 	"github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1/types"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -28,6 +29,8 @@ func NewUserHandler(db *gorm.DB, redis *redis.Client) types.Route {
 func (u UserHandler) SetupRoutes(v1Protected, v1Public *gin.RouterGroup) {
 	v1Protected.PUT("/user/interest", u.UpdateUserInterest)
 	v1Protected.GET("/user/interest", u.GetUserInterests)
+
+	v1Protected.PUT("/user/campus", u.UpdateUserCampus)
 }
 
 // UpdateUserInterest godoc
@@ -157,5 +160,41 @@ func (u UserHandler) GetUserInterests(c *gin.Context) {
 	c.JSON(http.StatusOK, types.SuccessResponse{
 		Message: "success",
 		Data:    result.Result,
+	})
+}
+
+func (u UserHandler) UpdateUserCampus(c *gin.Context) {
+	var req request.UpdateUserCampusRequest
+
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, types.ErrorResponse{
+			Error: errors.ErrMissingFields.Error(),
+		})
+		return
+	}
+
+	userId, ok := c.Get("sub")
+	if !ok {
+		c.JSON(http.StatusBadRequest, types.ErrorResponse{
+			Error: errors.ErrMissingFields.Error(),
+		})
+		return
+	}
+
+	req.UserId = userId.(string)
+
+	zap.L().Sugar().Infof("userId: %s, inviteCode: %s", req.UserId, req.InviteCode)
+
+	res, err := u.userService.UpdateUserCampus(req.ToCommand())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, types.SuccessResponse{
+		Message: "success",
+		Data:    res.User,
 	})
 }

@@ -10,4 +10,5 @@ type UserRepository interface {
 	GetUserInterests(userId string) ([]*model.Category, error)
 	UpdateUserInterests(userId string, interestIds []string) error
 	GetCampusId(userId string) (*uuid.UUID, error)
+	UpdateUserCampus(userId string, campusId uuid.UUID) (*model.User, error)
 }

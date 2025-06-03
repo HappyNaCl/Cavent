@@ -2,12 +2,13 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/HappyNaCl/Cavent/backend/internal/app/command"
 	"github.com/HappyNaCl/Cavent/backend/internal/app/mapper"
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/cache"
-	"github.com/HappyNaCl/Cavent/backend/internal/domain/errors"
+	domainerrors "github.com/HappyNaCl/Cavent/backend/internal/domain/errors"
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/repo"
 	rediscache "github.com/HappyNaCl/Cavent/backend/internal/infrastructure/cache/redis"
 	"github.com/HappyNaCl/Cavent/backend/internal/infrastructure/persistence/postgresdb"
@@ -18,12 +19,15 @@ import (
 
 type UserService struct {
 	userRepo repo.UserRepository
+	campusRepo repo.CampusRepository
+
 	userInterestCache cache.UserInterestCache
 }
 
 func NewUserService(db *gorm.DB, redis *redis.Client) *UserService {
 	return &UserService{
 		userRepo: postgresdb.NewUserGormRepo(db),
+		campusRepo: postgresdb.NewCampusGormRepo(db),
 		userInterestCache: rediscache.NewUserInterestCache(redis),
 	}
 }
@@ -74,7 +78,7 @@ func (us *UserService) GetUserInterests(ctx context.Context, com *command.GetUse
 
 func (us *UserService) UpdateUserInterests(com *command.UpdateUserInterestCommand) (*command.UpdateUserInterestCommandResult, error) {
 	if len(com.CategoryIds) <= 0 {
-		return nil, errors.ErrInterestLength
+		return nil, domainerrors.ErrInterestLength
 	}
 
 	err := us.userRepo.UpdateUserInterests(com.UserId, com.CategoryIds)
@@ -87,4 +91,25 @@ func (us *UserService) UpdateUserInterests(com *command.UpdateUserInterestComman
 		return nil, fmt.Errorf("failed to invalidate user interests cache: %w", err)
 	}
 	return &command.UpdateUserInterestCommandResult{}, nil
+}
+
+func (us *UserService) UpdateUserCampus(com *command.UpdateUserCampusCommand) (*command.UpdateUserCampusCommandResult, error) {
+	campus, err := us.campusRepo.FindCampusByInviteCode(com.InviteCode)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, domainerrors.ErrCampusNotFound
+		}
+		return nil, err
+	}
+
+	zap.L().Sugar().Infof("Updating user campus for user %s to campus %s", com.UserId, campus.Id)
+	user, err := us.userRepo.UpdateUserCampus(com.UserId, campus.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	userResult := mapper.NewUserResultFromUser(user).ToBrief()
+	return &command.UpdateUserCampusCommandResult{
+		User: &userResult,
+	}, nil
 }

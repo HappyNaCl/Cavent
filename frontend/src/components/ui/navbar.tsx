@@ -27,7 +27,6 @@ export default function Navbar() {
     { name: "Home", to: "/" },
     { name: "Events", to: "/event" },
     { name: "Campus", to: "/campus" },
-    { name: "About", to: "/about" },
   ];
 
   const [popoverOpen, setPopoverOpen] = useState(false);
@@ -95,7 +94,7 @@ export default function Navbar() {
                   <CommandList>
                     <CommandItem>
                       <Link
-                        to="/favorites"
+                        to="/profile/interest"
                         className="flex items-center gap-2 w-full py-2"
                       >
                         <BookHeart className="w-4 h-4" />

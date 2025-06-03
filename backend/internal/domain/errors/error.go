@@ -41,4 +41,7 @@ var (
 	ErrSupabaseBucketMissing = errors.New("missing SUPABASE_BUCKET environment variable")
 	ErrSupabaseUrlMissing = errors.New("missing SUPABASE_URL environment variable")
 	ErrSupabaseKeyMissing  = errors.New("missing SUPABASE_KEY environment variable")	
+
+	// Campus Errors
+	ErrCampusNotFound = errors.New("campus not found")
 )
