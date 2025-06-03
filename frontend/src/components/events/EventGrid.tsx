@@ -51,7 +51,7 @@ export default function EventGrid({ onUnauthorized }: EventGridProps) {
           />
         ))}
       </div>
-      <Link to={"/events"} className="text-blue-600 hover:underline text-lg">
+      <Link to={"/event"} className="text-blue-600 hover:underline text-lg">
         Show More
       </Link>
     </section>
