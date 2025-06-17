@@ -1,15 +1,18 @@
 package v1
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/HappyNaCl/Cavent/backend/internal/app/command"
 	"github.com/HappyNaCl/Cavent/backend/internal/app/service"
-	"github.com/HappyNaCl/Cavent/backend/internal/domain/errors"
+	domainerrors "github.com/HappyNaCl/Cavent/backend/internal/domain/errors"
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/factory"
 	"github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1/dto/request"
 	"github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1/types"
+	fileUtils "github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/hibiken/asynq"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -19,8 +22,8 @@ type UserHandler struct {
 	userService *service.UserService
 }
 
-func NewUserHandler(db *gorm.DB, redis *redis.Client) types.Route {
-	userService := service.NewUserService(db, redis)
+func NewUserHandler(db *gorm.DB, redis *redis.Client, asynq *asynq.Client) types.Route {
+	userService := service.NewUserService(db, redis, asynq)
 	return &UserHandler{
 		userService: userService,
 	}
@@ -31,6 +34,9 @@ func (u UserHandler) SetupRoutes(v1Protected, v1Public *gin.RouterGroup) {
 	v1Protected.GET("/user/interest", u.GetUserInterests)
 
 	v1Protected.PUT("/user/campus", u.UpdateUserCampus)
+
+	v1Protected.GET("/user/profile", u.GetUserProfile)
+	v1Protected.PUT("/user/profile", u.UpdateUserProfile)
 }
 
 // UpdateUserInterest godoc
@@ -51,7 +57,7 @@ func (u UserHandler) UpdateUserInterest(c *gin.Context) {
 
 	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, types.ErrorResponse{
-			Error: errors.ErrMissingFields.Error(),
+			Error: domainerrors.ErrMissingFields.Error(),
 		})
 		return
 	}
@@ -59,7 +65,7 @@ func (u UserHandler) UpdateUserInterest(c *gin.Context) {
 	userId, ok := c.Get("sub")
 	if !ok {
 		c.JSON(http.StatusBadRequest, types.ErrorResponse{
-			Error: errors.ErrMissingFields.Error(),
+			Error: domainerrors.ErrMissingFields.Error(),
 		})
 	}
 
@@ -67,7 +73,7 @@ func (u UserHandler) UpdateUserInterest(c *gin.Context) {
 
 	if len(req.CategoryIds) <= 0 {
 		c.JSON(http.StatusBadRequest, types.ErrorResponse{
-			Error: errors.ErrInterestLength.Error(),
+			Error: domainerrors.ErrInterestLength.Error(),
 		})
 		return
 	}
@@ -142,7 +148,7 @@ func (u UserHandler) GetUserInterests(c *gin.Context) {
 	userId, exists := c.Get("sub")
 	if !exists {
 		c.JSON(http.StatusBadRequest, types.ErrorResponse{
-			Error: errors.ErrMissingFields.Error(),
+			Error: domainerrors.ErrMissingFields.Error(),
 		})
 		return
 	}
@@ -168,7 +174,7 @@ func (u UserHandler) UpdateUserCampus(c *gin.Context) {
 
 	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, types.ErrorResponse{
-			Error: errors.ErrMissingFields.Error(),
+			Error: domainerrors.ErrMissingFields.Error(),
 		})
 		return
 	}
@@ -176,7 +182,7 @@ func (u UserHandler) UpdateUserCampus(c *gin.Context) {
 	userId, ok := c.Get("sub")
 	if !ok {
 		c.JSON(http.StatusBadRequest, types.ErrorResponse{
-			Error: errors.ErrMissingFields.Error(),
+			Error: domainerrors.ErrMissingFields.Error(),
 		})
 		return
 	}
@@ -196,5 +202,86 @@ func (u UserHandler) UpdateUserCampus(c *gin.Context) {
 	c.JSON(http.StatusOK, types.SuccessResponse{
 		Message: "success",
 		Data:    res.User,
+	})
+}
+
+func (u UserHandler) GetUserProfile(c *gin.Context) {
+	userId := c.GetString("sub")
+
+	result, err := u.userService.GetUserProfile(c.Request.Context(), &command.GetUserProfileCommand{
+		UserId: userId,
+	})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, types.SuccessResponse{
+		Message: "success",
+		Data:    result.Result,
+	})
+}
+
+func (u UserHandler) UpdateUserProfile(c *gin.Context) {
+	var req request.UpdateUserProfileRequest
+
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, types.ErrorResponse{
+			Error: domainerrors.ErrMissingFields.Error(),
+		})
+		return
+	}
+
+	userId := c.GetString("sub")
+	if userId == "" {
+		c.JSON(http.StatusBadRequest, types.ErrorResponse{
+			Error: domainerrors.ErrMissingFields.Error(),
+		})
+		return
+	}
+
+	file, header, err := c.Request.FormFile("profileImage")
+	if err != nil {
+		if !errors.Is(err, http.ErrMissingFile) {
+			c.JSON(http.StatusBadRequest, &types.ErrorResponse{
+				Error: err.Error(),
+			})
+			return
+		}
+	}
+
+	command := req.ToCommand()
+	var fileBytes []byte
+	var fileExt string
+
+	command.UserId = userId
+
+	if file != nil && header != nil {
+		fileBytes, fileExt, err = fileUtils.ReadMultipartFile(file, header)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, &types.ErrorResponse{
+				Error: err.Error(),
+			})
+			return
+		}
+
+		command.AvatarBytes = fileBytes
+		command.AvatarExt = &fileExt
+	}
+
+	res, err := u.userService.UpdateUserProfile(c.Request.Context(), command)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, types.SuccessResponse{
+		Message: "success",
+		Data:    res.Result,
 	})
 }

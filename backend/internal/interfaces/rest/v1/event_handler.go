@@ -459,11 +459,12 @@ func (e *EventHandler) GetAllEvents(c *gin.Context) {
 	price := c.Query("price")
 	if price != "" {
 		command.Filters = append(command.Filters, "ticket_type = ?")
-		if price == "free" {
+		switch price {
+		case "free":
 			command.FilterArgs = append(command.FilterArgs, []interface{}{"free"})
-		} else if price == "paid" {
+		case "paid":
 			command.FilterArgs = append(command.FilterArgs, []interface{}{"ticketed"})
-		} else {
+		default:
 			c.JSON(http.StatusBadRequest, &types.ErrorResponse{
 				Error: "invalid price filter",
 			})
@@ -473,17 +474,18 @@ func (e *EventHandler) GetAllEvents(c *gin.Context) {
 
 	date := c.Query("date")
 	if date != "" {
-		if date == "today" {
+		switch date {
+		case "today":
 			startOfDay := time.Now().Truncate(24 * time.Hour)
 			endOfDay := startOfDay.Add(24 * time.Hour).Add(-time.Nanosecond)
 			command.Filters = append(command.Filters, "start_time BETWEEN ? AND ?")
 			command.FilterArgs = append(command.FilterArgs, []interface{}{startOfDay, endOfDay})
-		} else if date == "tomorrow" {
+		case "tomorrow":
 			startOfTomorrow := time.Now().Truncate(24 * time.Hour).AddDate(0, 0, 1)
 			endOfTomorrow := startOfTomorrow.Add(24 * time.Hour).Add(-time.Nanosecond)
 			command.Filters = append(command.Filters, "start_time BETWEEN ? AND ?")
 			command.FilterArgs = append(command.FilterArgs, []interface{}{startOfTomorrow, endOfTomorrow})
-		} else if date == "this-week" {
+		case "this-week":
 			now := time.Now()
 			weekday := int(now.Weekday())
 			if weekday == 0 {
@@ -493,19 +495,19 @@ func (e *EventHandler) GetAllEvents(c *gin.Context) {
 			endOfWeek := startOfWeek.AddDate(0, 0, 7).Add(-time.Nanosecond)
 			command.Filters = append(command.Filters, "start_time BETWEEN ? AND ?")
 			command.FilterArgs = append(command.FilterArgs, []interface{}{startOfWeek, endOfWeek})
-		} else if date == "this-month" {
+		case "this-month":
 			now := time.Now()
 			startOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
 			endOfMonth := startOfMonth.AddDate(0, 1, 0).Add(-time.Nanosecond)
 			command.Filters = append(command.Filters, "start_time BETWEEN ? AND ?")
 			command.FilterArgs = append(command.FilterArgs, []interface{}{startOfMonth, endOfMonth})
-		} else if date == "this-year" {
+		case "this-year":
 			now := time.Now()
 			startOfYear := time.Date(now.Year(), time.January, 1, 0, 0, 0, 0, now.Location())
 			endOfYear := startOfYear.AddDate(1, 0, 0).Add(-time.Nanosecond)
 			command.Filters = append(command.Filters, "start_time BETWEEN ? AND ?")
 			command.FilterArgs = append(command.FilterArgs, []interface{}{startOfYear, endOfYear})
-		} else {
+		default:
 			c.JSON(http.StatusBadRequest, &types.ErrorResponse{
 				Error: "invalid date filter",
 			})

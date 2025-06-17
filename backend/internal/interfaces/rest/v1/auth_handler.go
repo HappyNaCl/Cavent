@@ -16,6 +16,7 @@ import (
 	"github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1/types"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/hibiken/asynq"
 	"github.com/markbates/goth/gothic"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
@@ -27,10 +28,10 @@ type AuthHandler struct {
 	userService *service.UserService
 }
 
-func NewAuthRoute(db *gorm.DB, redis *redis.Client) types.Route {
+func NewAuthRoute(db *gorm.DB, redis *redis.Client, asynq *asynq.Client) types.Route {
 	return &AuthHandler{
 		authService: service.NewAuthService(db, redis),
-		userService: service.NewUserService(db, redis),
+		userService: service.NewUserService(db, redis, asynq),
 	}
 }
 

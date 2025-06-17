@@ -9,6 +9,8 @@ import EventDetailPage from "./page/event/EventDetailPage";
 import SearchResultPage from "./page/search/SearchResultPage";
 import CampusPage from "./page/campus/CampusPage";
 import FavoritePage from "./page/favorite/FavoritePage";
+import SettingsLayout from "./layout/SettingsLayout";
+import ProfileForm from "./components/form/ProfileForm";
 
 function App() {
   return (
@@ -28,9 +30,12 @@ function App() {
         </Route>
         <Route path="event" element={<GeneralLayout />}>
           <Route path="create" element={<CreateEventPage />} />
-          <Route path=":id" element={<EventDetailPage />}></Route>
+          <Route path=":id" element={<EventDetailPage />} />
         </Route>
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/settings" element={<SettingsLayout />}>
+          <Route path="account" element={<ProfileForm />} />
+        </Route>
       </Routes>
     </main>
   );

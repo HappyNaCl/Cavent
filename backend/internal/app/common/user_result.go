@@ -35,3 +35,14 @@ func (u UserResult) ToBrief() BriefUserResult {
         Role:      u.Role,
     }
 }
+
+func (u UserResult) ToProfile() UserProfileResult {
+    return UserProfileResult{
+        Id:           u.Id,
+        Name:         u.Name,
+        AvatarUrl:    u.AvatarUrl,
+        Description:  u.Description,
+        PhoneNumber:  u.PhoneNumber,
+        Address:      u.Address,
+    }
+}

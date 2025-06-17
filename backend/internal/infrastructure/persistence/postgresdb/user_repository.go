@@ -12,6 +12,37 @@ type UserGormRepo struct {
 	db *gorm.DB
 }
 
+// GetUserProfile implements repo.UserRepository.
+func (u *UserGormRepo) GetUserProfile(userId string) (*model.User, error) {
+	var user model.User
+	err := u.db.Where("id = ?", userId).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+// UpdateUserProfile implements repo.UserRepository.
+func (u *UserGormRepo) UpdateUserProfile(user *model.User) (*model.User, error) {
+	var oldUser model.User
+	err := u.db.Where("id = ?", user.Id).First(&oldUser).Error
+	if err != nil {
+		return nil, err
+	}
+
+	oldUser.Name = user.Name
+	oldUser.AvatarUrl = user.AvatarUrl
+	oldUser.Description = user.Description
+	oldUser.PhoneNumber = user.PhoneNumber
+	oldUser.Address = user.Address
+
+	if err := u.db.Save(&oldUser).Error; err != nil {
+		return nil, err
+	}
+	return &oldUser, nil
+}
+
 // UpdateUserCampus implements repo.UserRepository.
 func (u *UserGormRepo) UpdateUserCampus(userId string, campusId uuid.UUID) (*model.User, error) {
 	var user model.User
@@ -21,7 +52,7 @@ func (u *UserGormRepo) UpdateUserCampus(userId string, campusId uuid.UUID) (*mod
 	}
 
 	if user.CampusId != nil && *user.CampusId == campusId {
-		return &user, nil 
+		return &user, nil
 	}
 
 	user.CampusId = &campusId

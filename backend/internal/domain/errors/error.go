@@ -44,4 +44,7 @@ var (
 
 	// Campus Errors
 	ErrCampusNotFound = errors.New("campus not found")
+
+	// User Errors
+	ErrUserNotFound = errors.New("user not found")
 )

@@ -25,13 +25,13 @@ func Init(db *gorm.DB, redis *redis.Client, client *asynq.Client) *gin.Engine  {
 
 	v1Public := r.Group("/api/v1")
 
-	authRoute := NewAuthRoute(db, redis)
+	authRoute := NewAuthRoute(db, redis, client)
 	authRoute.SetupRoutes(v1Protected, v1Public)
 
 	categoryRoute := NewCategoryHandler(db, redis)
 	categoryRoute.SetupRoutes(v1Protected, v1Public)
 
-	userRoute := NewUserHandler(db, redis)
+	userRoute := NewUserHandler(db, redis, client)
 	userRoute.SetupRoutes(v1Protected, v1Public)
 	
 	eventRoute := NewEventHandler(db, redis, client)
