@@ -18,6 +18,7 @@ import (
 	"github.com/hibiken/asynq"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -178,4 +179,74 @@ func (us *UserService) UpdateUserProfile(ctx context.Context, com *command.Updat
 	return &command.UpdateUserProfileCommandResult{
 		Result: mapper.NewUserResultFromUser(updatedUser).ToProfile(),
 	}, nil
+}
+
+func (us *UserService) UpdateUserPassword(ctx context.Context, com *command.UpdateUserPasswordCommand) (*command.UpdateUserPasswordCommandResult, error) {
+	if com.OldPassword == "" || com.NewPassword == "" {
+		return nil, domainerrors.ErrMissingFields
+	}
+
+	err := us.userRepo.HasPassword(com.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	oldPassword, err := us.userRepo.GetPasswordByUserId(com.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	if bcrypt.CompareHashAndPassword([]byte(oldPassword), []byte(com.OldPassword)) != nil {
+		return nil, domainerrors.ErrInvalidCurrentPassword
+	}
+
+	if bcrypt.CompareHashAndPassword([]byte(oldPassword), []byte(com.NewPassword)) == nil {
+		return nil, domainerrors.ErrPasswordCannotBeSame
+	}
+
+	newPassword, err := bcrypt.GenerateFromPassword([]byte(com.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+
+	err = us.userRepo.UpdateUserPassword(com.UserId, string(newPassword))
+	if err != nil {
+		return nil, err
+	}
+
+	return &command.UpdateUserPasswordCommandResult{}, nil
+}
+
+func (us *UserService) HasPassword(ctx context.Context, com *command.HasPasswordCommand) (*command.HasPasswordCommandResult, error) {
+	err := us.userRepo.HasPassword(com.UserId)
+	if err != nil {
+		if errors.Is(err, domainerrors.ErrNoPassword) {
+			return &command.HasPasswordCommandResult{
+				HasPassword: false,
+			}, nil
+		}
+		return nil, err
+	}
+
+	return &command.HasPasswordCommandResult{
+		HasPassword: true,
+	}, nil
+}
+
+func (us *UserService) SetPassword(ctx context.Context, com *command.SetPasswordCommand) (*command.SetPasswordCommandResult, error) {
+	if com.NewPassword == "" {
+		return nil, domainerrors.ErrMissingFields
+	}
+
+	newPassword, err := bcrypt.GenerateFromPassword([]byte(com.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+
+	err = us.userRepo.SetUserPassword(com.UserId, string(newPassword))
+	if err != nil {
+		return nil, err
+	}
+
+	return &command.SetPasswordCommandResult{}, nil
 }

@@ -10,7 +10,8 @@ import SearchResultPage from "./page/search/SearchResultPage";
 import CampusPage from "./page/campus/CampusPage";
 import FavoritePage from "./page/favorite/FavoritePage";
 import SettingsLayout from "./layout/SettingsLayout";
-import ProfileForm from "./components/form/ProfileForm";
+import ProfilePage from "./page/profile/ProfilePage";
+import PasswordPage from "./page/profile/PasswordPage";
 
 function App() {
   return (
@@ -34,7 +35,8 @@ function App() {
         </Route>
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/settings" element={<SettingsLayout />}>
-          <Route path="account" element={<ProfileForm />} />
+          <Route path="account" element={<ProfilePage />} />
+          <Route path="password" element={<PasswordPage />} />
         </Route>
       </Routes>
     </main>

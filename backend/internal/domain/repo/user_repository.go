@@ -13,4 +13,8 @@ type UserRepository interface {
 	UpdateUserCampus(userId string, campusId uuid.UUID) (*model.User, error)
 	GetUserProfile(userId string) (*model.User, error)
 	UpdateUserProfile(user *model.User) (*model.User, error)
+	GetPasswordByUserId(userId string) (string, error)
+	UpdateUserPassword(userId, newPassword string) error
+	SetUserPassword(userId, newPassword string) error
+	HasPassword(userId string) error
 }

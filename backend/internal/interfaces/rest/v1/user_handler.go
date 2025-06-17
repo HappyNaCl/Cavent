@@ -37,6 +37,10 @@ func (u UserHandler) SetupRoutes(v1Protected, v1Public *gin.RouterGroup) {
 
 	v1Protected.GET("/user/profile", u.GetUserProfile)
 	v1Protected.PUT("/user/profile", u.UpdateUserProfile)
+
+	v1Protected.GET("/user/has-password", u.HasPassword)
+	v1Protected.PUT("/user/password", u.UpdateUserPassword)
+	v1Protected.POST("/user/password", u.SetUserPassword)
 }
 
 // UpdateUserInterest godoc
@@ -283,5 +287,111 @@ func (u UserHandler) UpdateUserProfile(c *gin.Context) {
 	c.JSON(http.StatusOK, types.SuccessResponse{
 		Message: "success",
 		Data:    res.Result,
+	})
+}
+
+func (u UserHandler) HasPassword(c *gin.Context) {
+	userId := c.GetString("sub")
+
+	res, err := u.userService.HasPassword(c.Request.Context(), &command.HasPasswordCommand{
+		UserId: userId,
+	})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, types.ErrorResponse{
+			Error: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, types.SuccessResponse{
+		Message: "success",
+		Data: res.HasPassword,
+	})
+}
+
+func (u UserHandler) UpdateUserPassword(c *gin.Context) {
+	var req request.UpdateUserPasswordRequest
+
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, types.ErrorResponse{
+			Error: domainerrors.ErrMissingFields.Error(),
+		})
+		return
+	}
+
+	if req.OldPassword == req.NewPassword {
+		c.JSON(http.StatusBadRequest, types.ErrorResponse{
+			Error: domainerrors.ErrPasswordCannotBeSame.Error(),
+		})
+	}
+
+	if req.NewPassword != req.ConfirmPassword {
+		c.JSON(http.StatusBadRequest, types.ErrorResponse{
+			Error: domainerrors.ErrConfirmPasswordMismatch.Error(),
+		})
+	}
+
+	userId := c.GetString("sub")
+	if userId == "" {
+		c.JSON(http.StatusBadRequest, types.ErrorResponse{
+			Error: domainerrors.ErrMissingFields.Error(),
+		})
+		return
+	}
+
+	command := req.ToCommand()
+	command.UserId = userId
+
+	_, err := u.userService.UpdateUserPassword(c.Request.Context(), command)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, types.ErrorResponse{
+			Error: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, types.SuccessResponse{
+		Message: "success",
+	})
+}
+
+func (u UserHandler) SetUserPassword(c *gin.Context) {
+	var req request.SetUserPasswordRequest
+
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, types.ErrorResponse{
+			Error: domainerrors.ErrMissingFields.Error(),
+		})
+		return
+	}
+
+	if req.NewPassword != req.ConfirmPassword {
+		c.JSON(http.StatusBadRequest, types.ErrorResponse{
+			Error: domainerrors.ErrConfirmPasswordMismatch.Error(),
+		})
+		return
+	}
+
+	userId := c.GetString("sub")
+	if userId == "" {
+		c.JSON(http.StatusBadRequest, types.ErrorResponse{
+			Error: domainerrors.ErrMissingFields.Error(),
+		})
+		return
+	}
+
+	command := req.ToCommand()
+	command.UserId = userId
+	_, err := u.userService.SetPassword(c.Request.Context(), command)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, types.ErrorResponse{
+			Error: err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, types.SuccessResponse{
+		Message: "success",
+		Data:    nil,
 	})
 }

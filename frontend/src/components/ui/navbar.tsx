@@ -103,7 +103,7 @@ export default function Navbar() {
                     </CommandItem>
                     <CommandItem>
                       <Link
-                        to="/settings"
+                        to="/settings/account"
                         className="flex items-center gap-2 w-full py-2"
                       >
                         <Settings className="w-4 h-4" />

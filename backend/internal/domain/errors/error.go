@@ -47,4 +47,9 @@ var (
 
 	// User Errors
 	ErrUserNotFound = errors.New("user not found")
+
+	// Update Password Errors	
+	ErrNoPassword = errors.New("user has no password set")
+	ErrInvalidCurrentPassword = errors.New("current password is incorrect")
+	ErrPasswordCannotBeSame = errors.New("new password cannot be the same as the current password")
 )

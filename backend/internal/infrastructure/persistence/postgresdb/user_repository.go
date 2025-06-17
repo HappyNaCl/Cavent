@@ -1,7 +1,9 @@
 package postgresdb
 
 import (
-	"github.com/HappyNaCl/Cavent/backend/internal/domain/errors"
+	"errors"
+
+	domainerrors "github.com/HappyNaCl/Cavent/backend/internal/domain/errors"
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/model"
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/repo"
 	"github.com/google/uuid"
@@ -10,6 +12,65 @@ import (
 
 type UserGormRepo struct {
 	db *gorm.DB
+}
+
+func (u *UserGormRepo) SetUserPassword(userId string, newPassword string) (error) {
+	var user model.User
+	err := u.db.Where("id = ?", userId).First(&user).Error
+	if err != nil {
+		return err
+	}
+
+	user.Password = newPassword
+	if err := u.db.Save(&user).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// GetPasswordByUserId implements repo.UserRepository.
+func (u *UserGormRepo) GetPasswordByUserId(userId string) (string, error) {
+	var user model.User
+	err := u.db.Model(&model.User{}).Select("password").Where("id = ?", userId).First(&user).Error
+	if err != nil {
+		return "", err
+	}
+	
+	return user.Password, nil
+}
+
+// HasPassword implements repo.UserRepository.
+func (u *UserGormRepo) HasPassword(userId string) (error) {
+	var user model.User
+	err := u.db.Model(&model.User{}).Select("password").Where("id = ?", userId).First(&user).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return domainerrors.ErrUserNotFound
+		}
+		return err
+	}
+
+	if user.Password == "" {
+		return domainerrors.ErrNoPassword
+	}
+	return nil
+}
+
+// UpdateUserPassword implements repo.UserRepository.
+func (u *UserGormRepo) UpdateUserPassword(userId string, newPassword string) error {
+	var user model.User
+	err := u.db.Where("id = ?", userId).First(&user).Error
+	if err != nil {
+		return err
+	}
+
+	user.Password = newPassword
+	if err := u.db.Save(&user).Error; err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // GetUserProfile implements repo.UserRepository.
@@ -120,7 +181,7 @@ func (u *UserGormRepo) GetCampusId(userId string) (*uuid.UUID, error) {
 	}
 
 	if user.CampusId == nil {
-		return nil, errors.ErrUserNotInCampus
+		return nil, domainerrors.ErrUserNotInCampus
 	}
 
 	return user.CampusId, nil
