@@ -1,13 +1,10 @@
 package main
 
 import (
-	"context"
-	"flag"
 	"os"
 
 	"github.com/HappyNaCl/Cavent/backend/config"
-	migration "github.com/HappyNaCl/Cavent/backend/internal/infrastructure/persistence/postgresdb/migration"
-	seeder "github.com/HappyNaCl/Cavent/backend/internal/infrastructure/persistence/postgresdb/seeder"
+
 	"github.com/HappyNaCl/Cavent/backend/internal/infrastructure/queue"
 	v1 "github.com/HappyNaCl/Cavent/backend/internal/interfaces/rest/v1"
 	"github.com/joho/godotenv"
@@ -43,8 +40,8 @@ func main(){
 		panic(err)
 	}
 
-
 	redisAddr := os.Getenv("REDIS_URL")
+
 	// Setup Asynq client
 	client, err := queue.InitClient(redisAddr)
 	if err != nil {
@@ -53,53 +50,7 @@ func main(){
 
 	// Setup Gin router
 	r := v1.Init(db, redis, client)
-    
-	migrate := flag.Bool("migrate", false, "Run migrations")
-	seed := flag.Bool("seed", false, "Run seeders")
-	fresh := flag.Bool("fresh", false, "Run fresh migrations and seed")
-
-	flag.Parse()
-
-	if migrate != nil && *migrate {
-		err := migration.Migrate(db)
-		if err != nil {
-			zap.L().Sugar().Infof("Error migrating database: %v", err.Error())
-			panic(err)
-		}
-		
-		err = redis.FlushAll(context.Background()).Err()
-		if err != nil {
-			zap.L().Sugar().Infof("Error flushing redis: %v", err.Error())
-			panic(err)
-		}
-	}
-
-	if seed != nil && *seed {
-		err := seeder.Seed(db)
-		if err != nil {
-			zap.L().Sugar().Infof("Error seeding database: %v", err.Error())
-			panic(err)
-		}
-	}
-
-	if fresh != nil && *fresh {
-		err := migration.Migrate(db)
-		if err != nil {
-			zap.L().Sugar().Infof("Error migrating database: %v", err.Error())
-			panic(err)
-		}
-		err = redis.FlushAll(context.Background()).Err()
-		if err != nil {
-			zap.L().Sugar().Infof("Error flushing redis: %v", err.Error())
-			panic(err)
-		}
-		err = seeder.Seed(db)
-		if err != nil {
-			zap.L().Sugar().Infof("Error seeding database: %v", err.Error())
-			panic(err)
-		}
-	}
-
-
 	r.Run(":8080")
+
+	defer redis.Close()
 }

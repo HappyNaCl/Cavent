@@ -42,6 +42,9 @@ func Init(db *gorm.DB, redis *redis.Client, client *asynq.Client) *gin.Engine  {
 
 	campusHandler := NewCampusHandler(db)
 	campusHandler.SetupRoutes(v1Protected, v1Public)
+
+	ticketTypeHandler := NewTicketTypeHandler(db)
+	ticketTypeHandler.SetupRoutes(v1Protected, v1Public)
 	
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	return r
