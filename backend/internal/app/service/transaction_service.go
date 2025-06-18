@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/HappyNaCl/Cavent/backend/internal/app/command"
+	domainerrors "github.com/HappyNaCl/Cavent/backend/internal/domain/errors"
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/factory"
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/model"
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/repo"
@@ -15,6 +16,7 @@ import (
 
 type TransactionService struct {
 	transactionRepo repo.TransactionRepository
+	ticketTypeRepo repo.TicketTypeRepository
 
 	asynq *asynq.Client
 }
@@ -22,6 +24,7 @@ type TransactionService struct {
 func NewTransactionService(db *gorm.DB, asynq *asynq.Client) *TransactionService {
 	return &TransactionService{
 		transactionRepo: postgresdb.NewTransactionGormRepo(db),
+		ticketTypeRepo: postgresdb.NewTicketTypeGormRepo(db),
 		asynq:           asynq,
 	}
 }
@@ -34,6 +37,14 @@ func (t *TransactionService) Checkout(ctx context.Context, com *command.Checkout
 	details := make([]model.TransactionDetail, len(com.Ticket))
 
 	for i, ticket := range com.Ticket {
+		isAvailable, err := t.ticketTypeRepo.IsTicketAvailable(ticket.Id)
+		if err != nil {
+			return nil, err
+		}
+		if !isAvailable {
+			return nil, domainerrors.ErrTicketNotAvailable
+		}
+
 		detail := detailFactory.CreateTransactionDetail(header.Id, ticket.Id, ticket.Quantity)
 		details[i] = detail
 	}

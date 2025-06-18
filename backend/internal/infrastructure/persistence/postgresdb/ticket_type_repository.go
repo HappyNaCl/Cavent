@@ -26,6 +26,14 @@ func (t *TicketTypeGormRepo) ReduceTicketTypeQuantity(ticketTypeId uuid.UUID) er
 	return nil
 }
 
+func (t *TicketTypeGormRepo) IsTicketAvailable(ticketTypeId uuid.UUID) (bool, error) {
+	var count int64
+	if err := t.db.Model(&model.TicketType{}).Where("id = ? AND quantity > 0 AND sold < quantity", ticketTypeId).Count(&count).Error; err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
 func NewTicketTypeGormRepo(db *gorm.DB) repo.TicketTypeRepository {
 	return &TicketTypeGormRepo{
 		db: db,

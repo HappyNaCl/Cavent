@@ -6,6 +6,7 @@ import (
 )
 
 type TicketTypeRepository interface {
+	IsTicketAvailable(ticketTypeId uuid.UUID) (bool, error)
 	GetTicketTypeByEventId(eventId string) ([]*model.TicketType, error)
 	ReduceTicketTypeQuantity(ticketTypeId uuid.UUID) error
 }

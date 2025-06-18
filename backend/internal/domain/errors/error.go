@@ -52,4 +52,7 @@ var (
 	ErrNoPassword = errors.New("user has no password set")
 	ErrInvalidCurrentPassword = errors.New("current password is incorrect")
 	ErrPasswordCannotBeSame = errors.New("new password cannot be the same as the current password")
+
+	// Checkout Errors
+	ErrTicketNotAvailable = errors.New("ticket is not available")
 )
