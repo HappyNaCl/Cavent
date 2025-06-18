@@ -20,6 +20,7 @@ func NewServer(redisAddr string) *asynq.Server {
 			Queues: map[string]int{
 				tasks.TypeEventView: 10,
 				tasks.TypeImageUpload: 10,
+				tasks.TypeTicketCheckout: 10,
 			},
 			RetryDelayFunc: func(n int, err error, t *asynq.Task) time.Duration {
 				return time.Duration(n) * time.Second
@@ -28,11 +29,12 @@ func NewServer(redisAddr string) *asynq.Server {
 	)
 }
 
-func StartWorker(redisAddr string, eventView *handler.EventViewedHandler, imageUpload *handler.ImageUploadHandler){
+func StartWorker(redisAddr string, eventView *handler.EventViewedHandler, imageUpload *handler.ImageUploadHandler, checkoutTicket *handler.TicketCheckoutHandler){
 	srv := NewServer(redisAddr)
 	mux := asynq.NewServeMux()
 	mux.HandleFunc(tasks.TypeEventView, eventView.Handle)
 	mux.HandleFunc(tasks.TypeImageUpload, imageUpload.Handle)
+	mux.HandleFunc(tasks.TypeTicketCheckout, checkoutTicket.Handle)
 
 	if err := srv.Run(mux); err != nil {
 		panic(err)

@@ -10,16 +10,25 @@ import {
 } from "@/components/ui/card";
 import { Minus, Plus } from "lucide-react";
 import { Ticket } from "@/interface/Ticket";
+import { toast } from "sonner";
+import axios from "axios";
+import api from "@/lib/axios";
 
 type TicketFormProps = {
   tickets: Ticket[];
+  eventId: string;
+  onSubmit?: () => void;
 };
 
 type SelectedQuantities = {
   [ticketId: string]: number;
 };
 
-export default function TicketForm({ tickets }: TicketFormProps) {
+export default function TicketForm({
+  tickets,
+  eventId,
+  onSubmit,
+}: TicketFormProps) {
   const [selectedQuantities, setSelectedQuantities] =
     useState<SelectedQuantities>({});
 
@@ -55,13 +64,36 @@ export default function TicketForm({ tickets }: TicketFormProps) {
     );
   }, [selectedQuantities, tickets]);
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    console.log("Submitting order:", {
-      selectedTickets: selectedQuantities,
-      totalPrice: totalPrice.toFixed(2),
-    });
-    alert(`Order submitted! Total: $${totalPrice.toFixed(2)}`);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const result = Object.entries(selectedQuantities).map(
+      ([ticketId, quantity]) => ({
+        ticketId,
+        quantity,
+      })
+    );
+
+    const formData = {
+      eventId,
+      tickets: result,
+    };
+    console.log(formData);
+
+    try {
+      const res = await api.post("/checkout", formData);
+      if (res.status === 200) {
+        toast.success("Tickets purchased successfully!");
+        setSelectedQuantities({});
+        onSubmit?.();
+      } else {
+        toast.error("Failed to purchase tickets");
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.error || "An error occurred");
+      }
+    }
   };
 
   return (

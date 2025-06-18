@@ -11,8 +11,11 @@ type TransactionGormRepo struct {
 }
 
 // CreateTransaction implements repo.TransactionRepository.
-func (t *TransactionGormRepo) CreateTransaction(userId string, eventId string, ticketTypes []*model.TicketType) error {
-	panic("unimplemented")
+func (t *TransactionGormRepo) CreateTransaction(transaction *model.TransactionHeader) error{
+	if err := t.db.Create(transaction).Error; err != nil {
+		return err 
+	}
+	return nil
 }
 
 func NewTransactionGormRepo(db *gorm.DB) repo.TransactionRepository {

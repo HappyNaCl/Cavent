@@ -10,6 +10,8 @@ func Migrate(db *gorm.DB) error {
     err := db.Migrator().DropTable(
         &model.UserFavorite{},
         &model.EventView{},
+        &model.TransactionDetail{},
+        &model.TransactionHeader{},
         &model.Ticket{},
         &model.TicketType{},
         "event_categories",
@@ -35,6 +37,8 @@ func Migrate(db *gorm.DB) error {
         &model.TicketType{},
         &model.Ticket{},
         &model.EventView{},
+        &model.TransactionHeader{},
+        &model.TransactionDetail{},
     )
 	
     if err != nil {

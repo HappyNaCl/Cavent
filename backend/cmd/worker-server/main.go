@@ -27,6 +27,7 @@ func main() {
 	
 	eventViewHandler := handler.NewEventViewedHandler(db)
 	imageUploadHandler := handler.NewImageUploadHandler()
+	checkoutTicketHandler := handler.NewTicketCheckoutHandler(db)
 
-	queue.StartWorker(redisAddr, eventViewHandler, imageUploadHandler)
+	queue.StartWorker(redisAddr, eventViewHandler, imageUploadHandler, checkoutTicketHandler)
 }

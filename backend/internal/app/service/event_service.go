@@ -96,7 +96,7 @@ func (e EventService) CreateEvent(com *command.CreateEventCommand) (*command.Cre
 		return nil, err
 	}
 
-	_, err = e.asynqClient.Enqueue(asynqTask, asynq.MaxRetry(5), asynq.Queue(tasks.TypeImageUpload), )
+	_, err = e.asynqClient.Enqueue(asynqTask, asynq.MaxRetry(5), asynq.Queue(tasks.TypeImageUpload))
 	if err != nil {
 		return nil, err
 	}

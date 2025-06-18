@@ -240,6 +240,7 @@ export default function EventDetailPage() {
 
       {event.ticketType === "ticketed" && (
         <TicketDialog
+          eventId={event.id}
           open={openTicketDialog}
           onOpenChange={setOpenTicketDialog}
           tickets={tickets}
