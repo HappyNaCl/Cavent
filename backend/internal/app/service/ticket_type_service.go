@@ -30,3 +30,11 @@ func (tts *TicketTypeService) GetTicketTypeByEventId(ctx context.Context, com *c
 		TicketTypes: mapper.NewTicketTypeResultFromTicketType(ticketTypes),
 	}, nil
 }
+
+func (tts *TicketTypeService) ReduceTicketTypeQuantity(ctx context.Context, com *command.ReduceTicketTypeQuantityCommand) (*command.ReduceTicketTypeQuantityCommandResult, error) {
+	if err := tts.ticketTypeRepo.ReduceTicketTypeQuantity(com.TicketTypeId); err != nil {
+		return nil, err
+	}
+
+	return &command.ReduceTicketTypeQuantityCommandResult{}, nil
+}

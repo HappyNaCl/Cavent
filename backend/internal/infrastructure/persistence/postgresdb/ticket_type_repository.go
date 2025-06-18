@@ -3,6 +3,7 @@ package postgresdb
 import (
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/model"
 	"github.com/HappyNaCl/Cavent/backend/internal/domain/repo"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -16,6 +17,13 @@ func (t *TicketTypeGormRepo) GetTicketTypeByEventId(eventId string) ([]*model.Ti
 		return nil, err
 	}
 	return ticketTypes, nil
+}
+
+func (t *TicketTypeGormRepo) ReduceTicketTypeQuantity(ticketTypeId uuid.UUID) error {
+	if err := t.db.Model(&model.TicketType{}).Where("id = ?", ticketTypeId).UpdateColumn("quantity", gorm.Expr("quantity - 1")).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
 func NewTicketTypeGormRepo(db *gorm.DB) repo.TicketTypeRepository {
