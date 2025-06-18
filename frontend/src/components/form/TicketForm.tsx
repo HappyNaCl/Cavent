@@ -1,4 +1,6 @@
-import { useState, useMemo } from "react";
+"use client";
+
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -29,15 +31,20 @@ export default function TicketForm({
   eventId,
   onSubmit,
 }: TicketFormProps) {
+  const [componentTickets, setComponentTickets] = useState<Ticket[]>(tickets);
   const [selectedQuantities, setSelectedQuantities] =
     useState<SelectedQuantities>({});
+
+  useEffect(() => {
+    setComponentTickets(tickets);
+  }, [tickets]);
 
   const handleQuantityChange = (ticketId: string, amount: number) => {
     setSelectedQuantities((prev) => {
       const currentQuantity = prev[ticketId] || 0;
       const newQuantity = currentQuantity + amount;
 
-      const ticket = tickets.find((t) => t.id === ticketId);
+      const ticket = componentTickets.find((t) => t.id === ticketId);
       if (!ticket) return prev;
 
       const availableStock = ticket.quantity - ticket.sold;
@@ -56,34 +63,53 @@ export default function TicketForm({
   const totalPrice = useMemo(() => {
     return Object.entries(selectedQuantities).reduce(
       (total, [ticketId, quantity]) => {
-        const ticket = tickets.find((t) => t.id === ticketId);
+        const ticket = componentTickets.find((t) => t.id === ticketId);
         if (!ticket) return total;
         return total + ticket.price * quantity;
       },
       0
     );
-  }, [selectedQuantities, tickets]);
+  }, [selectedQuantities, componentTickets]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const result = Object.entries(selectedQuantities).map(
-      ([ticketId, quantity]) => ({
+    const result = Object.entries(selectedQuantities)
+      .filter(([, quantity]) => quantity > 0)
+      .map(([ticketId, quantity]) => ({
         ticketId,
         quantity,
-      })
-    );
+      }));
+
+    if (result.length === 0) {
+      toast.info("Please select at least one ticket to purchase.");
+      return;
+    }
 
     const formData = {
       eventId,
       tickets: result,
     };
-    console.log(formData);
 
     try {
       const res = await api.post("/checkout", formData);
+
       if (res.status === 200) {
         toast.success("Tickets purchased successfully!");
+
+        setComponentTickets((prevTickets) =>
+          prevTickets.map((ticket) => {
+            const purchasedQuantity = selectedQuantities[ticket.id];
+            if (purchasedQuantity > 0) {
+              return {
+                ...ticket,
+                sold: ticket.sold + purchasedQuantity,
+              };
+            }
+            return ticket;
+          })
+        );
+
         setSelectedQuantities({});
         onSubmit?.();
       } else {
@@ -106,7 +132,7 @@ export default function TicketForm({
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-6">
-          {tickets.map((ticket) => {
+          {componentTickets.map((ticket) => {
             const availableStock = ticket.quantity - ticket.sold;
             const currentSelection = selectedQuantities[ticket.id] || 0;
 
