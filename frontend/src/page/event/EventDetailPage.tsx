@@ -1,6 +1,7 @@
 import FavoriteButton from "@/components/button/FavoriteButton";
 import LoginModal, { LoginModalRef } from "@/components/dialog/LoginDialog";
 import { ShareModal } from "@/components/dialog/ShareDialog";
+import { TicketDialog } from "@/components/dialog/TicketDialog";
 import NotFound from "@/components/error/NotFound";
 import CampusEventCarousel from "@/components/events/CampusEventCarousel";
 import { useAuth } from "@/components/provider/AuthProvider";
@@ -8,9 +9,16 @@ import EventDetailSkeleton from "@/components/skeleton/EventDetailSkeleton";
 import { Button } from "@/components/ui/button";
 import Image from "@/components/ui/image";
 import { Event } from "@/interface/Event";
+import { Ticket } from "@/interface/Ticket";
 import api from "@/lib/axios";
 import axios from "axios";
-import { Calendar, Clock, MapPin, Share2, Ticket } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  Share2,
+  Ticket as TicketIcon,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router";
 import { toast } from "sonner";
@@ -20,6 +28,8 @@ export default function EventDetailPage() {
   const { user } = useAuth();
 
   const [openShareDialog, setOpenShareDialog] = useState(false);
+  const [openTicketDialog, setOpenTicketDialog] = useState(false);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -29,6 +39,14 @@ export default function EventDetailPage() {
     if (loginModalRef.current) {
       loginModalRef.current.open();
     }
+  };
+
+  const handleTicketButtonClick = () => {
+    if (!user) {
+      handleUnauthorized();
+      return;
+    }
+    setOpenTicketDialog(true);
   };
 
   const dateObj =
@@ -72,8 +90,8 @@ export default function EventDetailPage() {
             user: user?.id,
           },
         });
-        console.log(res.data);
         setEvent(res.data.data);
+        setTickets(res.data.data.tickets || []);
       } catch (error) {
         if (axios.isAxiosError(error)) {
           toast.error(
@@ -125,7 +143,6 @@ export default function EventDetailPage() {
         </div>
       </div>
 
-      {/* Date and Time */}
       <div className="space-y-2">
         <h2 className="text-lg font-semibold text-gray-700">Date and Time</h2>
         <div className="flex items-center gap-2 text-gray-600">
@@ -156,20 +173,27 @@ export default function EventDetailPage() {
           <h2 className="text-lg font-semibold text-gray-700">
             Ticket Information
           </h2>
-          <div className="flex flex-col gap-1 text-gray-600">
+          <div className="flex flex-col gap-4 text-gray-600">
             {event.tickets.map((ticket) => (
-              <span className="flex items-center gap-2" key={ticket.id}>
-                <Ticket />
-                {ticket.name} : ${ticket.price.toFixed(2)} each
-              </span>
+              <div className="flex flex-col w-fit border-4 border-l-amber-200 px-4 py-2 rounded-2xl shadow-md min-w-sm">
+                <TicketIcon />
+                <span className="flex items-center gap-2" key={ticket.id}>
+                  <span className="font-bold">{ticket.name}</span> : $
+                  {ticket.price.toFixed(2)} each
+                </span>
+                <span>{ticket.quantity - ticket.sold} available</span>
+              </div>
             ))}
           </div>
-          <Button className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold mt-2">
+          <Button
+            className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold mt-2"
+            onClick={handleTicketButtonClick}
+          >
             Buy Tickets
           </Button>
         </div>
       )}
-      {/* Hosted By */}
+
       <div className="space-y-2">
         <h2 className="text-lg font-semibold text-gray-700">Hosted by</h2>
         <div className="flex items-center gap-3">
@@ -192,7 +216,6 @@ export default function EventDetailPage() {
         </div>
       </div>
 
-      {/* Event Description */}
       <div className="space-y-2">
         <h2 className="text-lg font-semibold text-gray-700">
           Event Description
@@ -208,12 +231,20 @@ export default function EventDetailPage() {
         unAuthorized={handleUnauthorized}
       />
 
-      <LoginModal ref={loginModalRef} />
+      {!user && <LoginModal ref={loginModalRef} />}
       <ShareModal
         open={openShareDialog}
         onOpenChange={setOpenShareDialog}
         eventId={event.id}
       />
+
+      {event.ticketType === "ticketed" && (
+        <TicketDialog
+          open={openTicketDialog}
+          onOpenChange={setOpenTicketDialog}
+          tickets={tickets}
+        />
+      )}
     </div>
   );
 }

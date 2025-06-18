@@ -7,10 +7,16 @@ import (
 	"github.com/HappyNaCl/Cavent/backend/config"
 	migration "github.com/HappyNaCl/Cavent/backend/internal/infrastructure/persistence/postgresdb/migration"
 	seeder "github.com/HappyNaCl/Cavent/backend/internal/infrastructure/persistence/postgresdb/seeder"
+	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 )
 
 func main() {
+	err := godotenv.Load()
+    if err != nil {
+        panic("Failed to load .env file")
+    }
+	
 	db, err := config.ConnectDb()
 	if err != nil {
 		zap.L().Sugar().Errorf("Error connecting to db: %v", err)

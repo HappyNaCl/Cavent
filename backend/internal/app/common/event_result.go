@@ -20,6 +20,6 @@ type EventResult struct {
 	CreatedAt 	time.Time 	`json:"createdAt"`
 	UpdatedAt 	time.Time 	`json:"updatedAt"`
 	IsFavorited bool       `json:"isFavorited,omitempty"`
-	Tickets     []*TicketResult `json:"tickets,omitempty"`
+	Tickets     []*TicketTypeResult `json:"tickets,omitempty"`
 	Campus      BriefCampusResult `json:"campus"`
 }

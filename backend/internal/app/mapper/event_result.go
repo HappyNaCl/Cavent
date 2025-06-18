@@ -26,13 +26,14 @@ func NewEventResultFromEvent(event *model.Event, isFavorited bool) *common.Event
 	}
 
 	if event.TicketType == "ticketed" {
-		tickets := make([]*common.TicketResult, 0, len(event.TicketTypes))
+		tickets := make([]*common.TicketTypeResult, 0, len(event.TicketTypes))
 		for _, ticket := range event.TicketTypes {
-			tickets = append(tickets, &common.TicketResult{
+			tickets = append(tickets, &common.TicketTypeResult{
 				Id:          ticket.Id,
 				Name:        ticket.Name,
 				Price:       ticket.Price,
 				Quantity:    ticket.Quantity,
+				Sold:        ticket.Sold,
 			})
 		}
 		result.Tickets = tickets

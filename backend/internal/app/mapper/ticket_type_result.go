@@ -13,6 +13,7 @@ func NewTicketTypeResultFromTicketType(ticketType []*model.TicketType) []*common
 			Name:        t.Name,
 			Price:       t.Price,
 			Quantity:    t.Quantity,
+			Sold: 		 t.Sold,
 		})
 	}
 	return ticketTypeResults

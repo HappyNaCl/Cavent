@@ -3,4 +3,5 @@ export interface Ticket {
   name: string;
   price: number;
   quantity: number;
+  sold: number;
 }
