@@ -12,6 +12,7 @@ import FavoritePage from "./page/favorite/FavoritePage";
 import SettingsLayout from "./layout/SettingsLayout";
 import ProfilePage from "./page/profile/ProfilePage";
 import PasswordPage from "./page/profile/PasswordPage";
+import TicketsPage from "./page/ticket/TicketsPage";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route index element={<HomePage />}></Route>
           <Route path="event" element={<SearchResultPage />} />
           <Route path="campus" element={<CampusPage />} />
+          <Route path="tickets" element={<TicketsPage />} />
         </Route>
         <Route path="favorite" element={<GeneralLayout />}>
           <Route index element={<FavoritePage />} />
